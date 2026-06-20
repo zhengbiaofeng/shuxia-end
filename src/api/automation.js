@@ -204,6 +204,64 @@ export async function refreshSubscribePage() {
   return normalizeSubscribePage(readResultResponse(response, '刷新订阅快照失败') || {})
 }
 
+export async function fetchNovelSyncPage(params = {}) {
+  const response = await request.get('/sx/book/subscription/list', {
+    params: { pageNo: 1, pageSize: 10, ...cleanParams(params) },
+  })
+  const page = readPageResponse(response, '获取小说同步订阅失败')
+  const rows = page.records.map(normalizeNovelSyncRow)
+
+  return {
+    rows,
+    total: page.total,
+    current: page.current,
+    pageSize: page.pageSize,
+    pages: page.pages,
+    metrics: buildNovelSyncMetrics(rows, page.total),
+  }
+}
+
+export async function fetchNovelSyncDetail(id) {
+  if (!id) throw new Error('缺少订阅ID')
+  const response = await request.get(`/sx/book/subscription/detail/${encodeURIComponent(id)}`)
+  return normalizeNovelSyncDetail(readResultResponse(response, '获取小说同步详情失败') || {})
+}
+
+export async function createNovelSyncSubscription(payload = {}) {
+  const response = await request.post('/sx/book/subscription/add', normalizeNovelSyncPayload(payload))
+  if (!response?.success) throw new Error(response?.message || '新增小说同步订阅失败')
+  return response.result
+}
+
+export async function updateNovelSyncSubscription(payload = {}) {
+  const response = await request.post('/sx/book/subscription/edit', normalizeNovelSyncPayload(payload))
+  if (!response?.success) throw new Error(response?.message || '保存小说同步订阅失败')
+  return response.result
+}
+
+export async function changeNovelSyncStatus({ id, status }) {
+  const response = await request.post('/sx/book/subscription/changeStatus', { id, status })
+  if (!response?.success) throw new Error(response?.message || '切换小说同步状态失败')
+  return response.result
+}
+
+export async function deleteNovelSyncSubscription(id) {
+  if (!id) throw new Error('缺少订阅ID')
+  const response = await request.delete('/sx/book/subscription/delete', { params: { id } })
+  if (!response?.success) throw new Error(response?.message || '删除小说同步订阅失败')
+  return response.result
+}
+
+export async function runNovelSyncNow(payload = {}) {
+  const response = await request.post('/sx/book/scrape/runNow', cleanParams({
+    subscriptionId: payload.subscriptionId,
+    syncChapters: Boolean(payload.syncChapters),
+    maxChapters: payload.maxChapters,
+    requestDelayMs: payload.requestDelayMs,
+  }))
+  return normalizeNovelSyncRunResult(readResultResponse(response, '执行小说同步失败') || {})
+}
+
 export async function analyzeSmartScrapeUrl(url) {
   const response = await request.post('/sx/book/auto-scrape/analyze', { url: trimText(url) })
   return normalizeSmartScrapeAnalyze(readResultResponse(response, '解析 URL 失败') || {})
