@@ -31,6 +31,7 @@ This source is for development and rule verification only. Do not present it as 
 - Phase 1 updates existing novels from a configured detail/catalog URL. It does not discover a whole site.
 - Phase 2 can discover new novels from category/ranking/search pages and auto-create records.
 - Manual metadata edits win by default. Scheduled sync should add chapters, not overwrite a user-maintained title, cover, intro, category, or tags unless an explicit overwrite option is enabled.
+- Crawled chapter content must pass a content scrubbing step before storage. The system should remove ads, source-site notices, script/style leftovers, navigation text, duplicated titles, update prompts, and other unrelated boilerplate instead of saving raw page text.
 - The backend creates tasks and runs long work asynchronously. Frontend write APIs should not block until hundreds of chapters are downloaded.
 - Fetch politely: single-site concurrency starts at 1, chapter request intervals are configurable, and each run has a max chapter limit.
 - Never add anti-captcha, login bypass, paywall bypass, or hidden authorization workarounds.
@@ -62,11 +63,20 @@ Objective: bind one existing local novel to one source detail URL, then manually
   - Suggested production default: configurable, conservative.
 - [ ] Add per-request delay or site-level throttle.
   - Suggested default: 1000-3000 ms between chapter fetches.
+- [ ] Add a content scrubbing pipeline before chapter content is stored.
+  - Strip `script`, `style`, `iframe`, hidden elements, navigation blocks, recommendation blocks, footer blocks, and obvious ad containers before text extraction when possible.
+  - Support rule-level remove selectors, for example `adRemoveSelectors` or `contentRemoveSelectors`.
+  - Support rule-level line filters or regex filters for common junk text, site notices, update prompts, and repeated source statements.
+  - Normalize whitespace, blank lines, HTML entities, full-width spaces, and duplicated chapter titles.
+  - Keep paragraph boundaries readable for the frontend reader.
+  - Record how many nodes/lines were removed in debug output and task logs.
+  - Fail or warn when the cleaned content becomes too short compared with the raw extraction result.
 - [ ] Add clear failure messages for:
   - detail page empty
   - catalog page empty
   - no chapters parsed
   - content selector matched nothing
+  - content scrubbed to empty or suspiciously short text
   - HTTP status not OK
   - unsupported charset or decoding failure
 
@@ -90,7 +100,8 @@ Objective: bind one existing local novel to one source detail URL, then manually
   - Full catalog chapter selector: suitable `dd a` selector on the list page.
 - [ ] Configure content selector for chapter pages.
   - Verify with one chapter page only.
-  - Strip navigation, ads, and unrelated footer text.
+  - Configure remove selectors and line filters to strip navigation, ads, source-site notices, update prompts, and unrelated footer text.
+  - Verify the cleaned text only contains chapter title/body content.
 - [ ] Add a handoff note under backend `docs/` if backend SQL or Java changes are made.
 
 ### 3. Subscription Backend
@@ -156,7 +167,9 @@ Objective: bind one existing local novel to one source detail URL, then manually
   - intro
   - latest chapter
   - chapter samples
-  - content sample
+  - raw content sample
+  - cleaned content sample
+  - scrub summary
   - warnings
 - [ ] Add result messaging after run:
   - task ID
@@ -174,6 +187,7 @@ Objective: bind one existing local novel to one source detail URL, then manually
 - [ ] Debug parse full catalog URL.
 - [ ] Run immediate sync with max 1-5 chapters.
 - [ ] Confirm chapters are inserted into the selected novel.
+- [ ] Confirm inserted chapter content has been scrubbed and does not contain ads, source-site notices, navigation text, recommendation text, or footer boilerplate.
 - [ ] Run immediate sync again and confirm duplicate chapters are skipped.
 - [ ] Enable a short test cron and confirm scheduled execution appears in Task Center.
 - [ ] Pause/terminate a long-running task and confirm it stops cleanly.
