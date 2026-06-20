@@ -1,0 +1,242 @@
+# Codex Project State
+
+This document is the handoff snapshot for new Codex threads. Read it before starting work in this project, then update it when backend/frontend integration state changes.
+
+## Project Paths
+
+- Frontend root: `E:\code\trae_workspcae\shuxia\qianduan\shuxia-end`
+- Backend root: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot`
+- Docker compose file: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\docker\command\docker-compose.yml`
+- Main backend service/container: `jeecg-system-start`
+- MySQL container used in local debugging: `mysql`
+- Local frontend dev URL normally used during testing: `http://127.0.0.1:5173`
+- Canonical backend source is the E盘 `boot-box` tree above. The old `D:\weixin_download\boot-box1\server\jeecg-boot` tree is not the current merge target.
+
+## Working Agreements
+
+- Frontend must reflect backend responses truthfully. Do not add frontend mojibake/data-repair fallbacks that hide backend data quality problems.
+- Prefer existing frontend components and shared styles. Avoid duplicating repeated styles page by page.
+- After backend code changes, create or update a backend handoff document under backend `docs/` so backend colleagues know exactly what changed.
+- For database scripts with Chinese text, do not pipe SQL through PowerShell into Docker. Copy the SQL into the container with `docker cp`, then run `mysql ... -e "source /tmp/file.sql"`.
+- User usually wants implementation, not just a plan. Continue through code changes, verification, and concise handoff unless blocked.
+- User will usually run final backend packaging/restart commands locally; Codex should provide PowerShell-safe commands when needed.
+
+## Current Backend Notes
+
+- Backend account/password login without image captcha is available through `POST /sys/mLogin`.
+  - Local verification: `POST /sys/login` without captcha returns captcha invalid.
+  - Local verification: `POST /sys/mLogin` with `username/password` returns `result.token` and `result.userInfo`.
+- Backend already has category APIs based on `sx_book_category`:
+  - `/sx/book/category/list`
+  - `/sx/book/category/tree`
+  - `/sx/book/category/options`
+  - add/edit/reorder/status/delete endpoints
+- Frontend resource-library pages now avoid mock business-data fallback:
+  - Storage management reads `/sx/book/storage/summary` and `/sx/book/storage/source/config/page`.
+  - Category management reads `/sx/book/category/summary` and `/sx/book/category/tree`; the four tabs are derived from root categories returned by the tree endpoint.
+  - Tag management reads `/sx/book/tag/summary` and `/sx/book/tag/list`.
+  - Static page labels/actions may live in `src/config/*`, but rows, counts, and metrics should come from backend APIs; on failure, show an error/empty state instead of mock rows.
+- Frontend no longer keeps `src/mock/*` data files. Business rows, counts and metrics should come from APIs; UI-only labels/actions live under `src/config/*`.
+- Content management pages now use real list APIs:
+  - Comic management reads `/sx/comic/list`.
+  - Audio management reads `/sx/audio/list`.
+- Automation, permission, settings and log pages now read backend APIs instead of `mock/adminModules`:
+  - `/sx/book/scrape-rule/list`, `/sx/book/scrape-channel/list`
+  - `/sx/book/task/summary`, `/sx/book/task/list`
+  - `/sx/book/dashboard/subscribe/list` for read-only subscription snapshots; `POST /sx/book/dashboard/subscribe/update` remains the explicit refresh action.
+  - `/sx/book/user/manage/list`, `/sys/role/queryall`, `/sx/book/rbac/role-permission/view`
+  - `/sx/book/site-setting/detail`, `/sx/book/front/reader/setting`, `/sx/book/notify-setting/channel/list`, `/sx/book/security-setting/detail`, `/sx/book/license-info/detail`
+  - `/sx/book/operate-log/list`, `/sx/book/task-log/list`, `/sx/book/task-stats/summary`, `/sx/book/task-stats/trend`
+- Automation frontend copy now uses "scan rule/channel" wording, while backend endpoints still use the mature `/scrape-*` route names.
+  - Scan rules use `/sx/book/scrape-rule/detail/{id}`, `/add`, `/edit`, `/changeStatus`, `/delete`, and `/debug`.
+  - Scan channels use `/sx/book/scrape-channel/detail/{id}`, `/add`, `/edit`, `/changeStatus`, `/delete`, and `/test`.
+  - Task center uses `/sx/book/task/detail/{id}`, `/sx/book/task/timeline/{id}`, and `/sx/book/task/{id}/{action}` for pause, terminate, and retry actions.
+- Site settings now drive global branding:
+  - Admin edit reads `GET /sx/book/site-setting/detail` and saves with `POST /sx/book/site-setting/save`.
+  - Public branding reads `GET /sx/book/site-setting/public` for login page, sidebar logo/name, browser title, and default footer.
+  - The public branding endpoint is explicitly whitelisted as `anon` in backend `ShiroConfig`.
+  - The site-setting SQL upsert can repair the local default `sx_site_setting` record if it contains mojibake values.
+  - Local verification after the SQL repair: `site_name=书匣`, `copyright_text=© 2024 书匣 · 私有数字内容库系统`, `default_search_placeholder=搜索书名/作者/分类`, `del_flag=0`; unauthenticated public endpoint returned HTTP 200 with the same values.
+  - Historical backend handoff doc was recorded under old D盘 backend; use E盘 backend as the current source before relying on that path.
+- Backend already has tag APIs based on `sx_content_tag` and `sx_content_tag_rel`:
+  - `/sx/book/tag/list`
+  - `/sx/book/tag/options`
+  - `/sx/book/tag/content/page`
+  - add/edit/status/delete endpoints
+- Tag management page now drives tabs, business-type/status filters, and pagination from real `/sx/book/tag/list` query parameters instead of static UI-only controls.
+- Book and novel management are now separated by backend query scope:
+  - Books page uses `bizType=ebook` and represents official/book-file content only.
+  - Novel page uses `bizType=novel` plus `bookType=novel` and represents network novels only.
+  - `/sx/book/list` supports `bizType` and `contentModel`; `/sx/book/filter/options` supports `bizType`; `/sx/book/category/options` supports `rootCode`; `/sx/book/dashboard/books-page-summary` supports `bizType`.
+  - Books page type selectors are restricted to `txt/pdf/epub/mobi/azw3/graphic`; `novel`, `comic`, and `audio` are not valid books-page types.
+  - Local verification: `ebook` scoped records `22`, `novel` scoped records `10`, `ebook_dirty_count=0`.
+  - Historical handoff doc was recorded under old D盘 backend; use E盘 backend as the current source before relying on that path.
+- Smart scrape一期 is now implemented for Douban Book detail URLs:
+  - Frontend page: `/automation/smart-scrape`.
+  - Backend APIs:
+    - `POST /sx/book/auto-scrape/analyze`
+    - `POST /sx/book/auto-scrape/import`
+    - `POST /sx/book/auto-scrape/content/analyze`
+    - `POST /sx/book/auto-scrape/content/start`
+  - Backend adapter layer starts with `DoubanBookAdapter` and supports `https://book.douban.com/subject/{id}/`.
+  - Douban is treated as metadata completion only, not chapter/content scraping.
+  - Douban cover URLs are now downloaded server-side and bound through the existing cover file/proxy path; existing manually maintained covers are not overwritten.
+  - Smart-scrape preview covers use `GET /sx/book/auto-scrape/cover-preview?url=...` instead of browser hotlinking Douban images directly; the endpoint is whitelisted for image tags and restricted to Douban image hosts.
+  - The smart-scrape frontend no longer exposes a local txt/pdf/epub upload panel; local file upload, auto-create, and parsing remain centralized in the Books page upload flow.
+  - The smart-scrape frontend also has a web content scrape panel after metadata import. Users can paste a public chapter-list or chapter-detail URL, preview matched rule/chapter samples, and confirm ingestion into `sx_book_chapter`.
+  - Web content scrape uses enabled advanced scan rules for `chapterSelector`/`chapterTitleSelector`/`chapterUrlSelector`/`contentSelector`; Douban remains metadata-only.
+  - Web content ingestion stores chapter text through the existing chapter content storage service, marks chapters `sliceStatus=SUCCESS`, refreshes `chapterCount/lastReadableChapterId`, and records `WEB_SCRAPE` task logs.
+  - `WEB_SCRAPE` is now supported in task log validation, task center list/detail/summary, and task statistics.
+  - For books with `sourceSite`, content parsing preserves the user-confirmed metadata/source fields after chapter parsing, so EPUB/PDF embedded metadata does not overwrite the Douban preview data.
+  - Import conflict matching uses ISBN first, then `bookName + authorName + publisher`.
+  - New `sx_book` metadata/source fields are added by SQL: `sx-book-auto-scrape.sql`.
+  - Historical handoff doc was recorded under old D盘 backend; use E盘 backend as the current source before relying on that path.
+- Backend tag names are now separated from category names:
+  - `SxContentTagService` rejects tag names that match active `sx_book_category.category_name` or content-type aliases such as `书籍`, `NOVEL`, `book`, `ebook`, `comic`, and `audio`.
+  - `sx-book-taxonomy-baseline.sql` removes category-name tags/relations, removes content-type alias tags, and seeds descriptive tag names instead.
+  - Historical handoff doc was recorded under old D盘 backend; use E盘 backend as the current source before relying on that path.
+- Latest taxonomy baseline added:
+  - SQL: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\jeecg-boot-module\sx-book\src\main\resources\sql\sx-book-taxonomy-baseline.sql`
+  - Doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\taxonomy-baseline-readme.md`
+  - Migration list updated: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\service-migration\01-database-files.md`
+- Local taxonomy verification after running the SQL:
+  - Active categories: `69`
+  - Active tags after latest local cleanup: `ebook=31`, `novel=22`, `comic=11`, `audio=10`
+  - Dirty categories: `0`
+  - Dirty tags: `0`
+  - Active category-name tags: `0`
+  - Active category-name tag relations: `0`
+  - Active content-type alias tags: `0`
+  - Active root-domain mismatches: `0`
+
+## Recently Completed Work
+
+- Switched frontend login to `POST /sys/mLogin` and removed the login-page image captcha requirement.
+- Logout in the sidebar is now an explicit `退出登录` button and routes back to `/login` after clearing auth state.
+- Removed frontend category mojibake fallback so frontend no longer masks backend dirty data.
+- Removed resource-library mock data fallback for storage/category/tag pages and verified the category tabs switch with real backend category tree data.
+- Removed remaining frontend mock data usage for dashboard, content management, automation, user permission, system settings and log pages.
+- Completed the automation module frontend integration pass:
+  - Scan rules support backend pagination, filtering, detail drawer, add/edit, enable/disable, delete, and rule debug.
+  - Scan channels support backend pagination, filtering, detail drawer, add/edit, enable/disable, delete, and connection test.
+  - Task center supports backend summary/list, detail, timeline, and pause/terminate/retry actions.
+  - Subscription page loads backend data, refreshes through the explicit backend refresh API, and filters locally by keyword/status.
+- Fixed login button hover text visibility.
+- Fixed dashboard layout breakage after real data:
+  - system status cards have enough width
+  - quick operation cards wrap intentionally
+  - horizontal overflow and panel content overflow were addressed
+- Improved book cover handling:
+  - Backend preview/download proxy supports cover and content files.
+  - Frontend normalizes backend relative cover URLs using the API base URL.
+  - Book list cover now displays when backend returns `coverUrl`.
+  - Book detail drawer cover display was adjusted to use normalized cover data.
+- Added single-file upload auto-import backend flow:
+  - Uploaded EPUB should auto-create a book record.
+  - Backend attempts metadata, cover, introduction and chapter extraction.
+  - A backend handoff doc exists: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\single-upload-auto-import-readme.md`
+- Added local-directory batch import for Books management:
+  - Frontend Books page now has a "批量导入" action that opens a browser directory picker instead of asking for a backend-readable absolute path.
+  - The selected client-side directory is read through browser file APIs; TXT/PDF/EPUB/MOBI/AZW3 candidates are recognized from `webkitRelativePath`.
+  - Frontend auto-matches category per item with a weighted classifier over parent path, relative path, file name, and title; built-in topic keywords/synonyms map titles like `国史大纲`, `中国通史`, `资治通鉴`, and `唐代政治史` to existing categories such as `历史` without requiring a default category selector.
+  - Frontend deduplicates same-directory same-book files before upload using normalized titles that remove extensions, leading numbers, source tails, and bracket notes; it keeps the best format with priority `EPUB > PDF > MOBI > AZW3 > TXT`.
+  - Batch import now has two-layer duplicate protection:
+    - after directory selection, frontend calls `POST /sx/book/import/duplicate-check` with normalized book title plus detected author; rows already present in the library are marked `已存在`, disabled in selection, and excluded from commit by default.
+    - backend rechecks at `/sx/book/upload/single` before object storage upload, then parses uploaded EPUB/PDF/TXT metadata before auto-create and rechecks with the final book name/author. `createBook` also rechecks before saving, so direct upload, metadata title changes, or race conditions still skip/block existing books.
+  - Batch import now hides raw backend/runtime errors from the UI:
+    - if an older running backend does not yet expose `/sx/book/import/duplicate-check`, selection-time duplicate checking silently degrades instead of showing Spring's `No static resource ... duplicate-check` message.
+    - if upload hits a transient Snowflake clock rollback (`Clock moved backwards` / `Refusing to generate id`), the frontend waits briefly, retries once, and only shows a short Chinese failure message if the retry still fails.
+  - Batch commit uploads each retained file through `/sx/book/upload/single` with `fileType=content`, detected `bookType`, and detected `categoryId`.
+  - Backend `SxBookUploadDTO` accepts `categoryId`; content upload auto-create passes it into `createBook` so `sx_book.category_id/category_name` are populated after validation.
+  - Backend server-path local import endpoints still exist for service-side import scenarios, and `SxBookLocalImportDTO.Item` still accepts per-item `categoryId`.
+  - Handoff doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\local-batch-book-import-readme.md`
+- Completed site settings page brand sync:
+  - The page is now editable and saves through `/sx/book/site-setting/save`.
+  - Saving refreshes the frontend global site settings store so sidebar Logo/name, title, and footer update without page reload.
+  - A public backend endpoint `/sx/book/site-setting/public` was added for unauthenticated/global branding reads.
+- Added the two-layer automation entrance:
+  - Common user flow: `/automation/smart-scrape` for URL -> parse -> preview -> import.
+  - Advanced flow remains `/automation/rules` and `/automation/channels` for scan-rule debugging and fallback configuration.
+  - The sidebar automation group now lists Smart Scrape before Scan Rules.
+
+## Known Local Commands
+
+Use PowerShell path changes like this, not `cd /d`:
+
+```powershell
+Set-Location "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot"
+```
+
+Backend package/restart pattern:
+
+```powershell
+$BackendRoot = "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot"
+$ComposeFile = "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\docker\command\docker-compose.yml"
+$env:MAVEN_HOME = "D:\tools\apache-maven-3.9.16"
+$env:Path = "$env:MAVEN_HOME\bin;$env:Path"
+
+mvn -f "$BackendRoot\pom.xml" -pl ":jeecg-system-start" -am -DskipTests package
+docker compose -f "$ComposeFile" restart jeecg-system-start
+docker logs -f --tail 120 jeecg-system-start
+```
+
+Run taxonomy SQL safely:
+
+```powershell
+$Sql = "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\jeecg-boot-module\sx-book\src\main\resources\sql\sx-book-taxonomy-baseline.sql"
+docker cp $Sql mysql:/tmp/sx-book-taxonomy-baseline.sql
+docker exec mysql mysql -uroot -p123456 -D jeecg-boot --default-character-set=utf8mb4 -e "source /tmp/sx-book-taxonomy-baseline.sql"
+```
+
+Frontend build check:
+
+```powershell
+npm run build
+```
+
+## 2026-06-20 Shelf Status Note
+
+- Fixed Books page offline/delete status mismatch.
+- Backend canonical shelf statuses are `1` online and `2` offline.
+- Frontend Books page now sends `2` for single and batch offline.
+- Backend `/sx/book/shelf` and `/sx/book/batch/shelf` also normalize legacy request value `0` to `2`.
+- Deletion still rejects books with `publish_status=1`; offline first, then delete.
+- Backend handoff doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\book-shelf-status-compat-readme.md`
+
+## 2026-06-20 Delete Storage Cleanup Note
+
+- Books are stored in MinIO when uploaded through the normal `/sx/book/upload/single` flow.
+- Fixed Books delete behavior so `/sx/book/delete` and `/sx/book/batch/delete` clean the deleted book's bound cover/content `sx_book_file` rows and their MinIO objects when the object is not referenced by another file row.
+- Historical orphan objects are not retroactively deleted by this change; use storage orphan cleanup for old leftovers.
+- Backend handoff doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\book-delete-storage-cleanup-readme.md`
+
+## 2026-06-20 Storage Orphan Cleanup UI Note
+
+- Storage Management now exposes a `清理孤儿文件` action next to `添加存储`.
+- The action confirms before calling `POST /sx/book/storage/orphan/cleanup`, then refreshes storage summary and source list.
+- The cleanup result shows the backend `cleanedCount` so users can see how many orphan files were removed in the run.
+- The backend cleanup also scans MinIO book prefixes `sx-book/content/` and `sx-book/cover/` for physical objects that no active `sx_book_file` row references. This fixes the case where the frontend orphan count is 0 but MinIO still has historical leftover objects.
+- The MinIO cleanup now always includes the book-managed `sx-book` bucket and falls back to Docker-internal MinIO endpoints such as `http://minio:9000` when public/localhost-style config is not reachable from the backend container.
+- Cleanup treats temporary `sx_book_file` rows as cleanable when they are not referenced by active books or active file history. History rows for deleted books no longer keep stale temporary files alive.
+- Backend handoff doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\storage-orphan-minio-object-cleanup-readme.md`
+
+## Integration Priority
+
+Current user priority:
+
+1. Build a reliable book and novel management chain first.
+2. Defer comic and audio work unless explicitly requested.
+3. Keep backend taxonomy, upload/import, cover preview, list/detail display, and batch book actions coherent.
+4. Keep UI resilient to real backend data: long names, missing fields, empty states, and unexpected counts must not break layout.
+5. Keep tag taxonomy distinct from category taxonomy; do not reintroduce category names as default tags.
+
+## New Thread Startup Checklist
+
+When starting a fresh Codex thread for this project:
+
+1. Read `AGENTS.md`.
+2. Read this file.
+3. Skim `docs/backend-integration-plan.md` for the broader interface plan.
+4. Check `git status --short` before editing.
+5. Preserve unrelated user changes.
+6. Update this file if the project state materially changes.

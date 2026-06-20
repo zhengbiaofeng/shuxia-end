@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>书匣 Wiki｜安装、使用与维护文档</title>
+    <meta
+      name="description"
+      content="书匣 Shuxia Wiki，包含安装部署、目录挂载、首次扫描、阅读模块、后台管理、权限、备份与常见问题。"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="wiki-body">
+    <header class="site-header">
+      <a class="brand brand-image" href="index.html" aria-label="返回书匣首页">
+        <img src="assets/logo-shuxia.png" alt="书匣 Shuxia" />
+      </a>
+      <button class="nav-toggle" type="button" aria-label="打开导航" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="site-nav" aria-label="主导航">
+        <a href="index.html">官网首页</a>
+        <a href="#install">安装</a>
+        <a href="#mount">挂载</a>
+        <a href="#usage">使用</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </header>
+
+    <main class="wiki-layout">
+      <aside class="wiki-sidebar" aria-label="Wiki 目录">
+        <div class="wiki-card">
+          <strong>书匣 Wiki</strong>
+          <p>部署、配置、管理和维护说明。</p>
+        </div>
+        <nav>
+          <a href="#overview">产品概览</a>
+          <a href="#install">安装部署</a>
+          <a href="#mount">目录挂载</a>
+          <a href="#first-run">首次运行</a>
+          <a href="#usage">使用指南</a>
+          <a href="#admin">后台管理</a>
+          <a href="#backup">备份迁移</a>
+          <a href="#faq">常见问题</a>
+        </nav>
+      </aside>
+
+      <article class="wiki-content">
+        <section class="wiki-hero" id="overview">
+          <p class="eyebrow">Documentation</p>
+          <h1>书匣 Wiki</h1>
+          <p>
+            这里整理书匣的部署、挂载、首次扫描、阅读模块、后台维护和常见问题。适合放在官网中作为产品帮助中心，也可以继续扩展为完整文档站。
+          </p>
+          <div class="doc-meta">
+            <span>适用：Docker / 飞牛 fnOS / NAS 内网环境</span>
+            <span>端口示例：9155</span>
+          </div>
+        </section>
+
+        <section class="doc-section" id="install">
+          <h2>安装部署</h2>
+          <p>通用 NAS 推荐 Docker 单容器部署；飞牛 fnOS 用户可使用 FPK 安装包降低命令行门槛。</p>
+          <div class="doc-grid two">
+            <div class="doc-panel">
+              <h3>Docker 部署</h3>
+              <ol>
+                <li>在 NAS 上创建 `shuxia/config` 目录。</li>
+                <li>准备书屋、小说、有声、漫画等本地资源目录。</li>
+                <li>复制 compose 模板，按实际路径修改 volumes。</li>
+                <li>启动容器后访问 `http://NAS-IP:9155`。</li>
+              </ol>
+            </div>
+            <div class="doc-panel">
+              <h3>飞牛 fnOS 部署</h3>
+              <ol>
+                <li>上传书匣 FPK 安装包。</li>
+                <li>在应用中心完成安装。</li>
+                <li>通过图形界面选择配置目录和资源目录。</li>
+                <li>打开应用入口进入初始化向导。</li>
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <section class="doc-section" id="mount">
+          <h2>目录挂载</h2>
+          <p>书匣采用固定配置目录加自定义多目录挂载。升级容器只替换程序，不影响 `/config` 和原始书籍文件。</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>容器目录</th>
+                  <th>用途</th>
+                  <th>建议</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>/config</td>
+                  <td>配置、缓存、封面、日志、数据库</td>
+                  <td>必须持久化，可读写</td>
+                </tr>
+                <tr>
+                  <td>/library/book01</td>
+                  <td>正规出版书籍、PDF、EPUB</td>
+                  <td>建议只读挂载</td>
+                </tr>
+                <tr>
+                  <td>/library/novel01</td>
+                  <td>本地 TXT 网文、合集小说</td>
+                  <td>建议只读挂载</td>
+                </tr>
+                <tr>
+                  <td>/library/audio01</td>
+                  <td>MP3、M4A 有声书与播客</td>
+                  <td>按专辑文件夹整理</td>
+                </tr>
+                <tr>
+                  <td>/library/comic01</td>
+                  <td>ZIP、PDF、图集漫画</td>
+                  <td>保持文件名顺序清晰</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="doc-section" id="first-run">
+          <h2>首次运行</h2>
+          <div class="timeline">
+            <article>
+              <span>01</span>
+              <div>
+                <h3>初始化管理员</h3>
+                <p>首次打开站点后设置管理员账号、密码、站点名称和默认主题。</p>
+              </div>
+            </article>
+            <article>
+              <span>02</span>
+              <div>
+                <h3>确认存储识别</h3>
+                <p>进入后台存储管理，检查 `/library/*` 目录是否被识别到正确模块。</p>
+              </div>
+            </article>
+            <article>
+              <span>03</span>
+              <div>
+                <h3>执行首次扫描</h3>
+                <p>扫描会建立索引、生成封面缓存，并触发中文刮削任务。</p>
+              </div>
+            </article>
+            <article>
+              <span>04</span>
+              <div>
+                <h3>创建用户和权限</h3>
+                <p>家庭版和商业版可创建子用户，分别控制下载、编辑、模块访问和私密书架。</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="doc-section" id="usage">
+          <h2>使用指南</h2>
+          <div class="doc-grid four">
+            <div class="doc-panel">
+              <h3>书屋</h3>
+              <p>适合 EPUB、PDF、MOBI、AZW3、TXT 等正规书籍。支持格式聚合、书签、批注、护眼模式。</p>
+            </div>
+            <div class="doc-panel">
+              <h3>小说</h3>
+              <p>适合长篇 TXT 网文。支持编码修复、广告净化、章节拆分、断点记忆和沉浸阅读。</p>
+            </div>
+            <div class="doc-panel">
+              <h3>有声</h3>
+              <p>适合 MP3、M4A 有声书。支持专辑管理、倍速、定时关闭、断点续播和后台播放。</p>
+            </div>
+            <div class="doc-panel">
+              <h3>漫画</h3>
+              <p>适合 ZIP、PDF、图片目录。支持智能排序、自动裁边、手机滚动和 PC 双页阅读。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="doc-section" id="admin">
+          <h2>后台管理</h2>
+          <div class="doc-grid two">
+            <div class="doc-panel">
+              <h3>资源库</h3>
+              <p>管理存储目录、分类、标签和四大内容模块，支持批量扫描、刮削、去重和整理。</p>
+            </div>
+            <div class="doc-panel">
+              <h3>系统设置</h3>
+              <p>配置站点信息、阅读器默认项、通知、安全策略、授权信息和日志保留策略。</p>
+            </div>
+          </div>
+          <figure class="doc-image">
+            <img src="PC/PC-后台-存储管理.png" alt="书匣后台存储管理页面" loading="lazy" />
+            <figcaption>后台存储管理会展示挂载目录、容量、扫描状态和目录绑定关系。</figcaption>
+          </figure>
+        </section>
+
+        <section class="doc-section" id="backup">
+          <h2>备份与迁移</h2>
+          <p>迁移书匣时，核心是保留 `/config`。它包含 SQLite 数据库、用户账号、阅读记录、个人书架、权限配置和刮削元数据。</p>
+          <div class="notice">
+            <strong>建议：</strong>
+            <span>定期备份 `/config/db/book.db` 和配置目录。迁移到新 NAS 时，先停止旧容器，再复制 `/config`，最后用相同 compose 启动。</span>
+          </div>
+        </section>
+
+        <section class="doc-section" id="faq">
+          <h2>常见问题</h2>
+          <details open>
+            <summary>书匣会修改我的原始书籍文件吗？</summary>
+            <p>默认不会。建议所有书籍目录使用只读挂载，刮削、净化、去重和转换优先生成索引、缓存或新文件。</p>
+          </details>
+          <details>
+            <summary>为什么要把书屋、小说、有声、漫画分目录？</summary>
+            <p>不同内容的扫描、刮削和阅读方式不同。分目录可以减少错配，也方便给用户或模块设置权限。</p>
+          </details>
+          <details>
+            <summary>低端 ARM NAS 能运行吗？</summary>
+            <p>可以。书匣设计中包含任务队列、CPU 阈值、IO 限速、内存释放和硬盘休眠检测，目标就是适配低功耗 NAS。</p>
+          </details>
+          <details>
+            <summary>无外网 NAS 如何升级？</summary>
+            <p>商业化规划中支持离线升级包。无外网环境可手动上传升级包完成更新，不依赖外网拉取镜像。</p>
+          </details>
+        </section>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div>
+        <a class="brand brand-image" href="index.html" aria-label="返回书匣首页">
+          <img src="assets/logo-shuxia.png" alt="书匣 Shuxia" />
+        </a>
+      </div>
+      <nav aria-label="页脚导航">
+        <a href="index.html">官网首页</a>
+        <a href="#overview">返回顶部</a>
+      </nav>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

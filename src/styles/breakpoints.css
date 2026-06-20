@@ -1,0 +1,68 @@
+/**
+ * Breakpoints & Container Query Utilities
+ *
+ * 提供：
+ * 1. 命名容器上下文 (hero-stage / dashboard-stage 等)
+ * 2. @custom-media 别名 (--mobile / --desktop 等)
+ * 3. 通用容器查询 mixin
+ *
+ * @custom-media 需要 postcss-custom-media 插件 (vite.config.js 已配置)
+ */
+
+@custom-media --mobile  (max-width: 639px);
+@custom-media --tablet  (min-width: 640px) and (max-width: 1023px);
+@custom-media --desktop (min-width: 1024px);
+@custom-media --wide    (min-width: 1280px);
+@custom-media --xl      (min-width: 1440px);
+@custom-media --2xl     (min-width: 1920px);
+
+/* ============================================
+ * 命名容器 (供各页面/场景使用)
+ * 在父级声明后，子元素可以用 @container xxx 监听
+ * ============================================ */
+
+/* Login 视觉场景容器 */
+.login-stage {
+  container-type: inline-size;
+  container-name: login;
+}
+
+/* Dashboard 主区域容器 */
+.dashboard-stage {
+  container-type: inline-size;
+  container-name: dashboard;
+}
+
+/* Books 列表区域容器 */
+.books-stage {
+  container-type: inline-size;
+  container-name: books;
+}
+
+/* 通用 hero 插图容器 (用于所有视觉场景) */
+.hero-stage {
+  container-type: inline-size;
+  container-name: hero;
+}
+
+/* ============================================
+ * 通用断点 mixin (CSS 工具类)
+ * ============================================ */
+
+/* 移动端隐藏 / 显示 */
+.hide-mobile { display: initial; }
+.show-mobile { display: none; }
+
+@media (max-width: 639px) {
+  .hide-mobile { display: none; }
+  .show-mobile { display: initial; }
+}
+
+/* 桌面端隐藏 / 显示 */
+.hide-desktop { display: none; }
+.show-desktop { display: initial; }
+
+@media (max-width: 1023px) {
+  .hide-desktop { display: initial; }
+  .show-desktop { display: none; }
+}
