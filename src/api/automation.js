@@ -552,6 +552,197 @@ function normalizeSubscribeRow(item = {}) {
   }
 }
 
+function normalizeNovelSyncRow(item = {}) {
+  const status = Number(item.status ?? 1)
+  const lastStatus = String(item.lastSyncStatus || '').toLowerCase()
+  const taskStatus = String(item.latestTaskResultStatus || '').toUpperCase()
+  const displayStatus = status === 1 ? '启用' : '停用'
+  const resultStatus = taskStatus || lastStatus.toUpperCase()
+  return {
+    raw: item,
+    id: item.id,
+    bookId: item.bookId || '',
+    name: item.bookName || item.bookId || '--',
+    author: item.authorName || '--',
+    source: item.sourceName || item.sourceId || '--',
+    sourceId: item.sourceId || '',
+    detailUrl: item.detailUrl || '--',
+    cron: item.cronExpr || '--',
+    latestRemoteChapter: item.latestRemoteChapter || '--',
+    latestSyncTime: formatDateTime(item.latestSyncTime),
+    lastSyncStatus: normalizeSyncStatusLabel(resultStatus, lastStatus),
+    lastSyncTone: syncStatusTone(resultStatus, lastStatus),
+    lastSyncMessage: item.lastSyncMessage || item.latestTaskResultStatusLabel || '--',
+    status: displayStatus,
+    statusValue: status,
+    statusTone: status === 1 ? 'green' : 'slate',
+    taskId: item.latestTaskId || '',
+    latestTaskSummary: buildLatestTaskSummary(item),
+    canPause: Boolean(item.latestTaskCanPause),
+    canTerminate: Boolean(item.latestTaskCanTerminate),
+    canRetry: Boolean(item.latestTaskCanRetry),
+    canResume: Boolean(item.latestTaskCanResume),
+    maxChapters: parseNovelSyncRemark(item.remark).maxChapters,
+    requestDelayMs: parseNovelSyncRemark(item.remark).requestDelayMs,
+  }
+}
+
+function normalizeNovelSyncDetail(item = {}) {
+  const remarkOptions = parseNovelSyncRemark(item.remark)
+  return {
+    ...normalizeNovelSyncRow(item),
+    targetType: item.targetType || 'cloud',
+    targetTypeLabel: item.targetTypeLabel || item.targetType || '--',
+    remark: remarkOptions.remark,
+    maxChapters: remarkOptions.maxChapters,
+    requestDelayMs: remarkOptions.requestDelayMs,
+    overwriteMetadata: Boolean(remarkOptions.overwriteMetadata),
+    syncChapters: remarkOptions.syncChapters !== false,
+    catalogUrlSelector: remarkOptions.catalogUrlSelector || '',
+    catalogUrlTemplate: remarkOptions.catalogUrlTemplate || '',
+    deriveCatalogListHtml: Boolean(remarkOptions.deriveCatalogListHtml),
+    contentRemoveSelectors: Array.isArray(remarkOptions.contentRemoveSelectors) ? remarkOptions.contentRemoveSelectors : [],
+    contentLineFilters: Array.isArray(remarkOptions.contentLineFilters) ? remarkOptions.contentLineFilters : [],
+    scheduleNextFireTime: formatDateTime(item.scheduleNextFireTime),
+    scheduleTriggerStateLabel: item.scheduleTriggerStateLabel || '--',
+    createTime: formatDateTime(item.createTime),
+    updateTime: formatDateTime(item.updateTime),
+    raw: item,
+  }
+}
+
+function normalizeNovelSyncPayload(payload = {}) {
+  const remarkOptions = {
+    remark: trimText(payload.remark),
+    maxChapters: Number(payload.maxChapters || 0) || undefined,
+    requestDelayMs: Number(payload.requestDelayMs ?? 0),
+    syncChapters: payload.syncChapters !== false,
+    overwriteMetadata: Boolean(payload.overwriteMetadata),
+    catalogUrlSelector: trimText(payload.catalogUrlSelector),
+    catalogUrlTemplate: trimText(payload.catalogUrlTemplate),
+    deriveCatalogListHtml: Boolean(payload.deriveCatalogListHtml),
+    contentRemoveSelectors: normalizeLines(payload.contentRemoveSelectors),
+    contentLineFilters: normalizeLines(payload.contentLineFilters),
+  }
+
+  return cleanParams({
+    id: payload.id,
+    bookId: payload.bookId,
+    sourceId: payload.sourceId,
+    detailUrl: trimText(payload.detailUrl),
+    targetType: payload.targetType || 'cloud',
+    cronExpr: payload.cronExpr,
+    status: Number(payload.status ?? 1),
+    remark: JSON.stringify(cleanParams(remarkOptions)),
+  })
+}
+
+function normalizeNovelSyncRunResult(item = {}) {
+  return {
+    raw: item,
+    taskId: item.taskId || '',
+    subscriptionId: item.subscriptionId || '',
+    bookId: item.bookId || '',
+    bookName: item.bookName || '--',
+    sourceName: item.sourceName || '--',
+    ruleName: item.ruleName || '--',
+    detailUrl: item.detailUrl || '',
+    title: item.title || '--',
+    author: item.author || '--',
+    coverUrl: item.coverUrl || '',
+    intro: item.intro || '',
+    latestChapterTitle: item.latestChapterTitle || '--',
+    chapterCount: Number(item.chapterCount || 0),
+    chapterTitleSamples: Array.isArray(item.chapterTitleSamples) ? item.chapterTitleSamples : [],
+    chapterUrlSamples: Array.isArray(item.chapterUrlSamples) ? item.chapterUrlSamples : [],
+    contentSample: item.contentSample || '',
+    syncChapters: Boolean(item.syncChapters),
+    addedChapterCount: Number(item.addedChapterCount || 0),
+    skippedChapterCount: Number(item.skippedChapterCount || 0),
+    failedChapterCount: Number(item.failedChapterCount || 0),
+    localChapterCountAfterSync: item.localChapterCountAfterSync,
+    chapterOrderMode: item.chapterOrderMode || '--',
+    chapterDedupMode: item.chapterDedupMode || '--',
+    httpStatus: item.httpStatus,
+    message: item.message || '执行完成',
+    executedAt: formatDateTime(item.executedAt),
+  }
+}
+
+function buildNovelSyncMetrics(rows = [], total = rows.length) {
+  return [
+    metric('同步订阅', total, '条', '当前筛选结果', 'blue', DataAnalysis),
+    metric('启用中', rows.filter((row) => row.statusValue === 1).length, '条', '可被定时触发', 'green', CircleCheck),
+    metric('最近成功', rows.filter((row) => row.lastSyncTone === 'green').length, '条', '当前页统计', 'purple', Finished),
+    metric('需要关注', rows.filter((row) => ['red', 'orange'].includes(row.lastSyncTone)).length, '条', '失败或暂停', 'orange', Warning),
+  ]
+}
+
+function buildLatestTaskSummary(item = {}) {
+  const parts = [
+    item.latestTaskResultStatusLabel || item.latestTaskStatusLabel,
+    item.latestTaskAddedChapterCount !== undefined ? `新增 ${item.latestTaskAddedChapterCount}` : '',
+    item.latestTaskSkippedChapterCount !== undefined ? `跳过 ${item.latestTaskSkippedChapterCount}` : '',
+    item.latestTaskFailedChapterCount !== undefined ? `失败 ${item.latestTaskFailedChapterCount}` : '',
+  ].filter(Boolean)
+  return parts.join(' / ') || '--'
+}
+
+function normalizeSyncStatusLabel(resultStatus, lastStatus) {
+  const value = String(resultStatus || lastStatus || '').toUpperCase()
+  if (value === 'SUCCESS' || value === 'SUCCESSFUL' || value === 'success'.toUpperCase()) return '成功'
+  if (value === 'FAIL' || value === 'FAILED' || value === 'fail'.toUpperCase()) return '失败'
+  if (value === 'RUNNING') return '运行中'
+  if (value === 'PAUSED' || value === 'paused'.toUpperCase()) return '已暂停'
+  if (value === 'TERMINATED') return '已终止'
+  if (value === 'PENDING' || value === 'pending'.toUpperCase()) return '待执行'
+  return value || '--'
+}
+
+function syncStatusTone(resultStatus, lastStatus) {
+  const value = String(resultStatus || lastStatus || '').toUpperCase()
+  if (value === 'SUCCESS' || value === 'SUCCESSFUL') return 'green'
+  if (value === 'FAIL' || value === 'FAILED') return 'red'
+  if (value === 'RUNNING' || value === 'PENDING') return 'blue'
+  if (value === 'PAUSED' || value === 'TERMINATED') return 'orange'
+  if (String(lastStatus || '').toLowerCase() === 'success') return 'green'
+  if (String(lastStatus || '').toLowerCase() === 'fail') return 'red'
+  if (String(lastStatus || '').toLowerCase() === 'paused') return 'orange'
+  return 'slate'
+}
+
+function parseNovelSyncRemark(remark) {
+  const fallback = {
+    remark: typeof remark === 'string' ? remark : '',
+    maxChapters: 5,
+    requestDelayMs: 1000,
+    syncChapters: true,
+    overwriteMetadata: false,
+    deriveCatalogListHtml: false,
+  }
+  if (!remark || typeof remark !== 'string' || !remark.trim().startsWith('{')) {
+    return fallback
+  }
+  try {
+    const parsed = JSON.parse(remark)
+    return {
+      ...fallback,
+      ...parsed,
+      remark: parsed.remark || '',
+      maxChapters: Number(parsed.maxChapters || fallback.maxChapters),
+      requestDelayMs: Number(parsed.requestDelayMs ?? fallback.requestDelayMs),
+    }
+  } catch {
+    return fallback
+  }
+}
+
+function normalizeLines(value) {
+  if (Array.isArray(value)) return value.map(trimText).filter(Boolean)
+  if (typeof value !== 'string') return []
+  return value.split('\n').map((item) => item.trim()).filter(Boolean)
+}
+
 function normalizeSmartScrapeAnalyze(result = {}) {
   const preview = normalizeSmartScrapePreview(result.preview || {})
   const warnings = Array.isArray(result.warnings) ? result.warnings : preview.warnings
