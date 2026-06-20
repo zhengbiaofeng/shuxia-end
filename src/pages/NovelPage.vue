@@ -522,8 +522,15 @@ function handleTabChange(key) {
 }
 
 function handlePageAction(action) {
-  if (action.label === '刷新') {
+  const code = action?.code
+
+  if (action.label === '刷新' || code === 'refresh') {
     refreshPage()
+    return
+  }
+
+  if (action.label === '批量导入' || code === 'local-import') {
+    openLocalImportDialog()
     return
   }
 
