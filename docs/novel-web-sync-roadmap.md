@@ -53,7 +53,7 @@ Objective: bind one existing local novel to one source detail URL, then manually
   - Prefer server-declared charset.
   - Detect page charset from meta tags when possible.
   - Fall back to UTF-8.
-  - Record charset in debug/task logs when useful.
+  - [ ] Record charset in debug/task logs when useful.
 - [x] Add a catalog-page resolution strategy.
   - Preferred: explicit `catalogUrlSelector` or `catalogUrlTemplate` on the rule.
   - Acceptable MVP fallback for bqglll: derive `detailUrl + "list.html"` when the source rule enables it.
@@ -116,8 +116,9 @@ Objective: bind one existing local novel to one source detail URL, then manually
 - [x] Add run options if missing:
   - `syncChapters`
   - `maxChapters`
-  - `overwriteMetadata`
   - `requestDelayMs`
+- [ ] Wire explicit metadata overwrite behavior if/when product enables it.
+  - `overwriteMetadata`
 - [x] Ensure scheduled runs use the same logic as manual runs.
 - [x] Ensure duplicate chapter detection uses:
   - remote chapter key
@@ -167,10 +168,8 @@ Objective: bind one existing local novel to one source detail URL, then manually
   - intro
   - latest chapter
   - chapter samples
-  - raw content sample
   - cleaned content sample
-  - scrub summary
-  - warnings
+- [ ] Add raw content sample, scrub summary, and warnings after backend exposes those debug fields.
 - [x] Add result messaging after run:
   - task ID
   - added chapter count
