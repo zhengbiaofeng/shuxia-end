@@ -269,12 +269,32 @@ npm run build
 - Key backend gaps before Phase 1 implementation: selector `::attr(...)` extraction, charset handling, catalog URL support, content scrubbing to remove ads/boilerplate before storage, max-chapter limits, request throttle, and clearer per-chapter failure logs.
 - Key frontend gap before Phase 1 implementation: productize the current update subscription snapshot page into a usable novel sync management page with add/edit/debug/run/log actions.
 
+## 2026-06-20 Novel Web Sync Phase 1 Backend Note
+
+- Phase 1 backend execution foundation has been implemented in the current E盘 backend tree.
+- Scrape selector extraction now supports `::attr(name)`, including metadata selectors like `meta[property=og\:novel\:book_name]::attr(content)`.
+- Rule debug and subscription execution share the new selector helper for text, cover/media URLs, chapter titles, and chapter URLs.
+- Subscription execution now decodes fetched pages by HTTP charset, meta charset, then UTF-8 fallback.
+- Runtime options can be configured through rule/subscription `remark` JSON:
+  - `catalogUrlSelector`, `catalogUrlTemplate`, `deriveCatalogListHtml`
+  - `maxChapters`, `requestDelayMs`
+  - `contentRemoveSelectors`, `adRemoveSelectors`
+  - `contentLineFilters`, `contentLineRegexFilters`
+- Manual `POST /sx/book/scrape/runNow` accepts `maxChapters` and `requestDelayMs` overrides.
+- Chapter sync now supports catalog-page parsing, max-chapter limits, per-chapter request delay, content cleanup, suspiciously-short content failure, non-2xx HTTP failure, and per-chapter failure logs with URL.
+- Compatibility note: backend default max chapter limit is `200` so existing subscriptions are not unexpectedly limited to development defaults; new test/UI runs can still pass `maxChapters=5`.
+- No SQL migration was added in this slice. Practice source/channel/rule fixtures and real end-to-end sync verification remain next steps.
+- Backend handoff doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-web-sync-phase1-backend-readme.md`
+- Verification:
+  - Backend: `mvn -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\pom.xml" -pl ":sx-book" -am -DskipTests compile` passed.
+  - Frontend: `npm run build` passed with existing dependency/chunk-size warnings.
+
 ## Integration Priority
 
 Current user priority:
 
 1. Build a reliable book and novel management chain first.
-2. Follow the web-novel sync roadmap for scheduled crawling work: Phase 1 existing-novel chapter sync first, Phase 2 source discovery and auto-create later.
+2. Continue the web-novel sync roadmap: create/configure a practice source rule, run Phase 1 end-to-end against one existing local novel, then defer Phase 2 source discovery and auto-create until Phase 1 is stable.
 3. Defer comic and audio work unless explicitly requested.
 4. Keep backend taxonomy, upload/import, cover preview, list/detail display, and batch book actions coherent.
 5. Keep UI resilient to real backend data: long names, missing fields, empty states, and unexpected counts must not break layout.
