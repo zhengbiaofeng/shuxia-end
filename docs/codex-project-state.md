@@ -247,6 +247,12 @@ npm run build
 - The batch toolbar exposes `批量删除`, confirms destructive action, calls the existing `/sx/book/batch/delete` API, clears selection, closes the chapter drawer when the selected novel was deleted, and refreshes the current page.
 - This keeps novel deletion behavior aligned with Books page batch delete while leaving batch shelf actions out until explicitly needed.
 
+## 2026-06-20 Novel Shelf Actions Note
+
+- Novel page row actions now include `上下架` between `章节` and `编辑`.
+- Single-row shelf toggles call `/sx/book/shelf` with canonical statuses `1` online and `2` offline, then refresh the current page and the open chapter drawer context when needed.
+- Novel batch toolbar now includes `批量上架`, `批量下架`, and `批量删除`, using the same shared `/sx/book/batch/shelf` and `/sx/book/batch/delete` APIs as Books page.
+
 ## Integration Priority
 
 Current user priority:
