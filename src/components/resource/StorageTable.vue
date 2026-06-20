@@ -17,7 +17,7 @@
           </tr>
         </thead>
         <tbody v-if="rows.length">
-          <tr v-for="row in rows" :key="row.name">
+          <tr v-for="row in rows" :key="row.id || row.name">
             <td>
               <div class="storage-name">
                 <span class="storage-name__icon" :class="`tone-${row.color}`">
@@ -46,7 +46,14 @@
             <td>{{ row.files }}</td>
             <td>
               <div class="table-actions">
-                <button type="button" title="扫描"><el-icon><VideoPlay /></el-icon></button>
+                <button
+                  type="button"
+                  title="扫描"
+                  :disabled="!row.scannable || scanningId === row.id"
+                  @click="$emit('scan', row)"
+                >
+                  <el-icon><Loading v-if="scanningId === row.id" /><VideoPlay v-else /></el-icon>
+                </button>
                 <button type="button" title="编辑" @click="$emit('edit', row)"><el-icon><EditPen /></el-icon></button>
                 <button type="button" title="删除" @click="$emit('delete', row)"><el-icon><MoreFilled /></el-icon></button>
               </div>
@@ -65,15 +72,16 @@
 </template>
 
 <script setup>
-import { EditPen, FolderOpened, MoreFilled, VideoPlay } from '@element-plus/icons-vue'
+import { EditPen, FolderOpened, Loading, MoreFilled, VideoPlay } from '@element-plus/icons-vue'
 import ResourcePagination from './ResourcePagination.vue'
 
 defineProps({
   rows: { type: Array, default: () => [] },
   total: { type: Number, default: 0 },
+  scanningId: { type: String, default: '' },
 })
 
-defineEmits(['delete', 'edit'])
+defineEmits(['delete', 'edit', 'scan'])
 
 function typeTone(type) {
   if (type === 'SMB') return 'green'
