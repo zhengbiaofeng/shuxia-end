@@ -220,6 +220,20 @@ npm run build
 - Cleanup treats temporary `sx_book_file` rows as cleanable when they are not referenced by active books or active file history. History rows for deleted books no longer keep stale temporary files alive.
 - Backend handoff doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\storage-orphan-minio-object-cleanup-readme.md`
 
+## 2026-06-20 Storage Source Scan Import Note
+
+- Storage Management local-directory rows expose a scan action in the operation column.
+- The action is enabled only for active `local` storage source configs with `localBasePath`.
+- Scan flow:
+  - confirms the action
+  - calls `POST /sx/book/import/local/scan` using the storage source `localBasePath`
+  - filters scan results to books and novels
+  - calls `POST /sx/book/import/local/commit`
+  - refreshes storage summary/source list after commit
+- TXT files detected as novel scan items are submitted with `bookType=novel`; backend NAS import now uses the uploaded-content parse eligibility helper so novel + TXT local source can still auto-parse into chapters.
+- Existing auto-classify service applies category and tags after NAS/local import.
+- Backend handoff doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\storage-source-scan-import-readme.md`
+
 ## Integration Priority
 
 Current user priority:
