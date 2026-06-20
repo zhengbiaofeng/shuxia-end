@@ -119,7 +119,7 @@ Objective: bind one existing local novel to one source detail URL, then manually
 
 ### 4. Frontend Phase 1
 
-- [ ] Rename or reshape the current "更新订阅" page into a usable "小说同步" page.
+- [ ] Rename or reshape the current "Update Subscriptions" page into a usable "Novel Sync" page.
 - [ ] Add table columns:
   - novel name
   - source site
@@ -232,7 +232,7 @@ Objective: configure category/ranking/search/list pages so the system can discov
 
 ### 3. Frontend Phase 2
 
-- [ ] Add "来源发现" view under Automation or Novel Sync.
+- [ ] Add a "Source Discovery" view under Automation or Novel Sync.
 - [ ] Add discovery source form:
   - channel
   - list/category URL
@@ -270,7 +270,7 @@ Objective: configure category/ranking/search/list pages so the system can discov
 1. Extend selector extraction syntax and charset handling.
 2. Add catalog URL support and max-chapter throttle in backend execution.
 3. Add or seed bqglll practice channel/rule.
-4. Productize the subscription page as "小说同步".
+4. Productize the subscription page as "Novel Sync".
 5. Run Phase 1 with one existing novel.
 6. Add task/log polish and retry handling.
 7. Start Phase 2 discovery dry-run.
@@ -284,4 +284,3 @@ Objective: configure category/ranking/search/list pages so the system can discov
 - Whether the first bqglll practice source should be added through SQL seed, admin UI, or a hidden local debug endpoint.
 - Whether Phase 2 auto-created novels should default to unpublished. Current recommendation: unpublished.
 - Whether cover images from web sync should be stored through the existing file/proxy pipeline or kept as external URLs. Current recommendation: store/proxy later; Phase 1 can preview external cover only if current behavior permits it.
-
