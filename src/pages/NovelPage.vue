@@ -800,6 +800,101 @@ async function handleDeleteChapter(row) {
   }
 }
 
+async function openLocalImportDialog() {
+  localImportVisible.value = true
+}
+
+function chooseLocalImportDirectory() {
+  localImportDirectoryInputRef.value?.click()
+}
+
+async function handleLocalDirectoryChange(event) {
+  const files = Array.from(event.target?.files || [])
+  if (event.target) {
+    event.target.value = ''
+  }
+
+  if (!files.length) {
+    return
+  }
+
+  localImportScanning.value = true
+  localImportRows.value = []
+  localImportDuplicateRows.value = []
+  localImportUnsupportedCount.value = 0
+  localImportSourceFileCount.value = files.length
+  localImportSelectedRows.value = []
+  localImportResult.value = null
+
+  try {
+    if (!categoryOptions.value.length) {
+      await loadFilterData()
+    }
+
+    localImportDirectoryName.value = resolveDirectoryName(files)
+    const prepared = buildLocalDirectoryImportRows(files)
+    localImportRows.value = prepared.rows
+    localImportDuplicateRows.value = prepared.duplicates
+    localImportUnsupportedCount.value = prepared.unsupportedCount
+    await applyLocalImportDuplicateCheck(localImportRows.value)
+
+    await nextTick()
+    const selectableRows = localImportRows.value.filter(isImportableLocalRow)
+    selectableRows.forEach((row) => localImportTableRef.value?.toggleRowSelection(row, true))
+    localImportSelectedRows.value = selectableRows
+
+    if (!localImportRows.value.length) {
+      ElMessage.warning('目录中没有找到可导入的 TXT 小说')
+    } else if (localImportExistingCount.value > 0) {
+      ElMessage.success(`已识别 ${localImportRows.value.length} 本小说，其中 ${localImportExistingCount.value} 本库中已有`)
+    } else if (localImportDuplicateRows.value.length > 0) {
+      ElMessage.success(`已识别 ${localImportRows.value.length} 本小说，并去重 ${localImportDuplicateRows.value.length} 个重复文件`)
+    } else {
+      ElMessage.success(`已识别 ${localImportRows.value.length} 本小说`)
+    }
+  } catch (error) {
+    ElMessage.error(error?.message || '读取本地小说目录失败')
+  } finally {
+    localImportScanning.value = false
+  }
+}
+
+function handleLocalImportSelectionChange(rows = []) {
+  localImportSelectedRows.value = rows
+}
+
+async function commitLocalImport() {
+  const pendingRows = localImportSelectedRows.value.filter(isImportableLocalRow)
+  if (!pendingRows.length) {
+    ElMessage.warning('请先选择要导入的小说')
+    return
+  }
+
+  localImportCommitting.value = true
+  localImportResult.value = buildLocalImportResultShell(pendingRows.length)
+
+  try {
+    for (const row of pendingRows) {
+      await uploadLocalImportRow(row)
+    }
+
+    const result = localImportResult.value
+    if (result.failedCount > 0) {
+      result.summary = `批量导入完成，成功 ${result.createdCount} 项，跳过 ${result.skippedCount} 项，失败 ${result.failedCount} 项`
+      ElMessage.warning(result.summary)
+    } else {
+      result.summary = `批量导入完成，成功 ${result.createdCount} 项，跳过 ${result.skippedCount} 项`
+      ElMessage.success(result.summary)
+    }
+    resetListViewAfterUpload()
+    await Promise.allSettled([loadNovels(1), loadFilterData()])
+  } catch (error) {
+    ElMessage.error(error?.message || '批量导入小说失败')
+  } finally {
+    localImportCommitting.value = false
+  }
+}
+
 function buildFilters() {
   return baseFilters.map((filter) => {
     if (filter.key === 'categoryId') {
