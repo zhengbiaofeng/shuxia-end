@@ -257,6 +257,7 @@ npm run build
 
 - Frontend `batchDeleteBooks` now splits large selections into small `/sx/book/batch/delete` chunks and keeps the per-request timeout at 60 seconds.
 - Request timeout errors are shown as `请求处理时间较长，请稍后刷新确认结果` instead of the raw Axios `timeout of 15000ms exceeded` text.
+- Books and Novel batch action toasts append up to three failed item details from backend `items`, so protected online content shows the actual reason instead of only `失败 N 条`.
 - Backend batch delete still runs per-book cleanup synchronously so it can return per-item success/failure details while cleaning chapter content, file rows, and storage objects.
 
 ## Integration Priority
