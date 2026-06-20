@@ -91,12 +91,18 @@ const menuExtraGroups = {
 }
 
 export function createSideMenus(activeLabel = '概览') {
+  const currentPath = typeof window === 'undefined' ? '' : window.location.pathname
+
   return baseSideMenus.map((group, groupIndex) => ({
     ...group,
-    items: [...group.items, ...(menuExtraGroups[groupIndex] || [])].map((item, itemIndex) => ({
-      ...item,
-      path: item.path || menuPathGroups[groupIndex]?.[itemIndex],
-      active: item.label === activeLabel,
-    })),
+    items: [...group.items, ...(menuExtraGroups[groupIndex] || [])].map((item, itemIndex) => {
+      const path = item.path || menuPathGroups[groupIndex]?.[itemIndex]
+
+      return {
+        ...item,
+        path,
+        active: item.label === activeLabel || path === currentPath,
+      }
+    }),
   }))
 }
