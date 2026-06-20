@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 .codegraph
+.codex
 .playwright-cli
 output
 
