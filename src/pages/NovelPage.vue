@@ -1025,6 +1025,443 @@ function resetChapterForm() {
   chapterFormRef.value?.clearValidate?.()
 }
 
+function resetLocalImportForm() {
+  localImportScanning.value = false
+  localImportCommitting.value = false
+  localImportDirectoryName.value = ''
+  localImportRows.value = []
+  localImportDuplicateRows.value = []
+  localImportUnsupportedCount.value = 0
+  localImportSourceFileCount.value = 0
+  localImportSelectedRows.value = []
+  localImportResult.value = null
+}
+
+function resetListViewAfterUpload() {
+  Object.assign(filters, createFilterState(baseFilters))
+  searchKeyword.value = ''
+  activeTab.value = 'all'
+  window.clearTimeout(searchTimer)
+}
+
+function localImportStatusType(status) {
+  if (status === 'created') return 'success'
+  if (status === 'exists') return 'warning'
+  if (status === 'skipped') return 'warning'
+  if (status === 'failed') return 'danger'
+  if (status === 'uploading') return 'primary'
+  return 'info'
+}
+
+function localImportStatusText(status) {
+  const map = {
+    ready: '待导入',
+    uploading: '上传中',
+    created: '已入库',
+    exists: '已存在',
+    skipped: '已跳过',
+    failed: '失败',
+  }
+  return map[status] || status || '--'
+}
+
+function buildLocalDirectoryImportRows(files = []) {
+  const candidates = []
+  let unsupportedCount = 0
+
+  files.forEach((file, index) => {
+    const candidate = createLocalImportCandidate(file, index)
+    if (candidate) {
+      candidates.push(candidate)
+    } else {
+      unsupportedCount += 1
+    }
+  })
+
+  const grouped = new Map()
+  const duplicates = []
+
+  candidates.forEach((candidate) => {
+    const groupKey = `${normalizePathKey(candidate.directoryPath)}::${normalizeBookIdentity(candidate.bookName, candidate.fileName)}`
+    const current = grouped.get(groupKey)
+    if (!current) {
+      grouped.set(groupKey, candidate)
+      return
+    }
+
+    const winner = pickPreferredLocalImportCandidate(current, candidate)
+    const loser = winner === current ? candidate : current
+    grouped.set(groupKey, winner)
+    duplicates.push(createLocalImportDuplicateRow(loser, winner))
+  })
+
+  return {
+    rows: Array.from(grouped.values()).sort(compareLocalImportRows),
+    duplicates: duplicates.sort(compareLocalImportRows),
+    unsupportedCount,
+  }
+}
+
+function createLocalImportCandidate(file, index) {
+  if (!(file instanceof File) || isDirectoryLikeFile(file)) return null
+
+  const extension = extractFileExtension(file.name)
+  if (extension !== LOCAL_IMPORT_SUPPORTED_EXTENSION) return null
+
+  const relativePath = normalizeBrowserRelativePath(file.webkitRelativePath || file.name)
+  const directoryPath = relativePath.includes('/') ? relativePath.slice(0, relativePath.lastIndexOf('/')) : ''
+  const bookName = stripFileExtension(file.name)
+  const authorName = extractLocalImportAuthor(file.name)
+  const category = guessCategoryForLocalItem({
+    parentPath: directoryPath,
+    relativePath,
+    fileName: file.name,
+    title: bookName,
+  })
+
+  return {
+    key: `${relativePath}-${file.size}-${file.lastModified}-${index}`,
+    file: markRaw(file),
+    fileName: file.name,
+    bookName,
+    authorName,
+    bookType: NOVEL_BIZ_TYPE,
+    extension,
+    directoryPath,
+    relativePath,
+    fileSize: Number(file.size || 0),
+    fileSizeText: formatBrowserFileSize(file.size),
+    lastModifiedTime: formatBrowserFileTime(file.lastModified),
+    categoryId: category?.id || '',
+    categoryName: category?.name || '',
+    status: 'ready',
+    message: '',
+    bookId: '',
+    contentFileId: '',
+  }
+}
+
+function pickPreferredLocalImportCandidate(first, second) {
+  if (Number(first.fileSize || 0) !== Number(second.fileSize || 0)) {
+    return Number(first.fileSize || 0) > Number(second.fileSize || 0) ? first : second
+  }
+  return first
+}
+
+function createLocalImportDuplicateRow(loser, winner) {
+  return {
+    ...loser,
+    status: 'skipped',
+    message: `已保留 ${winner.fileName}`,
+    keptFileName: winner.fileName,
+  }
+}
+
+async function applyLocalImportDuplicateCheck(rows = []) {
+  const checkRows = rows.filter((row) => row?.status === 'ready')
+  if (!checkRows.length) return
+
+  try {
+    const result = await checkBookImportDuplicates(checkRows.map((row) => ({
+      key: row.key,
+      bookName: row.bookName,
+      authorName: row.authorName,
+      fileName: row.fileName,
+      bookType: row.bookType,
+      fileSize: row.fileSize,
+      relativePath: row.relativePath,
+    })))
+    if (result.unavailable) {
+      console.info('小说批量导入重复预检接口暂不可用，已跳过选择阶段预检。')
+      return
+    }
+
+    const itemMap = new Map((result.items || []).map((item) => [item.key, item]))
+    checkRows.forEach((row) => {
+      const duplicate = itemMap.get(row.key)
+      if (!duplicate?.duplicate) return
+      row.status = 'exists'
+      row.message = duplicate.reason || '库中已存在'
+      row.existingBookId = duplicate.existingBookId || ''
+      row.existingBookName = duplicate.existingBookName || ''
+      row.existingAuthorName = duplicate.existingAuthorName || ''
+      row.existingBookType = duplicate.existingBookType || ''
+      row.existingCategoryName = duplicate.existingCategoryName || ''
+    })
+    localImportSelectedRows.value = localImportSelectedRows.value.filter(isImportableLocalRow)
+  } catch (error) {
+    console.warn('小说批量导入重复预检失败。', error)
+    if (!isDuplicateCheckUnavailableError(error)) {
+      ElMessage.warning(localizeImportError(error, '重复预检失败，将在导入时再次校验'))
+    }
+  }
+}
+
+function compareLocalImportRows(first, second) {
+  return String(first.relativePath || '').localeCompare(String(second.relativePath || ''), 'zh-CN')
+}
+
+function isImportableLocalRow(row = {}) {
+  return row.status === 'ready' || row.status === 'failed'
+}
+
+function isSelectableLocalImportRow(row = {}) {
+  return isImportableLocalRow(row)
+}
+
+function buildLocalImportResultShell(requestedCount) {
+  return {
+    requestedCount,
+    createdCount: 0,
+    skippedCount: 0,
+    failedCount: 0,
+    duplicateCount: localImportDuplicateRows.value.length,
+    summary: '',
+    items: [],
+  }
+}
+
+async function uploadLocalImportRow(row) {
+  row.status = 'uploading'
+  row.message = '上传中'
+
+  try {
+    const uploaded = await uploadBookFileWithRetry({
+      file: row.file,
+      fileType: 'content',
+      bookType: NOVEL_BIZ_TYPE,
+      categoryId: row.categoryId || undefined,
+    })
+    row.bookId = uploaded.bookId || ''
+    row.contentFileId = uploaded.id || ''
+    if (uploaded.duplicate) {
+      row.status = 'exists'
+      row.message = uploaded.duplicateReason || `库中已存在：${uploaded.duplicateBookName || uploaded.bookName || uploaded.bookId || row.bookName}`
+      row.existingBookId = uploaded.duplicateBookId || uploaded.bookId || ''
+      row.existingBookName = uploaded.duplicateBookName || uploaded.bookName || ''
+      localImportResult.value.skippedCount += 1
+      localImportResult.value.duplicateCount += 1
+    } else {
+      row.status = uploaded.bookId ? 'created' : 'skipped'
+      row.message = uploaded.bookId ? '已自动入库并触发解析' : '已上传，未自动建书'
+      localImportResult.value.createdCount += uploaded.bookId ? 1 : 0
+      localImportResult.value.skippedCount += uploaded.bookId ? 0 : 1
+    }
+  } catch (error) {
+    row.status = 'failed'
+    row.message = localizeImportError(error, '导入失败')
+    localImportResult.value.failedCount += 1
+  }
+
+  localImportResult.value.items.push({
+    status: row.status,
+    bookName: row.bookName,
+    message: row.message,
+    relativePath: row.relativePath,
+    bookId: row.bookId,
+    contentFileId: row.contentFileId,
+    existingBookId: row.existingBookId || '',
+    existingBookName: row.existingBookName || '',
+  })
+}
+
+async function uploadBookFileWithRetry(payload) {
+  try {
+    return await uploadBookFile(payload)
+  } catch (error) {
+    if (!isClockRollbackError(error)) {
+      throw error
+    }
+
+    await delay(resolveClockRollbackRetryDelay(error))
+    return uploadBookFile(payload)
+  }
+}
+
+function delay(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms))
+}
+
+function resolveClockRollbackRetryDelay(error) {
+  const message = collectErrorMessage(error)
+  const milliseconds = Number(message.match(/for\s+(\d+)\s+milliseconds/i)?.[1] || 0)
+  if (!Number.isFinite(milliseconds) || milliseconds <= 0) {
+    return 1600
+  }
+  return Math.min(Math.max(milliseconds + 150, 600), 2500)
+}
+
+function isClockRollbackError(error) {
+  return /Clock moved backwards|Refusing to generate id|系统时钟短暂回拨/i.test(collectErrorMessage(error))
+}
+
+function isDuplicateCheckUnavailableError(error) {
+  return /duplicate-check|No static resource|接口暂不可用|接口不存在|404/i.test(collectErrorMessage(error))
+}
+
+function localizeImportError(error, fallback = '操作失败') {
+  const message = collectErrorMessage(error)
+  if (/Clock moved backwards|Refusing to generate id|系统时钟短暂回拨/i.test(message)) {
+    return '系统时钟短暂回拨，请稍后重试'
+  }
+  if (/No static resource/i.test(message)) {
+    return '接口暂不可用，请确认后端服务已更新'
+  }
+  if (/Error updating database|nested exception|Cause:/i.test(message)) {
+    return '数据写入失败，请稍后重试'
+  }
+  return error?.message || fallback
+}
+
+function collectErrorMessage(error) {
+  return `${error?.message || ''} ${error?.rawMessage || ''}`
+}
+
+function guessCategoryForLocalItem(item = {}) {
+  if (!categoryOptions.value.length) return null
+
+  const matches = categoryOptions.value
+    .map((category) => ({
+      category,
+      score: scoreCategoryForLocalItem(category, item),
+    }))
+    .filter((match) => match.score >= LOCAL_IMPORT_CATEGORY_MIN_SCORE)
+    .sort((first, second) => (
+      second.score - first.score
+      || getCategoryDepth(second.category) - getCategoryDepth(first.category)
+      || Number(second.category.raw?.sortNo || 0) - Number(first.category.raw?.sortNo || 0)
+    ))
+
+  return matches[0]?.category || null
+}
+
+function scoreCategoryForLocalItem(category = {}, item = {}) {
+  const name = normalizeKeyword(category.name)
+  const code = normalizeKeyword(category.code)
+  if (isGenericLocalImportCategory(name, code)) return 0
+
+  const aliases = buildLocalImportCategoryAliases(category)
+  if (!aliases.length) return 0
+
+  return LOCAL_IMPORT_CATEGORY_FIELDS.reduce((total, field) => {
+    const text = normalizeSearchText(item[field.key])
+    if (!text) return total
+
+    const fieldScore = aliases.reduce((score, alias) => {
+      if (!alias.value || !text.includes(alias.value)) return score
+      return Math.max(score, field.weight * alias.weight)
+    }, 0)
+    return total + fieldScore
+  }, 0)
+}
+
+function buildLocalImportCategoryAliases(category = {}) {
+  const aliases = []
+  addLocalImportAlias(aliases, category.name, 1)
+  addLocalImportAlias(aliases, normalizeCategoryCodeToken(category.code), 0.9)
+  return aliases
+}
+
+function addLocalImportAlias(aliases, value, weight) {
+  const normalized = normalizeSearchText(value)
+  if (!normalized || aliases.some((item) => item.value === normalized)) return
+  aliases.push({ value: normalized, weight })
+}
+
+function isGenericLocalImportCategory(name, code) {
+  return LOCAL_IMPORT_GENERIC_CATEGORY_NAMES.has(name) || LOCAL_IMPORT_GENERIC_CATEGORY_CODES.has(code)
+}
+
+function getCategoryDepth(category = {}) {
+  const code = String(category.code || '')
+  return code ? code.split('_').filter(Boolean).length : 0
+}
+
+function normalizeCategoryCodeToken(code) {
+  const parts = String(code || '').toLowerCase().split('_').filter(Boolean)
+  return parts[parts.length - 1] || code
+}
+
+function normalizeKeyword(value) {
+  return String(value || '').trim().toLowerCase()
+}
+
+function normalizeSearchText(value) {
+  return normalizeKeyword(value)
+    .replace(/\.[a-z0-9]+$/i, '')
+    .replace(/[_\-.,;:()[\]{}'"“”‘’【】《》<>/\\|]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function normalizeBookIdentity(bookName, fileName = '') {
+  const value = bookName || stripFileExtension(fileName)
+  return normalizeKeyword(value)
+    .replace(/\.[a-z0-9]{2,5}$/i, '')
+    .replace(/^\s*\d+\s*[、.．)_-]+\s*/, '')
+    .replace(/[（(【\[][^）)】\]]*(z-library|zlib|libgen|annas|library|电子书|ebook)[^）)】\]]*[）)】\]]/gi, '')
+    .replace(/[（(【\[][^）)】\]]+[）)】\]]/g, ' ')
+    .replace(/\b(z-library|zlib|libgen|annas|library|ebook|txt)\b/gi, '')
+    .replace(/[._\-—–·•,;:()[\]{}'"“”‘’【】《》<>/\\|]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function extractLocalImportAuthor(fileName = '') {
+  const title = stripFileExtension(fileName)
+  const match = title.match(/[（(]\s*([^）)]+?)\s*[）)]/)
+  if (!match) return ''
+  const value = match[1]
+    .replace(/z-library|zlib|libgen|annas|library|电子书|ebook/gi, '')
+    .replace(/作者|著|编著|编/g, '')
+    .trim()
+  return value || ''
+}
+
+function normalizePathKey(value) {
+  return normalizeKeyword(value).replace(/\\/g, '/').replace(/\/+/g, '/').replace(/\/$/, '')
+}
+
+function normalizeBrowserRelativePath(value) {
+  return String(value || '').replace(/\\/g, '/').replace(/^\/+/, '')
+}
+
+function resolveDirectoryName(files = []) {
+  const relativePath = normalizeBrowserRelativePath(files[0]?.webkitRelativePath || '')
+  if (!relativePath) return '已选择目录'
+  return relativePath.split('/')[0] || '已选择目录'
+}
+
+function extractFileExtension(fileName) {
+  const match = String(fileName || '').trim().toLowerCase().match(/\.([a-z0-9]+)$/)
+  return match ? match[1] : ''
+}
+
+function stripFileExtension(fileName) {
+  return String(fileName || '').replace(/\.[^.]+$/, '').trim() || '未命名小说'
+}
+
+function formatBrowserFileSize(value) {
+  const size = Number(value || 0)
+  if (!size) return '--'
+  if (size >= 1024 ** 4) return `${(size / 1024 ** 4).toFixed(2)} TB`
+  if (size >= 1024 ** 3) return `${(size / 1024 ** 3).toFixed(2)} GB`
+  if (size >= 1024 ** 2) return `${(size / 1024 ** 2).toFixed(2)} MB`
+  if (size >= 1024) return `${(size / 1024).toFixed(2)} KB`
+  return `${size} B`
+}
+
+function formatBrowserFileTime(value) {
+  const date = new Date(Number(value || 0))
+  if (Number.isNaN(date.getTime())) return '--'
+  const pad = (number) => String(number).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+function isDirectoryLikeFile(file) {
+  return file instanceof File && Number(file.size || 0) === 0 && !file.type && !file.name?.includes('.')
+}
+
 function createFilterState(filtersConfig = []) {
   return filtersConfig.reduce((state, filter) => {
     const firstOption = filter.options?.[0]
