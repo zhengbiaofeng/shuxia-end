@@ -757,6 +757,40 @@ async function handleDeleteNovel(row) {
   }
 }
 
+async function toggleShelfStatus(row) {
+  if (!row?.id) {
+    ElMessage.warning('缺少小说 ID，无法切换上下架')
+    return
+  }
+
+  const currentStatus = Number(row.raw?.publishStatus ?? -1)
+  const nextStatus = currentStatus === 1 ? 2 : 1
+  const actionText = nextStatus === 1 ? '上架' : '下架'
+
+  try {
+    await ElMessageBox.confirm(`确定${actionText}「${row.title}」吗？`, `${actionText}小说`, {
+      confirmButtonText: actionText,
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+
+    batchLoading.value = true
+    await changeBookShelfStatus(row.id, nextStatus)
+    ElMessage.success(`小说已${actionText}`)
+    await loadNovels(pageNo.value)
+
+    if (chapterVisible.value && selectedNovel.value?.id === row.id) {
+      selectedNovel.value = await fetchBookDetail(row.id)
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error?.message || `${actionText}小说失败`)
+    }
+  } finally {
+    batchLoading.value = false
+  }
+}
+
 async function openChapters(row) {
   if (!row?.id) {
     ElMessage.warning('缺少小说 ID，无法查看章节')
