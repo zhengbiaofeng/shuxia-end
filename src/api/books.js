@@ -1,6 +1,9 @@
 import { API_BASE_URL } from '../config/app';
 import request from '../utils/request';
 
+const BATCH_DELETE_CHUNK_SIZE = 3;
+const BATCH_DELETE_TIMEOUT = 60000;
+
 export async function fetchBookCategories(params = {}) {
   const response = await request.get('/sx/book/category/options', {
     params: normalizePageQuery(params),
@@ -246,9 +249,28 @@ export async function deleteBook(id) {
 }
 
 export async function batchDeleteBooks(ids = []) {
+  const normalizedIds = Array.isArray(ids) ? ids.filter(Boolean) : [];
+  if (!normalizedIds.length) {
+    throw new Error('请选择需要批量删除的书籍');
+  }
+
+  const chunks = chunkArray(normalizedIds, BATCH_DELETE_CHUNK_SIZE);
+  if (chunks.length === 1) {
+    return deleteBookBatchChunk(chunks[0]);
+  }
+
+  const results = [];
+  for (const chunk of chunks) {
+    results.push(await deleteBookBatchChunk(chunk));
+  }
+
+  return mergeBatchDeleteResults(results, normalizedIds.length);
+}
+
+async function deleteBookBatchChunk(ids = []) {
   const response = await request.delete('/sx/book/batch/delete', {
     data: { ids },
-    timeout: 60000,
+    timeout: BATCH_DELETE_TIMEOUT,
   });
 
   if (!response?.success) {
@@ -256,6 +278,21 @@ export async function batchDeleteBooks(ids = []) {
   }
 
   return response.result;
+}
+
+function mergeBatchDeleteResults(results = [], requestedCount = 0) {
+  const items = results.flatMap((result) => Array.isArray(result?.items) ? result.items : []);
+  const successCount = results.reduce((sum, result) => sum + Number(result?.successCount || 0), 0);
+  const failedCount = results.reduce((sum, result) => sum + Number(result?.failedCount || 0), 0);
+
+  return {
+    actionType: results.find((result) => result?.actionType)?.actionType || 'delete',
+    requestedCount,
+    successCount,
+    failedCount,
+    summary: `批量删除完成，成功 ${successCount} 条，失败 ${failedCount} 条`,
+    items,
+  };
 }
 
 export async function changeBookShelfStatus(id, publishStatus) {
