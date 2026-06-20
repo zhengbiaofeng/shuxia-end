@@ -253,6 +253,12 @@ npm run build
 - Single-row shelf toggles call `/sx/book/shelf` with canonical statuses `1` online and `2` offline, then refresh the current page and the open chapter drawer context when needed.
 - Novel batch toolbar now includes `批量上架`, `批量下架`, and `批量删除`, using the same shared `/sx/book/batch/shelf` and `/sx/book/batch/delete` APIs as Books page.
 
+## 2026-06-20 Batch Delete Timeout Note
+
+- Frontend `batchDeleteBooks` now splits large selections into small `/sx/book/batch/delete` chunks and keeps the per-request timeout at 60 seconds.
+- Request timeout errors are shown as `请求处理时间较长，请稍后刷新确认结果` instead of the raw Axios `timeout of 15000ms exceeded` text.
+- Backend batch delete still runs per-book cleanup synchronously so it can return per-item success/failure details while cleaning chapter content, file rows, and storage objects.
+
 ## Integration Priority
 
 Current user priority:
