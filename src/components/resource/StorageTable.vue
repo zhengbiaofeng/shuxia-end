@@ -268,6 +268,11 @@ function typeTone(type) {
   border-radius: 6px;
 }
 
+.table-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .tone-blue { background: #eff6ff; color: #1476ff; }
 .tone-green { background: #ecfdf5; color: #16a34a; }
 .tone-purple { background: #f5f3ff; color: #7c3aed; }
