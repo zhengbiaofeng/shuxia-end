@@ -674,12 +674,25 @@ async function batchDeleteSelectedNovels(ids, rows = []) {
 }
 
 function showBatchResult(result = {}, fallbackMessage) {
-  const message = result.summary || `${fallbackMessage}，成功 ${result.successCount ?? 0} 条，失败 ${result.failedCount ?? 0} 条`
+  const message = buildBatchResultMessage(result, fallbackMessage)
   if (Number(result.failedCount || 0) > 0) {
     ElMessage.warning(message)
   } else {
     ElMessage.success(message)
   }
+}
+
+function buildBatchResultMessage(result = {}, fallbackMessage) {
+  const baseMessage = result.summary || `${fallbackMessage}，成功 ${result.successCount ?? 0} 条，失败 ${result.failedCount ?? 0} 条`
+  const failedItems = Array.isArray(result.items) ? result.items.filter((item) => item?.success === false || item?.status === 'failed') : []
+  if (!failedItems.length) return baseMessage
+
+  const details = failedItems
+    .slice(0, 3)
+    .map((item) => `${item.bookName || item.id || '未命名'}：${item.message || '操作失败'}`)
+    .join('；')
+  const suffix = failedItems.length > 3 ? `；等 ${failedItems.length} 条失败` : ''
+  return `${baseMessage}。${details}${suffix}`
 }
 
 async function refreshSelectedNovelIfNeeded(rows = []) {
