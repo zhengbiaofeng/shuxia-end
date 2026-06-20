@@ -9,7 +9,9 @@
     :page-no="pageNo"
     :page-size="pageSize"
     :rows="novels"
+    :selected-row-keys="selectedNovelIds"
     :total="total"
+    @batch-action="handleBatchAction"
     @action="handlePageAction"
     @filter-change="handleFilterChange"
     @page-change="loadNovels"
@@ -18,6 +20,7 @@
     @reset="resetFilters"
     @row-action="handleRowAction"
     @search="loadNovels(1)"
+    @selection-change="handleSelectionChange"
     @tab-change="handleTabChange"
   />
 
@@ -281,6 +284,7 @@ import {
 } from '@element-plus/icons-vue'
 import ContentManagementPage from '../components/content/ContentManagementPage.vue'
 import {
+  batchDeleteBooks,
   checkBookImportDuplicates,
   createNovel,
   createNovelChapter,
@@ -349,6 +353,7 @@ const searchKeyword = ref('')
 const filters = reactive(createFilterState(baseFilters))
 const activeTab = ref('all')
 const loading = ref(false)
+const batchLoading = ref(false)
 const novels = ref([])
 const total = ref(0)
 const pageNo = ref(1)
@@ -374,6 +379,7 @@ const chapterSubmitting = ref(false)
 const chapterFormRef = ref()
 const chapterForm = reactive(createEmptyChapterForm())
 const editingChapter = ref(null)
+const selectedNovelIds = ref([])
 const localImportVisible = ref(false)
 const localImportScanning = ref(false)
 const localImportCommitting = ref(false)
@@ -446,6 +452,10 @@ const pageConfig = computed(() => ({
   filters: buildFilters(),
   columns,
   rowActions,
+  selectable: true,
+  batchActions: [
+    { code: 'batch-delete', label: '批量删除', tone: 'danger', loading: batchLoading.value },
+  ],
 }))
 
 let searchTimer = null
@@ -496,6 +506,7 @@ async function loadNovels(nextPage = pageNo.value) {
     })
 
     novels.value = response.records.map((row) => ({ ...row, availableActions: [] }))
+    selectedNovelIds.value = selectedNovelIds.value.filter((id) => response.records.some((row) => row.id === id))
     total.value = Number(response.total) || 0
     pageNo.value = Number(response.current) || pageNo.value
   } catch (error) {
@@ -564,6 +575,62 @@ function handleRowAction(action, row) {
   }
 
   ElMessage.info(`暂未接入「${action.label}」操作。`)
+}
+
+function handleSelectionChange(keys = []) {
+  selectedNovelIds.value = Array.isArray(keys) ? keys : []
+}
+
+async function handleBatchAction(action, selectedRows = []) {
+  const ids = selectedNovelIds.value.filter(Boolean)
+  if (!ids.length) {
+    ElMessage.warning('请先选择要操作的小说')
+    return
+  }
+
+  const code = String(action?.code || '')
+  if (code === 'batch-delete') {
+    await batchDeleteSelectedNovels(ids, selectedRows)
+  }
+}
+
+async function batchDeleteSelectedNovels(ids, rows = []) {
+  try {
+    await ElMessageBox.confirm(
+      `确定批量删除已选择的 ${ids.length} 本小说吗？删除后不可恢复。`,
+      '批量删除小说',
+      {
+        confirmButtonText: '删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+      },
+    )
+
+    batchLoading.value = true
+    const result = await batchDeleteBooks(ids)
+    showBatchResult(result, '批量删除完成')
+    selectedNovelIds.value = []
+    if (selectedNovel.value?.id && ids.includes(selectedNovel.value.id)) {
+      chapterVisible.value = false
+      selectedNovel.value = null
+    }
+    await loadNovels(pageNo.value)
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error?.message || '批量删除小说失败')
+    }
+  } finally {
+    batchLoading.value = false
+  }
+}
+
+function showBatchResult(result = {}, fallbackMessage) {
+  const message = result.summary || `${fallbackMessage}，成功 ${result.successCount ?? 0} 条，失败 ${result.failedCount ?? 0} 条`
+  if (Number(result.failedCount || 0) > 0) {
+    ElMessage.warning(message)
+  } else {
+    ElMessage.success(message)
+  }
 }
 
 async function openNovelForm(row = null) {
