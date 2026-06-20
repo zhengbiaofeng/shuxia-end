@@ -42,36 +42,36 @@ Objective: bind one existing local novel to one source detail URL, then manually
 
 ### 1. Backend Rule Engine
 
-- [ ] Add selector value extraction syntax for attributes.
+- [x] Add selector value extraction syntax for attributes.
   - Example: `meta[property=og\:novel\:book_name]::attr(content)`
   - Example: `meta[property=og\:image]::attr(content)`
   - Keep existing plain CSS selector behavior as text extraction.
   - Apply consistently to title, author, intro, cover, chapter title, chapter URL, and content where it makes sense.
-- [ ] Add or confirm support for absolute and relative URL resolution from extracted URLs.
-- [ ] Add or confirm selector debug output includes raw matched count, extracted samples, and final normalized values.
-- [ ] Add fetch charset handling.
+- [x] Add or confirm support for absolute and relative URL resolution from extracted URLs.
+- [x] Add or confirm selector debug output includes raw matched count, extracted samples, and final normalized values.
+- [x] Add fetch charset handling.
   - Prefer server-declared charset.
   - Detect page charset from meta tags when possible.
   - Fall back to UTF-8.
   - Record charset in debug/task logs when useful.
-- [ ] Add a catalog-page resolution strategy.
+- [x] Add a catalog-page resolution strategy.
   - Preferred: explicit `catalogUrlSelector` or `catalogUrlTemplate` on the rule.
   - Acceptable MVP fallback for bqglll: derive `detailUrl + "list.html"` when the source rule enables it.
-- [ ] Ensure chapter list parsing can use the catalog page rather than only the detail page.
-- [ ] Add per-run max chapter count.
+- [x] Ensure chapter list parsing can use the catalog page rather than only the detail page.
+- [x] Add per-run max chapter count.
   - Suggested default for development: 5.
   - Suggested production default: configurable, conservative.
-- [ ] Add per-request delay or site-level throttle.
+- [x] Add per-request delay or site-level throttle.
   - Suggested default: 1000-3000 ms between chapter fetches.
-- [ ] Add a content scrubbing pipeline before chapter content is stored.
+- [x] Add a content scrubbing pipeline before chapter content is stored.
   - Strip `script`, `style`, `iframe`, hidden elements, navigation blocks, recommendation blocks, footer blocks, and obvious ad containers before text extraction when possible.
   - Support rule-level remove selectors, for example `adRemoveSelectors` or `contentRemoveSelectors`.
   - Support rule-level line filters or regex filters for common junk text, site notices, update prompts, and repeated source statements.
   - Normalize whitespace, blank lines, HTML entities, full-width spaces, and duplicated chapter titles.
   - Keep paragraph boundaries readable for the frontend reader.
-  - Record how many nodes/lines were removed in debug output and task logs.
+  - [ ] Record how many nodes/lines were removed in debug output and task logs.
   - Fail or warn when the cleaned content becomes too short compared with the raw extraction result.
-- [ ] Add clear failure messages for:
+- [x] Add clear failure messages for:
   - detail page empty
   - catalog page empty
   - no chapters parsed
@@ -106,32 +106,32 @@ Objective: bind one existing local novel to one source detail URL, then manually
 
 ### 3. Subscription Backend
 
-- [ ] Confirm `sx_scrape_subscription` supports binding to an existing `sx_book.id`.
+- [x] Confirm `sx_scrape_subscription` supports binding to an existing `sx_book.id`.
 - [ ] Confirm subscription creation validates:
   - book exists
   - book belongs to novel scope or target type is novel
   - channel exists and is enabled
   - detail URL belongs to the selected channel base URL
   - cron expression is valid
-- [ ] Add run options if missing:
+- [x] Add run options if missing:
   - `syncChapters`
   - `maxChapters`
   - `overwriteMetadata`
   - `requestDelayMs`
-- [ ] Ensure scheduled runs use the same logic as manual runs.
-- [ ] Ensure duplicate chapter detection uses:
+- [x] Ensure scheduled runs use the same logic as manual runs.
+- [x] Ensure duplicate chapter detection uses:
   - remote chapter key
   - remote chapter URL
   - normalized chapter title
-- [ ] Ensure repeated runs skip existing chapters and do not inflate chapter count.
-- [ ] Add task log rows for per-chapter failures, with chapter title and URL.
-- [ ] Add pause/terminate checks during long chapter loops.
-- [ ] Add a retry path for failed/paused tasks if existing task center actions do not cover it.
+- [x] Ensure repeated runs skip existing chapters and do not inflate chapter count.
+- [x] Add task log rows for per-chapter failures, with chapter title and URL.
+- [x] Add pause/terminate checks during long chapter loops.
+- [x] Add a retry path for failed/paused tasks if existing task center actions do not cover it.
 
 ### 4. Frontend Phase 1
 
-- [ ] Rename or reshape the current "Update Subscriptions" page into a usable "Novel Sync" page.
-- [ ] Add table columns:
+- [x] Rename or reshape the current "Update Subscriptions" page into a usable "Novel Sync" page.
+- [x] Add table columns:
   - novel name
   - source site
   - detail URL
@@ -141,7 +141,7 @@ Objective: bind one existing local novel to one source detail URL, then manually
   - last sync status/message
   - status
   - actions
-- [ ] Add actions:
+- [x] Add actions:
   - add subscription
   - edit subscription
   - enable/disable
@@ -149,7 +149,7 @@ Objective: bind one existing local novel to one source detail URL, then manually
   - preview/debug parse
   - view task logs
   - delete subscription
-- [ ] Add subscription form fields:
+- [x] Add subscription form fields:
   - existing novel selector
   - source channel selector
   - detail URL
@@ -160,7 +160,7 @@ Objective: bind one existing local novel to one source detail URL, then manually
   - sync chapters switch
   - overwrite metadata switch, default off
   - remark
-- [ ] Add parse preview panel:
+- [x] Add parse preview panel:
   - title
   - author
   - cover
@@ -171,13 +171,13 @@ Objective: bind one existing local novel to one source detail URL, then manually
   - cleaned content sample
   - scrub summary
   - warnings
-- [ ] Add result messaging after run:
+- [x] Add result messaging after run:
   - task ID
   - added chapter count
   - skipped chapter count
   - failed chapter count
   - link/open task center detail
-- [ ] Keep UI resilient to long URLs, long book names, empty values, and failed parse messages.
+- [x] Keep UI resilient to long URLs, long book names, empty values, and failed parse messages.
 
 ### 5. Verification Phase 1
 
@@ -192,8 +192,8 @@ Objective: bind one existing local novel to one source detail URL, then manually
 - [ ] Enable a short test cron and confirm scheduled execution appears in Task Center.
 - [ ] Pause/terminate a long-running task and confirm it stops cleanly.
 - [ ] Confirm failure logs show understandable Chinese messages.
-- [ ] Run frontend build after meaningful frontend changes.
-- [ ] Compile backend module after backend Java changes.
+- [x] Run frontend build after meaningful frontend changes.
+- [x] Compile backend module after backend Java changes.
 
 ## Phase 2: Discover New Novels From Website Pages
 
