@@ -248,6 +248,7 @@ export async function deleteBook(id) {
 export async function batchDeleteBooks(ids = []) {
   const response = await request.delete('/sx/book/batch/delete', {
     data: { ids },
+    timeout: 60000,
   });
 
   if (!response?.success) {
