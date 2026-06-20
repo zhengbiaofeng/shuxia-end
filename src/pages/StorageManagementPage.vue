@@ -11,9 +11,11 @@
     <StorageTable
       v-loading="loading"
       :rows="rows"
+      :scanning-id="scanningStorageId"
       :total="total"
       @delete="handleDeleteStorage"
       @edit="openStorageForm"
+      @scan="handleScanStorage"
     />
     <AddStorageModal
       v-model="addModalVisible"
@@ -46,11 +48,13 @@ import {
   fetchStoragePageData,
   updateStorageSource,
 } from '../api/resourceManagement'
+import { commitLocalBookImport, scanLocalBookImport } from '../api/books'
 import { storagePageConfig } from '../config/resourceManagement'
 
 const loading = ref(false)
 const submitting = ref(false)
 const cleanupLoading = ref(false)
+const scanningStorageId = ref('')
 const addModalVisible = ref(false)
 const formVisible = ref(false)
 const editingStorage = ref(null)
@@ -185,6 +189,59 @@ async function handleDeleteStorage(row) {
   }
 }
 
+async function handleScanStorage(row) {
+  const rootPath = row?.scanPath || row?.raw?.localBasePath || row?.path
+  if (!row?.scannable || !rootPath) {
+    ElMessage.warning('当前存储源不是可扫描的本地目录')
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(
+      `将扫描「${row.name}」目录下的书籍和小说，并自动导入、分类和打标签。确认继续吗？`,
+      '扫描存储目录',
+      {
+        confirmButtonText: '开始扫描',
+        cancelButtonText: '取消',
+        type: 'warning',
+      },
+    )
+
+    scanningStorageId.value = row.id || row.name || rootPath
+    const scanResult = await scanLocalBookImport({
+      rootPath,
+      recursive: true,
+      maxDepth: 5,
+      maxFiles: 2000,
+    })
+    const importItems = buildStorageScanImportItems(scanResult.items)
+
+    if (!importItems.length) {
+      ElMessage.warning(`扫描完成，未发现可导入的书籍或小说。已扫描 ${scanResult.scannedFileCount} 个文件`)
+      return
+    }
+
+    const result = await commitLocalBookImport({
+      authorName: 'NAS导入',
+      autoParse: true,
+      items: importItems,
+    })
+    const message = result.summary || `扫描导入完成，成功 ${result.createdCount} 项，跳过 ${result.skippedCount} 项，失败 ${result.failedCount} 项`
+    if (result.failedCount > 0) {
+      ElMessage.warning(message)
+    } else {
+      ElMessage.success(message)
+    }
+    await loadStoragePage()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error?.message || '扫描存储目录失败')
+    }
+  } finally {
+    scanningStorageId.value = ''
+  }
+}
+
 async function handleCleanupOrphans() {
   try {
     await ElMessageBox.confirm(
@@ -241,6 +298,17 @@ function normalizeStoragePayload(values) {
     sortNo: Number(values.sortNo || 0),
     remark: values.remark || undefined,
   }
+}
+
+function buildStorageScanImportItems(items = []) {
+  return (Array.isArray(items) ? items : [])
+    .filter((item) => item?.absolutePath)
+    .filter((item) => item.contentType === 'book' || item.contentType === 'novel')
+    .map((item) => ({
+      absolutePath: item.absolutePath,
+      bookName: item.title || item.fileName || undefined,
+      bookType: item.contentType === 'novel' ? 'novel' : item.suggestedBookType || item.extension || undefined,
+    }))
 }
 
 onMounted(() => {
