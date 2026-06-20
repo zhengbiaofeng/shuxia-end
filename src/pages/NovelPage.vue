@@ -284,7 +284,9 @@ import {
 } from '@element-plus/icons-vue'
 import ContentManagementPage from '../components/content/ContentManagementPage.vue'
 import {
+  batchChangeBookShelfStatus,
   batchDeleteBooks,
+  changeBookShelfStatus,
   checkBookImportDuplicates,
   createNovel,
   createNovelChapter,
@@ -344,9 +346,9 @@ const columns = [
 
 const rowActions = [
   { code: 'chapters', label: '章节', icon: Collection },
+  { code: 'shelf', label: '上下架', icon: RefreshRight },
   { code: 'edit', label: '编辑', icon: EditPen },
   { code: 'delete', label: '删除', icon: Delete, danger: true },
-  { code: 'more', label: '更多', icon: MoreFilled },
 ]
 
 const searchKeyword = ref('')
@@ -454,6 +456,8 @@ const pageConfig = computed(() => ({
   rowActions,
   selectable: true,
   batchActions: [
+    { code: 'batch-online', label: '批量上架', tone: 'primary', loading: batchLoading.value },
+    { code: 'batch-offline', label: '批量下架', loading: batchLoading.value },
     { code: 'batch-delete', label: '批量删除', tone: 'danger', loading: batchLoading.value },
   ],
 }))
@@ -505,7 +509,7 @@ async function loadNovels(nextPage = pageNo.value) {
       publishStatus: activePublishStatus(),
     })
 
-    novels.value = response.records.map((row) => ({ ...row, availableActions: [] }))
+    novels.value = response.records
     selectedNovelIds.value = selectedNovelIds.value.filter((id) => response.records.some((row) => row.id === id))
     total.value = Number(response.total) || 0
     pageNo.value = Number(response.current) || pageNo.value
