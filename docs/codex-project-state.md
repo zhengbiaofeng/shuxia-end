@@ -274,10 +274,11 @@ npm run build
 Current user priority:
 
 1. Build a reliable book and novel management chain first.
-2. Defer comic and audio work unless explicitly requested.
-3. Keep backend taxonomy, upload/import, cover preview, list/detail display, and batch book actions coherent.
-4. Keep UI resilient to real backend data: long names, missing fields, empty states, and unexpected counts must not break layout.
-5. Keep tag taxonomy distinct from category taxonomy; do not reintroduce category names as default tags.
+2. Follow the web-novel sync roadmap for scheduled crawling work: Phase 1 existing-novel chapter sync first, Phase 2 source discovery and auto-create later.
+3. Defer comic and audio work unless explicitly requested.
+4. Keep backend taxonomy, upload/import, cover preview, list/detail display, and batch book actions coherent.
+5. Keep UI resilient to real backend data: long names, missing fields, empty states, and unexpected counts must not break layout.
+6. Keep tag taxonomy distinct from category taxonomy; do not reintroduce category names as default tags.
 
 ## New Thread Startup Checklist
 
