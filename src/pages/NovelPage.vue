@@ -58,6 +58,124 @@
     </template>
   </el-dialog>
 
+  <el-dialog
+    v-model="localImportVisible"
+    title="批量导入小说"
+    width="1080px"
+    destroy-on-close
+    @closed="resetLocalImportForm"
+  >
+    <input
+      ref="localImportDirectoryInputRef"
+      class="directory-input"
+      type="file"
+      accept=".txt"
+      webkitdirectory
+      multiple
+      @change="handleLocalDirectoryChange"
+    />
+
+    <section class="local-import-picker">
+      <div class="local-import-picker__main">
+        <span>本地小说目录</span>
+        <strong>{{ localImportDirectoryName || '未选择目录' }}</strong>
+      </div>
+      <el-button :loading="localImportScanning" type="primary" @click="chooseLocalImportDirectory">
+        {{ localImportDirectoryName ? '重新选择目录' : '选择目录' }}
+      </el-button>
+    </section>
+
+    <section v-if="localImportRows.length || localImportDuplicateRows.length || localImportUnsupportedCount" class="local-import-summary">
+      <article v-for="item in localImportSummary" :key="item.label">
+        <span>{{ item.label }}</span>
+        <strong>{{ item.value }}</strong>
+      </article>
+    </section>
+
+    <el-alert
+      v-if="localImportDuplicateRows.length"
+      class="local-import-alert"
+      :title="`已按文件名和目录去重 ${localImportDuplicateRows.length} 个重复 TXT 文件`"
+      type="warning"
+      show-icon
+      :closable="false"
+    />
+
+    <el-alert
+      v-if="localImportExistingCount"
+      class="local-import-alert"
+      :title="`已识别 ${localImportExistingCount} 本库中已有小说，默认不会导入`"
+      type="warning"
+      show-icon
+      :closable="false"
+    />
+
+    <el-table
+      v-if="localImportRows.length"
+      ref="localImportTableRef"
+      :data="localImportRows"
+      class="local-import-table"
+      height="360"
+      row-key="key"
+      @selection-change="handleLocalImportSelectionChange"
+    >
+      <el-table-column type="selection" width="48" reserve-selection :selectable="isSelectableLocalImportRow" />
+      <el-table-column label="状态" width="96">
+        <template #default="{ row }">
+          <el-tag :type="localImportStatusType(row.status)" size="small">{{ localImportStatusText(row.status) }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="识别书名" min-width="190" show-overflow-tooltip>
+        <template #default="{ row }">{{ row.bookName }}</template>
+      </el-table-column>
+      <el-table-column label="类型" width="96">
+        <template #default>
+          <el-tag size="small">TXT</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="分类" width="180">
+        <template #default="{ row }">
+          <el-tag v-if="row.categoryName" size="small" type="success">{{ row.categoryName }}</el-tag>
+          <el-tag v-else size="small" type="info">未匹配</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="说明" min-width="180" show-overflow-tooltip>
+        <template #default="{ row }">{{ row.message || row.existingBookName || '--' }}</template>
+      </el-table-column>
+      <el-table-column label="来源" min-width="260" show-overflow-tooltip>
+        <template #default="{ row }">{{ row.relativePath }}</template>
+      </el-table-column>
+      <el-table-column label="大小" prop="fileSizeText" width="110" />
+      <el-table-column label="修改时间" prop="lastModifiedTime" width="150" />
+    </el-table>
+
+    <section v-if="localImportResult" class="local-import-result">
+      <div class="local-import-result__summary">
+        <span v-for="item in localImportResultSummary" :key="item.label">
+          {{ item.label }} <strong>{{ item.value }}</strong>
+        </span>
+      </div>
+      <el-table :data="localImportResult.items" max-height="220" size="small">
+        <el-table-column label="状态" width="92">
+          <template #default="{ row }">
+            <el-tag :type="localImportStatusType(row.status)" size="small">{{ localImportStatusText(row.status) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="书名" prop="bookName" min-width="160" show-overflow-tooltip />
+        <el-table-column label="说明" prop="message" min-width="240" show-overflow-tooltip />
+        <el-table-column label="路径" prop="relativePath" min-width="260" show-overflow-tooltip />
+      </el-table>
+    </section>
+
+    <template #footer>
+      <el-button @click="localImportVisible = false">{{ localImportResult ? '关闭' : '取消' }}</el-button>
+      <el-button @click="chooseLocalImportDirectory">{{ localImportDirectoryName ? '重新选择' : '选择目录' }}</el-button>
+      <el-button :disabled="!localImportCanCommit" :loading="localImportCommitting" type="primary" @click="commitLocalImport">
+        导入选中 {{ localImportSelectedImportableCount }} 项
+      </el-button>
+    </template>
+  </el-dialog>
+
   <el-drawer v-model="chapterVisible" size="760px" title="章节管理" destroy-on-close>
     <div class="chapter-panel">
       <header v-if="selectedNovel" class="chapter-header">
