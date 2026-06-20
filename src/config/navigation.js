@@ -22,56 +22,56 @@ import {
 
 const baseSideMenus = [
   {
-    title: '概览',
-    items: [{ label: '概览', icon: House, path: '/dashboard' }],
+    title: '姒傝',
+    items: [{ label: '姒傝', icon: House, path: '/dashboard' }],
   },
   {
-    title: '资源库',
+    title: '璧勬簮搴?,
     items: [
-      { label: '存储管理', icon: FolderOpened, path: '/storage' },
-      { label: '分类管理', icon: Files, path: '/categories' },
-      { label: '标签管理', icon: Notebook, path: '/tags' },
+      { label: '瀛樺偍绠＄悊', icon: FolderOpened, path: '/storage' },
+      { label: '鍒嗙被绠＄悊', icon: Files, path: '/categories' },
+      { label: '鏍囩绠＄悊', icon: Notebook, path: '/tags' },
     ],
   },
   {
-    title: '内容管理',
+    title: '鍐呭绠＄悊',
     items: [
-      { label: '书籍', icon: Reading, path: '/books' },
-      { label: '小说', icon: Document, path: '/novels' },
-      { label: '漫画', icon: Opportunity, path: '/comics' },
-      { label: '有声', icon: Headset, path: '/audio' },
+      { label: '涔︾睄', icon: Reading, path: '/books' },
+      { label: '灏忚', icon: Document, path: '/novels' },
+      { label: '婕敾', icon: Opportunity, path: '/comics' },
+      { label: '鏈夊０', icon: Headset, path: '/audio' },
     ],
   },
   {
-    title: '自动化',
+    title: '鑷姩鍖?,
     items: [
-      { label: '智能抓取', icon: DataAnalysis, path: '/automation/smart-scrape' },
-      { label: '扫描规则', icon: RefreshRight },
-      { label: '任务中心', icon: Briefcase },
-      { label: '更新订阅', icon: SwitchButton },
+      { label: '鏅鸿兘鎶撳彇', icon: DataAnalysis, path: '/automation/smart-scrape' },
+      { label: '鎵弿瑙勫垯', icon: RefreshRight },
+      { label: '浠诲姟涓績', icon: Briefcase },
+      { label: '小说同步', icon: SwitchButton },
     ],
   },
   {
-    title: '用户权限',
+    title: '鐢ㄦ埛鏉冮檺',
     items: [
-      { label: '用户管理', icon: User },
-      { label: '角色权限', icon: MoreFilled },
+      { label: '鐢ㄦ埛绠＄悊', icon: User },
+      { label: '瑙掕壊鏉冮檺', icon: MoreFilled },
     ],
   },
   {
-    title: '系统设置',
+    title: '绯荤粺璁剧疆',
     items: [
-      { label: '站点设置', icon: Setting },
-      { label: '阅读设置', icon: Monitor },
-      { label: '通知设置', icon: VideoPlay },
-      { label: '安全设置', icon: Connection },
+      { label: '绔欑偣璁剧疆', icon: Setting },
+      { label: '闃呰璁剧疆', icon: Monitor },
+      { label: '閫氱煡璁剧疆', icon: VideoPlay },
+      { label: '瀹夊叏璁剧疆', icon: Connection },
     ],
   },
   {
-    title: '日志中心',
+    title: '鏃ュ織涓績',
     items: [
-      { label: '操作日志', icon: PieChart },
-      { label: '任务日志', icon: RefreshRight },
+      { label: '鎿嶄綔鏃ュ織', icon: PieChart },
+      { label: '浠诲姟鏃ュ織', icon: RefreshRight },
     ],
   },
 ]
@@ -87,10 +87,10 @@ const menuPathGroups = [
 ]
 
 const menuExtraGroups = {
-  5: [{ label: '授权信息', icon: Setting, path: '/settings/license' }],
+  5: [{ label: '鎺堟潈淇℃伅', icon: Setting, path: '/settings/license' }],
 }
 
-export function createSideMenus(activeLabel = '概览') {
+export function createSideMenus(activeLabel = '姒傝') {
   return baseSideMenus.map((group, groupIndex) => ({
     ...group,
     items: [...group.items, ...(menuExtraGroups[groupIndex] || [])].map((item, itemIndex) => ({
