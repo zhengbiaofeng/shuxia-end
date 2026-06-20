@@ -260,6 +260,15 @@ npm run build
 - Books and Novel batch action toasts append up to three failed item details from backend `items`, so protected online content shows the actual reason instead of only `失败 N 条`.
 - Backend batch delete still runs per-book cleanup synchronously so it can return per-item success/failure details while cleaning chapter content, file rows, and storage objects.
 
+## 2026-06-20 Novel Web Sync Roadmap Note
+
+- Future web-novel crawling/scheduled sync work should follow `E:\code\trae_workspcae\shuxia\qianduan\shuxia-end\docs\novel-web-sync-roadmap.md`.
+- Phase 1 target: bind an existing local novel to a user-configured source detail/catalog URL, then manually or periodically sync missing chapters through the existing scrape subscription/task center pipeline.
+- Phase 1 practice source: `https://m.bqglll.cc/`, example detail URL `https://m.bqglll.cc/look/104952/`; treat it as a development/practice source only, not an official bundled recommendation.
+- Phase 2 target: discover new novels from category/ranking/search/list pages, preview candidates, auto-create missing novel records, apply classification/tags, and create update subscriptions.
+- Key backend gaps before Phase 1 implementation: selector `::attr(...)` extraction, charset handling, catalog URL support, max-chapter limits, request throttle, and clearer per-chapter failure logs.
+- Key frontend gap before Phase 1 implementation: productize the current update subscription snapshot page into a usable novel sync management page with add/edit/debug/run/log actions.
+
 ## Integration Priority
 
 Current user priority:
