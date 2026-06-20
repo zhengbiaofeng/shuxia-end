@@ -262,6 +262,18 @@ export async function runNovelSyncNow(payload = {}) {
   return normalizeNovelSyncRunResult(readResultResponse(response, '执行小说同步失败') || {})
 }
 
+export async function quickSyncNovelByUrl(payload = {}) {
+  const response = await request.post('/sx/book/scrape/quickSync', cleanParams({
+    detailUrl: trimText(payload.detailUrl),
+    bookId: payload.bookId,
+    syncChapters: payload.syncChapters !== false,
+    maxChapters: payload.maxChapters,
+    requestDelayMs: payload.requestDelayMs,
+    cronExpr: trimText(payload.cronExpr),
+  }))
+  return normalizeNovelQuickSyncResult(readResultResponse(response, '小说链接同步失败') || {})
+}
+
 export async function analyzeSmartScrapeUrl(url) {
   const response = await request.post('/sx/book/auto-scrape/analyze', { url: trimText(url) })
   return normalizeSmartScrapeAnalyze(readResultResponse(response, '解析 URL 失败') || {})
