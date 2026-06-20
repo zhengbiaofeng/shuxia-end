@@ -563,17 +563,24 @@ function resetFilters() {
 }
 
 function handleRowAction(action, row) {
-  if (action.code === 'chapters') {
+  const code = normalizeActionCode(action)
+
+  if (code === 'chapters') {
     openChapters(row)
     return
   }
 
-  if (action.code === 'edit') {
+  if (code === 'shelf' || code === 'publish' || code === 'offline' || code === 'online') {
+    toggleShelfStatus(row)
+    return
+  }
+
+  if (code === 'edit') {
     openNovelForm(row)
     return
   }
 
-  if (action.code === 'delete') {
+  if (code === 'delete' || code === 'remove') {
     handleDeleteNovel(row)
     return
   }
@@ -593,8 +600,46 @@ async function handleBatchAction(action, selectedRows = []) {
   }
 
   const code = String(action?.code || '')
+  if (code === 'batch-online') {
+    await batchShelfNovels(ids, selectedRows, 1)
+    return
+  }
+
+  if (code === 'batch-offline') {
+    await batchShelfNovels(ids, selectedRows, 2)
+    return
+  }
+
   if (code === 'batch-delete') {
     await batchDeleteSelectedNovels(ids, selectedRows)
+  }
+}
+
+async function batchShelfNovels(ids, rows, publishStatus) {
+  const actionText = publishStatus === 1 ? '上架' : '下架'
+  try {
+    await ElMessageBox.confirm(
+      `确定批量${actionText}已选择的 ${ids.length} 本小说吗？`,
+      `批量${actionText}`,
+      {
+        confirmButtonText: actionText,
+        cancelButtonText: '取消',
+        type: 'warning',
+      },
+    )
+
+    batchLoading.value = true
+    const result = await batchChangeBookShelfStatus(ids, publishStatus)
+    showBatchResult(result, `批量${actionText}完成`)
+    selectedNovelIds.value = []
+    await loadNovels(pageNo.value)
+    await refreshSelectedNovelIfNeeded(rows)
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error?.message || `批量${actionText}小说失败`)
+    }
+  } finally {
+    batchLoading.value = false
   }
 }
 
@@ -634,6 +679,17 @@ function showBatchResult(result = {}, fallbackMessage) {
     ElMessage.warning(message)
   } else {
     ElMessage.success(message)
+  }
+}
+
+async function refreshSelectedNovelIfNeeded(rows = []) {
+  if (!chapterVisible.value || !selectedNovel.value?.id) return
+  if (!rows.some((row) => row.id === selectedNovel.value.id)) return
+
+  try {
+    selectedNovel.value = await fetchBookDetail(selectedNovel.value.id)
+  } catch (error) {
+    console.warn('批量操作后刷新小说详情失败。', error)
   }
 }
 
