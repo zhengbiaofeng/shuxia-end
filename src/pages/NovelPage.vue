@@ -147,7 +147,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, markRaw, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Collection,
@@ -155,6 +155,7 @@ import {
   Document,
   EditPen,
   Files,
+  FolderOpened,
   MoreFilled,
   Plus,
   RefreshRight,
@@ -162,6 +163,7 @@ import {
 } from '@element-plus/icons-vue'
 import ContentManagementPage from '../components/content/ContentManagementPage.vue'
 import {
+  checkBookImportDuplicates,
   createNovel,
   createNovelChapter,
   deleteBook,
@@ -175,9 +177,20 @@ import {
   reorderNovelChapters,
   updateBook,
   updateNovelChapter,
+  uploadBookFile,
 } from '../api/books'
 
 const NOVEL_BIZ_TYPE = 'novel'
+const LOCAL_IMPORT_SUPPORTED_EXTENSION = 'txt'
+const LOCAL_IMPORT_CATEGORY_MIN_SCORE = 4
+const LOCAL_IMPORT_CATEGORY_FIELDS = [
+  { key: 'parentPath', weight: 10 },
+  { key: 'relativePath', weight: 8 },
+  { key: 'title', weight: 5 },
+  { key: 'fileName', weight: 4 },
+]
+const LOCAL_IMPORT_GENERIC_CATEGORY_NAMES = new Set(['小说', '网络小说', '全部分类', '未分类'])
+const LOCAL_IMPORT_GENERIC_CATEGORY_CODES = new Set(['novel', 'all', 'uncategorized'])
 
 const baseFilters = [
   { key: 'categoryId', label: '分类', options: [{ label: '全部分类', value: '' }] },
@@ -243,6 +256,18 @@ const chapterSubmitting = ref(false)
 const chapterFormRef = ref()
 const chapterForm = reactive(createEmptyChapterForm())
 const editingChapter = ref(null)
+const localImportVisible = ref(false)
+const localImportScanning = ref(false)
+const localImportCommitting = ref(false)
+const localImportDirectoryInputRef = ref()
+const localImportDirectoryName = ref('')
+const localImportRows = ref([])
+const localImportDuplicateRows = ref([])
+const localImportUnsupportedCount = ref(0)
+const localImportSourceFileCount = ref(0)
+const localImportSelectedRows = ref([])
+const localImportResult = ref(null)
+const localImportTableRef = ref()
 
 const novelRules = {
   bookName: [{ required: true, message: '请输入小说名称', trigger: 'blur' }],
@@ -256,6 +281,36 @@ const chapterRules = {
 
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
 const categorySelectOptions = computed(() => categoryOptions.value.map((item) => ({ label: item.name, value: item.id })))
+const localImportSelectedImportableCount = computed(() => localImportSelectedRows.value.filter(isImportableLocalRow).length)
+const localImportCanCommit = computed(() => localImportSelectedImportableCount.value > 0 && !localImportCommitting.value && !localImportScanning.value)
+const localImportExistingCount = computed(() => localImportRows.value.filter((row) => row.status === 'exists').length)
+const localImportSummary = computed(() => {
+  if (!localImportRows.value.length && !localImportDuplicateRows.value.length && !localImportUnsupportedCount.value) return []
+
+  const totalFileSize = localImportRows.value.reduce((sum, row) => sum + Number(row.fileSize || 0), 0)
+  const matchedCategoryCount = localImportRows.value.filter((row) => row.categoryId).length
+
+  return [
+    { label: '选中文件', value: formatNumber(localImportSourceFileCount.value) },
+    { label: '待导入', value: formatNumber(localImportRows.value.filter(isImportableLocalRow).length) },
+    { label: '已匹配分类', value: formatNumber(matchedCategoryCount) },
+    { label: '库中已有', value: formatNumber(localImportExistingCount.value) },
+    { label: '已去重', value: formatNumber(localImportDuplicateRows.value.length) },
+    { label: '总大小', value: formatBrowserFileSize(totalFileSize) },
+  ]
+})
+const localImportResultSummary = computed(() => {
+  const result = localImportResult.value
+  if (!result) return []
+
+  return [
+    { label: '请求', value: formatNumber(result.requestedCount) },
+    { label: '入库', value: formatNumber(result.createdCount) },
+    { label: '跳过', value: formatNumber(result.skippedCount) },
+    { label: '重复', value: formatNumber(result.duplicateCount) },
+    { label: '失败', value: formatNumber(result.failedCount) },
+  ]
+})
 const pageConfig = computed(() => ({
   activeMenu: '小说',
   title: '小说',
@@ -265,6 +320,7 @@ const pageConfig = computed(() => ({
   tabs: buildTabs(),
   actions: [
     { label: '刷新', icon: RefreshRight },
+    { label: '批量导入', icon: FolderOpened },
     { label: '添加小说', icon: Plus, tone: 'primary' },
   ],
   metrics: buildMetrics(),
