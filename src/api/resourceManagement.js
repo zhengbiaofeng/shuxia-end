@@ -200,6 +200,8 @@ function normalizeStorageRow(item = {}) {
     scan: formatDateTime(item.updateTime || item.createTime),
     files: formatNumber(item.fileCount),
     color: sourceType === 'minio' ? 'purple' : 'blue',
+    scannable: sourceType === 'local' && item.status !== 0 && Boolean(item.localBasePath),
+    scanPath: item.localBasePath || '',
   }
 }
 
