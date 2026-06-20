@@ -234,6 +234,13 @@ npm run build
 - Existing auto-classify service applies category and tags after NAS/local import.
 - Backend handoff doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\storage-source-scan-import-readme.md`
 
+## 2026-06-20 Novel Batch Import Note
+
+- Novel page exposes a `批量导入` action next to `添加小说`.
+- The dialog selects a local browser directory, filters TXT files, de-duplicates repeated title/path candidates, runs the existing duplicate pre-check API, and uploads selected files through `/sx/book/upload/single` with `bookType=novel`.
+- The frontend attempts a lightweight category match from directory/path/file name and passes `categoryId` when available.
+- Backend upload auto-classification remains responsible for final category/tag application, and novel TXT uploads can auto-parse chapters through the shared uploaded-content parse eligibility helper.
+
 ## Integration Priority
 
 Current user priority:
