@@ -29,22 +29,36 @@ const TaskLogPage = () => import('../pages/logs/TaskLogPage.vue')
 const TaskStatsPage = () => import('../pages/logs/TaskStatsPage.vue')
 
 const adminModuleRoutes = [
-  { path: '/automation/smart-scrape', name: 'automation-smart-scrape', component: SmartScrapePage, meta: { title: '鏅鸿兘鎶撳彇', requiresAuth: true } },
-  { path: '/automation/rules', name: 'automation-rules', component: ScrapeRulesPage, meta: { title: '鎵弿瑙勫垯', requiresAuth: true } },
-  { path: '/automation/channels', name: 'automation-channels', component: ScrapeChannelsPage, meta: { title: '鎵弿娓犻亾绠＄悊', requiresAuth: true } },
-  { path: '/automation/rules/new', name: 'automation-rules-new', component: AddScrapeRulePage, meta: { title: '娣诲姞瑙勫垯', requiresAuth: true } },
-  { path: '/automation/tasks', name: 'automation-tasks', component: TaskCenterPage, meta: { title: '浠诲姟涓績', requiresAuth: true } },
+  { path: '/automation/smart-scrape', name: 'automation-smart-scrape', component: SmartScrapePage, meta: { title: '智能抓取', requiresAuth: true } },
+  { path: '/automation/rules', name: 'automation-rules', component: ScrapeRulesPage, meta: { title: '扫描规则', requiresAuth: true } },
+  { path: '/automation/channels', name: 'automation-channels', component: ScrapeChannelsPage, meta: { title: '扫描渠道管理', requiresAuth: true } },
+  { path: '/automation/rules/new', name: 'automation-rules-new', component: AddScrapeRulePage, meta: { title: '添加规则', requiresAuth: true } },
+  { path: '/automation/tasks', name: 'automation-tasks', component: TaskCenterPage, meta: { title: '任务中心', requiresAuth: true } },
   { path: '/automation/subscriptions', name: 'automation-subscriptions', component: SubscriptionsPage, meta: { title: '小说同步', requiresAuth: true } },
-  { path: '/permissions/users', name: 'permissions-users', component: UserManagementPage, meta: { title: '鐢ㄦ埛绠＄悊', requiresAuth: true } },
-  { path: '/permissions/roles', name: 'permissions-roles', component: RolePermissionPage, meta: { title: '瑙掕壊鏉冮檺', requiresAuth: true } },
-  { path: '/settings/site', name: 'settings-site', component: SiteSettingsPage, meta: { title: '绔欑偣璁剧疆', requiresAuth: true } },
-  { path: '/settings/reader', name: 'settings-reader', component: ReaderSettingsPage, meta: { title: '闃呰鍣ㄨ缃?, requiresAuth: true } },
-  { path: '/settings/notifications', name: 'settings-notifications', component: NotificationSettingsPage, meta: { title: '閫氱煡璁剧疆', requiresAuth: true } },
-  { path: '/settings/security', name: 'settings-security', component: SecuritySettingsPage, meta: { title: '瀹夊叏璁剧疆', requiresAuth: true } },
-  { path: '/settings/license', name: 'settings-license', component: LicenseInfoPage, meta: { title: '鎺堟潈淇℃伅', requiresAuth: true } },
-  { path: '/logs/operations', name: 'logs-operations', component: OperationLogPage, meta: { title: '鎿嶄綔鏃ュ織', requiresAuth: true } },
-  { path: '/logs/tasks', name: 'logs-tasks', component: TaskLogPage, meta: { title: '浠诲姟鏃ュ織', requiresAuth: true } },
-  { path: '/logs/tasks/stats', name: 'logs-task-stats', component: TaskStatsPage, meta: { title: '浠诲姟缁熻', requiresAuth: true } },
+  { path: '/permissions/users', name: 'permissions-users', component: UserManagementPage, meta: { title: '用户管理', requiresAuth: true } },
+  { path: '/permissions/roles', name: 'permissions-roles', component: RolePermissionPage, meta: { title: '角色权限', requiresAuth: true } },
+  { path: '/settings/site', name: 'settings-site', component: SiteSettingsPage, meta: { title: '站点设置', requiresAuth: true } },
+  { path: '/settings/reader', name: 'settings-reader', component: ReaderSettingsPage, meta: { title: '阅读设置', requiresAuth: true } },
+  { path: '/settings/notifications', name: 'settings-notifications', component: NotificationSettingsPage, meta: { title: '通知设置', requiresAuth: true } },
+  { path: '/settings/security', name: 'settings-security', component: SecuritySettingsPage, meta: { title: '安全设置', requiresAuth: true } },
+  { path: '/settings/license', name: 'settings-license', component: LicenseInfoPage, meta: { title: '授权信息', requiresAuth: true } },
+  { path: '/logs/operations', name: 'logs-operations', component: OperationLogPage, meta: { title: '操作日志', requiresAuth: true } },
+  { path: '/logs/tasks', name: 'logs-tasks', component: TaskLogPage, meta: { title: '任务日志', requiresAuth: true } },
+  { path: '/logs/tasks/stats', name: 'logs-task-stats', component: TaskStatsPage, meta: { title: '任务统计', requiresAuth: true } },
+]
+
+const routes = [
+  { path: '/', redirect: '/login' },
+  { path: '/login', name: 'login', component: LoginPage, meta: { title: '登录' } },
+  { path: '/dashboard', name: 'dashboard', component: DashboardPage, meta: { title: '首页概览', requiresAuth: true } },
+  { path: '/books', name: 'books', component: BooksPage, meta: { title: '书籍管理', requiresAuth: true } },
+  { path: '/storage', name: 'storage', component: StorageManagementPage, meta: { title: '存储管理', requiresAuth: true } },
+  { path: '/categories', name: 'categories', component: CategoryManagementPage, meta: { title: '分类管理', requiresAuth: true } },
+  { path: '/tags', name: 'tags', component: TagManagementPage, meta: { title: '标签管理', requiresAuth: true } },
+  { path: '/novels', name: 'novels', component: NovelPage, meta: { title: '小说', requiresAuth: true } },
+  { path: '/comics', name: 'comics', component: ComicPage, meta: { title: '漫画管理', requiresAuth: true } },
+  { path: '/audio', name: 'audio', component: AudioPage, meta: { title: '有声管理', requiresAuth: true } },
+  ...adminModuleRoutes,
 ]
 
 const router = createRouter({
@@ -52,93 +66,7 @@ const router = createRouter({
   scrollBehavior() {
     return { top: 0 }
   },
-  routes: [
-    {
-      path: '/',
-      redirect: '/login',
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: LoginPage,
-      meta: {
-        title: '鐧诲綍',
-      },
-    },
-    {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: DashboardPage,
-      meta: {
-        title: '棣栭〉姒傝',
-        requiresAuth: true,
-      },
-    },
-    {
-      path: '/books',
-      name: 'books',
-      component: BooksPage,
-      meta: {
-        title: '涔︾睄绠＄悊',
-        requiresAuth: true,
-      },
-    },
-    {
-      path: '/storage',
-      name: 'storage',
-      component: StorageManagementPage,
-      meta: {
-        title: '瀛樺偍绠＄悊',
-        requiresAuth: true,
-      },
-    },
-    {
-      path: '/categories',
-      name: 'categories',
-      component: CategoryManagementPage,
-      meta: {
-        title: '鍒嗙被绠＄悊',
-        requiresAuth: true,
-      },
-    },
-    {
-      path: '/tags',
-      name: 'tags',
-      component: TagManagementPage,
-      meta: {
-        title: '鏍囩绠＄悊',
-        requiresAuth: true,
-      },
-    },
-    {
-      path: '/novels',
-      name: 'novels',
-      component: NovelPage,
-      meta: {
-        title: '灏忚',
-        requiresAuth: true,
-      },
-    },
-    {
-      path: '/comics',
-      name: 'comics',
-      component: ComicPage,
-      meta: {
-        title: '婕敾绠＄悊',
-        requiresAuth: true,
-      },
-    },
-    {
-      path: '/audio',
-      name: 'audio',
-      component: AudioPage,
-      meta: {
-        title: '鏈夊０绠＄悊',
-        requiresAuth: true,
-      },
-    },
-    ...adminModuleRoutes,
-  ],
+  routes,
 })
 
 router.beforeEach(async (to) => {
@@ -166,7 +94,7 @@ router.beforeEach(async (to) => {
 })
 
 router.afterEach((to) => {
-  document.title = `涔﹀專 - ${to.meta.title || '鍐呭骞冲彴'}`
+  document.title = `书匣 - ${to.meta.title || '内容平台'}`
 })
 
 export default router
