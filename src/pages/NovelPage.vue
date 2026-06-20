@@ -414,6 +414,7 @@ const localImportSummary = computed(() => {
     { label: '已匹配分类', value: formatNumber(matchedCategoryCount) },
     { label: '库中已有', value: formatNumber(localImportExistingCount.value) },
     { label: '已去重', value: formatNumber(localImportDuplicateRows.value.length) },
+    { label: '已忽略', value: formatNumber(localImportUnsupportedCount.value) },
     { label: '总大小', value: formatBrowserFileSize(totalFileSize) },
   ]
 })
