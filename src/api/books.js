@@ -295,6 +295,15 @@ function mergeBatchDeleteResults(results = [], requestedCount = 0) {
   };
 }
 
+function chunkArray(items = [], size = 1) {
+  const chunkSize = Math.max(Number(size) || 1, 1);
+  const chunks = [];
+  for (let index = 0; index < items.length; index += chunkSize) {
+    chunks.push(items.slice(index, index + chunkSize));
+  }
+  return chunks;
+}
+
 export async function changeBookShelfStatus(id, publishStatus) {
   if (!id) {
     throw new Error('缺少书籍ID');
