@@ -266,7 +266,7 @@ npm run build
 - Phase 1 target: bind an existing local novel to a user-configured source detail/catalog URL, then manually or periodically sync missing chapters through the existing scrape subscription/task center pipeline.
 - Phase 1 practice source: `https://m.bqglll.cc/`, example detail URL `https://m.bqglll.cc/look/104952/`; treat it as a development/practice source only, not an official bundled recommendation.
 - Phase 2 target: discover new novels from category/ranking/search/list pages, preview candidates, auto-create missing novel records, apply classification/tags, and create update subscriptions.
-- Key backend gaps before Phase 1 implementation: selector `::attr(...)` extraction, charset handling, catalog URL support, max-chapter limits, request throttle, and clearer per-chapter failure logs.
+- Key backend gaps before Phase 1 implementation: selector `::attr(...)` extraction, charset handling, catalog URL support, content scrubbing to remove ads/boilerplate before storage, max-chapter limits, request throttle, and clearer per-chapter failure logs.
 - Key frontend gap before Phase 1 implementation: productize the current update subscription snapshot page into a usable novel sync management page with add/edit/debug/run/log actions.
 
 ## Integration Priority
