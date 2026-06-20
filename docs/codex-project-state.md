@@ -241,6 +241,12 @@ npm run build
 - The frontend attempts a lightweight category match from directory/path/file name and passes `categoryId` when available.
 - Backend upload auto-classification remains responsible for final category/tag application, and novel TXT uploads can auto-parse chapters through the shared uploaded-content parse eligibility helper.
 
+## 2026-06-20 Novel Batch Delete Note
+
+- Novel page now enables row selection through the shared `ContentManagementPage` batch toolbar.
+- The batch toolbar exposes `批量删除`, confirms destructive action, calls the existing `/sx/book/batch/delete` API, clears selection, closes the chapter drawer when the selected novel was deleted, and refreshes the current page.
+- This keeps novel deletion behavior aligned with Books page batch delete while leaving batch shelf actions out until explicitly needed.
+
 ## Integration Priority
 
 Current user priority:
