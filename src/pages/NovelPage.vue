@@ -1187,6 +1187,18 @@ function resetChapterForm() {
   chapterFormRef.value?.clearValidate?.()
 }
 
+function normalizeActionCode(action = {}) {
+  const code = String(action.code || '').toLowerCase()
+  const label = String(action.label || '')
+
+  if (code) return code
+  if (label.includes('章节')) return 'chapters'
+  if (label.includes('编辑')) return 'edit'
+  if (label.includes('删除')) return 'delete'
+  if (label.includes('上架') || label.includes('下架')) return 'shelf'
+  return label
+}
+
 function resetLocalImportForm() {
   localImportScanning.value = false
   localImportCommitting.value = false
