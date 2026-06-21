@@ -26,9 +26,6 @@
               @keyup.enter="submitQuickSync"
             />
           </el-form-item>
-          <el-form-item label="最多章节">
-            <el-input-number v-model="quickForm.maxChapters" :max="200" :min="1" class="quick-number" />
-          </el-form-item>
           <el-form-item label="请求间隔 ms">
             <el-input-number
               v-model="quickForm.requestDelayMs"
@@ -356,7 +353,6 @@ const query = reactive({
 })
 const quickForm = reactive({
   detailUrl: '',
-  maxChapters: 5,
   requestDelayMs: 1000,
   syncChapters: true,
 })
@@ -483,7 +479,6 @@ async function submitQuickSync() {
   try {
     quickResult.value = await quickSyncNovelByUrl({
       detailUrl,
-      maxChapters: quickForm.maxChapters,
       requestDelayMs: quickForm.requestDelayMs,
       syncChapters: quickForm.syncChapters,
     })
@@ -782,7 +777,7 @@ onMounted(async () => {
   align-items: flex-end;
   display: grid;
   gap: 14px;
-  grid-template-columns: minmax(260px, 1fr) 128px 150px 118px auto;
+  grid-template-columns: minmax(260px, 1fr) 150px 118px auto;
 }
 
 .quick-sync-form :deep(.el-form-item) {
