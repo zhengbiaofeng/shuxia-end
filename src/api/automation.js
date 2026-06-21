@@ -747,7 +747,7 @@ function syncStatusTone(resultStatus, lastStatus) {
 function parseNovelSyncRemark(remark) {
   const fallback = {
     remark: typeof remark === 'string' ? remark : '',
-    maxChapters: 5,
+    maxChapters: undefined,
     requestDelayMs: 1000,
     syncChapters: true,
     overwriteMetadata: false,
@@ -762,7 +762,7 @@ function parseNovelSyncRemark(remark) {
       ...fallback,
       ...parsed,
       remark: parsed.remark || '',
-      maxChapters: Number(parsed.maxChapters || fallback.maxChapters),
+      maxChapters: parsed.maxChapters === undefined ? fallback.maxChapters : Number(parsed.maxChapters),
       requestDelayMs: Number(parsed.requestDelayMs ?? fallback.requestDelayMs),
     }
   } catch {
