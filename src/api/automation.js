@@ -569,6 +569,27 @@ function normalizeNovelSyncRow(item = {}) {
   const taskStatus = String(item.latestTaskResultStatus || '').toUpperCase()
   const displayStatus = status === 1 ? '启用' : '停用'
   const resultStatus = taskStatus || lastStatus.toUpperCase()
+  const remarkOptions = parseNovelSyncRemark(item.remark)
+  const addedCount = Number(item.latestTaskAddedChapterCount || 0)
+  const skippedCount = Number(item.latestTaskSkippedChapterCount || 0)
+  const failedCount = Number(item.latestTaskFailedChapterCount || 0)
+  const processedCount = addedCount + skippedCount + failedCount
+  const chapterCount = Number(item.latestTaskChapterCount || 0)
+  const isRunning = resultStatus === 'RUNNING' || Number(item.latestTaskStatus) === 1
+  const progress = chapterCount > 0 ? Math.min(100, Math.round((processedCount / chapterCount) * 100)) : (isRunning ? 1 : 0)
+  const startedTime = formatDateTime(item.latestTaskStartedTime)
+  const finishedTime = formatDateTime(item.latestTaskFinishedTime)
+  const taskElapsedMs = resolveTaskElapsedMs(item.latestTaskStartedTime, item.latestTaskFinishedTime, item.latestTaskDurationMs)
+  const runningSummary = buildNovelSyncRunningSummary({
+    isRunning,
+    processedCount,
+    chapterCount,
+    addedCount,
+    skippedCount,
+    failedCount,
+    requestDelayMs: remarkOptions.requestDelayMs,
+    elapsedMs: taskElapsedMs,
+  })
   return {
     raw: item,
     id: item.id,
@@ -583,18 +604,37 @@ function normalizeNovelSyncRow(item = {}) {
     latestSyncTime: formatDateTime(item.latestSyncTime),
     lastSyncStatus: normalizeSyncStatusLabel(resultStatus, lastStatus),
     lastSyncTone: syncStatusTone(resultStatus, lastStatus),
-    lastSyncMessage: item.lastSyncMessage || item.latestTaskResultStatusLabel || '--',
+    lastSyncMessage: item.latestTaskErrorMessage || item.lastSyncMessage || item.latestTaskResultStatusLabel || '--',
     status: displayStatus,
     statusValue: status,
     statusTone: status === 1 ? 'green' : 'slate',
     taskId: item.latestTaskId || '',
     latestTaskSummary: buildLatestTaskSummary(item),
+    latestTaskStatus: Number(item.latestTaskStatus ?? -1),
+    latestTaskResultStatus: resultStatus,
+    latestTaskLatestRemoteChapter: item.latestTaskLatestRemoteChapter || item.latestRemoteChapter || '--',
+    latestTaskChapterCount: chapterCount,
+    latestTaskProcessedCount: processedCount,
+    latestTaskAddedChapterCount: addedCount,
+    latestTaskSkippedChapterCount: skippedCount,
+    latestTaskFailedChapterCount: failedCount,
+    latestTaskLocalChapterCountAfterSync: item.latestTaskLocalChapterCountAfterSync,
+    latestTaskStartedTime: startedTime,
+    latestTaskFinishedTime: finishedTime,
+    latestTaskUpdateTime: formatDateTime(item.latestTaskUpdateTime),
+    latestTaskDurationMs: taskElapsedMs,
+    latestTaskDurationText: formatDuration(taskElapsedMs),
+    latestTaskErrorMessage: item.latestTaskErrorMessage || '',
+    isRunning,
+    progress,
+    progressText: chapterCount > 0 ? `${processedCount}/${chapterCount}` : processedCount ? `${processedCount} 章` : '--',
+    runningSummary,
     canPause: Boolean(item.latestTaskCanPause),
     canTerminate: Boolean(item.latestTaskCanTerminate),
     canRetry: Boolean(item.latestTaskCanRetry),
     canResume: Boolean(item.latestTaskCanResume),
-    maxChapters: parseNovelSyncRemark(item.remark).maxChapters,
-    requestDelayMs: parseNovelSyncRemark(item.remark).requestDelayMs,
+    maxChapters: remarkOptions.maxChapters,
+    requestDelayMs: remarkOptions.requestDelayMs,
   }
 }
 
@@ -697,7 +737,8 @@ function normalizeNovelQuickSyncResult(item = {}) {
     createdRule: Boolean(item.createdRule),
     createdSubscription: Boolean(item.createdSubscription),
     matchedBy: item.matchedBy || '',
-    message: item.message || '同步完成',
+    submittedAsync: Boolean(item.submittedAsync),
+    message: item.message || '同步任务已提交',
     runResult: normalizeNovelSyncRunResult(item.runResult || {}),
   }
 }
@@ -719,6 +760,24 @@ function buildLatestTaskSummary(item = {}) {
     item.latestTaskFailedChapterCount !== undefined ? `失败 ${item.latestTaskFailedChapterCount}` : '',
   ].filter(Boolean)
   return parts.join(' / ') || '--'
+}
+
+function buildNovelSyncRunningSummary({
+  isRunning,
+  processedCount,
+  chapterCount,
+  addedCount,
+  skippedCount,
+  failedCount,
+  requestDelayMs,
+  elapsedMs,
+} = {}) {
+  if (!isRunning) return ''
+  const base = chapterCount > 0 ? `已处理 ${processedCount}/${chapterCount} 章` : `已处理 ${processedCount} 章`
+  const counts = `新增 ${addedCount}，跳过 ${skippedCount}，失败 ${failedCount}`
+  const delay = Number(requestDelayMs || 0) >= 5000 ? `，间隔 ${requestDelayMs}ms` : ''
+  const elapsed = elapsedMs > 0 ? `，已运行 ${formatDuration(elapsedMs)}` : ''
+  return `${base}；${counts}${delay}${elapsed}`
 }
 
 function normalizeSyncStatusLabel(resultStatus, lastStatus) {
@@ -1014,6 +1073,33 @@ function formatAveragePercent(values = []) {
 function formatDateTime(value) {
   if (!value) return '--'
   return String(value).replace('T', ' ').slice(0, 19)
+}
+
+function resolveTaskElapsedMs(startedAt, finishedAt, durationMs) {
+  const explicit = Number(durationMs)
+  if (Number.isFinite(explicit) && explicit > 0) return explicit
+  const start = parseDateTime(startedAt)
+  if (!start) return 0
+  const end = parseDateTime(finishedAt) || new Date()
+  return Math.max(0, end.getTime() - start.getTime())
+}
+
+function parseDateTime(value) {
+  if (!value) return null
+  const normalized = typeof value === 'string' ? value.replace(' ', 'T') : value
+  const date = new Date(normalized)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function formatDuration(ms) {
+  const seconds = Math.floor(Number(ms || 0) / 1000)
+  if (seconds <= 0) return '0秒'
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const restSeconds = seconds % 60
+  if (hours > 0) return `${hours}小时${minutes}分`
+  if (minutes > 0) return `${minutes}分${restSeconds}秒`
+  return `${restSeconds}秒`
 }
 
 function cleanParams(params = {}) {
