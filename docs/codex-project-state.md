@@ -289,6 +289,26 @@ npm run build
   - Backend: `mvn -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\pom.xml" -pl ":sx-book" -am -DskipTests compile` passed.
   - Frontend: `npm run build` passed with existing dependency/chunk-size warnings.
 
+## 2026-06-21 Novel One-Click Sync Note
+
+- Product boundary clarified:
+  - Normal Books remain user-prepared upload/local-scan imports.
+  - Web crawling/scheduled updates belong to Novel Sync and future serial content such as comics.
+  - Do not surface web-crawler entry points on the normal Books page.
+- Added backend one-click novel URL endpoint:
+  - `POST /sx/book/scrape/quickSync`
+  - Inputs: `detailUrl`, optional `bookId`, `syncChapters`, `maxChapters`, `requestDelayMs`, `cronExpr`.
+  - Behavior: parse the pasted URL, create/reuse only novel-scoped records, prepare source channel/rule/subscription, then reuse `runNow` for chapter sync.
+- Novel Sync page now has a first-screen URL input panel:
+  - paste novel detail/catalog URL
+  - set max chapters and request delay
+  - choose sync vs preview
+  - open run result and task center after completion
+- Existing advanced subscription table/forms remain available under the one-click path for troubleshooting and manual management.
+- Verification:
+  - Backend: `mvn -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\pom.xml" -pl ":sx-book" -am -DskipTests compile` passed.
+  - Frontend: `npm run build` passed with existing dependency/chunk-size warnings.
+
 ## Integration Priority
 
 Current user priority:
