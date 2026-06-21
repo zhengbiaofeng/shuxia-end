@@ -355,10 +355,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
-import { Delete, EditPen, Plus, RefreshRight, Tickets, VideoPlay, View } from '@element-plus/icons-vue'
+import { CircleClose, Delete, EditPen, Plus, RefreshRight, Tickets, VideoPlay, View } from '@element-plus/icons-vue'
 import { AdminActionIcons, AdminFilterBar, AdminStatusBadge, AdminTableCard } from '../../components/admin'
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
@@ -372,6 +372,7 @@ import {
   fetchScrapeChannelsPage,
   quickSyncNovelByUrl,
   runNovelSyncNow,
+  runTaskAction,
   updateNovelSyncSubscription,
 } from '../../api/automation'
 
@@ -383,8 +384,10 @@ const formVisible = ref(false)
 const previewVisible = ref(false)
 const previewLoading = ref(false)
 const quickLoading = ref(false)
+const pollLoading = ref(false)
 const submitting = ref(false)
 const statusLoadingId = ref('')
+const actionTaskLoadingId = ref('')
 const rows = ref([])
 const metrics = ref([])
 const total = ref(0)
@@ -398,6 +401,7 @@ const channelOptions = ref([])
 const novelsLoading = ref(false)
 const channelsLoading = ref(false)
 const cronPreset = ref('custom')
+let pollTimer = null
 const query = reactive({
   pageNo: 1,
   pageSize: 10,
@@ -453,6 +457,7 @@ const formEnabled = computed({
     form.status = value ? 1 : 0
   },
 })
+const runningRows = computed(() => rows.value.filter((row) => row.isRunning))
 
 function defaultForm() {
   return {
@@ -476,15 +481,21 @@ function defaultForm() {
 }
 
 function rowActions(row) {
-  return [
+  const actions = [
     { label: '预览', icon: View },
-    { label: '同步', icon: VideoPlay },
+    { label: '同步', icon: VideoPlay, disabled: row.isRunning },
     { label: '任务', icon: Tickets },
     { label: '编辑', icon: EditPen },
     { label: '删除', icon: Delete, danger: true },
-  ].map((action) => ({
+  ]
+  if (row.canTerminate) {
+    actions.splice(2, 0, { label: '停止', icon: CircleClose, danger: true })
+  }
+  return actions.map((action) => ({
     ...action,
-    loading: (action.label === '同步' || action.label === '预览') && previewLoading.value && previewResult.value?.subscriptionId === row.id,
+    loading:
+      ((action.label === '同步' || action.label === '预览') && previewLoading.value && previewResult.value?.subscriptionId === row.id)
+      || (action.label === '停止' && actionTaskLoadingId.value === row.taskId),
   }))
 }
 
@@ -535,9 +546,10 @@ async function submitQuickSync() {
       syncChapters: quickForm.syncChapters,
     })
     previewResult.value = quickResult.value.runResult
-    previewVisible.value = true
-    ElMessage.success(quickForm.syncChapters ? '小说同步已完成' : '解析预览已完成')
+    previewVisible.value = !quickResult.value.submittedAsync
+    ElMessage.success(quickForm.syncChapters ? '同步任务已提交，正在后台处理' : '解析预览已完成')
     await loadSubscriptions(1)
+    syncSelectedDetail()
   } catch (error) {
     ElMessage.error(error.message || '小说链接同步失败')
   } finally {
@@ -551,9 +563,14 @@ function openQuickPreview() {
   previewVisible.value = true
 }
 
-async function loadSubscriptions(pageNo = query.pageNo) {
+async function loadSubscriptions(pageNo = query.pageNo, options = {}) {
   query.pageNo = pageNo
-  loading.value = true
+  const silent = Boolean(options.silent)
+  if (silent) {
+    pollLoading.value = true
+  } else {
+    loading.value = true
+  }
   try {
     const data = await fetchNovelSyncPage(query)
     rows.value = data.rows
@@ -561,13 +578,20 @@ async function loadSubscriptions(pageNo = query.pageNo) {
     total.value = data.total
     query.pageNo = data.current || query.pageNo
     query.pageSize = data.pageSize || query.pageSize
+    syncSelectedDetail()
   } catch (error) {
-    rows.value = []
-    metrics.value = []
-    total.value = 0
-    ElMessage.error(error.message || '获取小说同步订阅失败')
+    if (!silent) {
+      rows.value = []
+      metrics.value = []
+      total.value = 0
+      ElMessage.error(error.message || '获取小说同步订阅失败')
+    }
   } finally {
-    loading.value = false
+    if (silent) {
+      pollLoading.value = false
+    } else {
+      loading.value = false
+    }
   }
 }
 
@@ -717,7 +741,11 @@ async function runSubscription(row) {
 
 async function executeSubscription(row, syncChapters) {
   if (!row?.id) return
-  previewVisible.value = true
+  if (syncChapters && row.isRunning) {
+    ElMessage.warning('该小说已有同步任务运行中，请先观察进度或停止任务')
+    return
+  }
+  previewVisible.value = !syncChapters
   previewLoading.value = true
   previewResult.value = null
   try {
@@ -726,7 +754,7 @@ async function executeSubscription(row, syncChapters) {
       syncChapters,
       requestDelayMs: row.requestDelayMs,
     })
-    ElMessage.success(syncChapters ? '同步任务已执行' : '解析预览已完成')
+    ElMessage.success(syncChapters ? '同步任务已提交，正在后台处理' : '解析预览已完成')
     await loadSubscriptions(query.pageNo)
     if (selectedDetail.value?.id === row.id) {
       selectedDetail.value = await fetchNovelSyncDetail(row.id)
@@ -738,6 +766,28 @@ async function executeSubscription(row, syncChapters) {
   }
 }
 
+async function stopRunningTask(row) {
+  if (!row?.taskId) return
+  actionTaskLoadingId.value = row.taskId
+  try {
+    await runTaskAction({
+      taskType: 'SCRAPE',
+      taskId: row.taskId,
+      action: 'terminate',
+      remark: '用户在小说同步页停止任务',
+    })
+    ElMessage.success('已请求停止同步任务')
+    await loadSubscriptions(query.pageNo)
+    if (selectedDetail.value?.id === row.id) {
+      selectedDetail.value = await fetchNovelSyncDetail(row.id)
+    }
+  } catch (error) {
+    ElMessage.error(error.message || '停止同步任务失败')
+  } finally {
+    actionTaskLoadingId.value = ''
+  }
+}
+
 async function handleRowAction(row, action) {
   if (action.label === '预览') {
     await previewSubscription(row)
@@ -745,6 +795,10 @@ async function handleRowAction(row, action) {
   }
   if (action.label === '同步') {
     await runSubscription(row)
+    return
+  }
+  if (action.label === '停止') {
+    await stopRunningTask(row)
     return
   }
   if (action.label === '任务') {
@@ -775,8 +829,40 @@ async function confirmDelete(row) {
   }
 }
 
+function syncSelectedDetail() {
+  if (!selectedDetail.value?.id) return
+  const current = rows.value.find((row) => row.id === selectedDetail.value.id)
+  if (current) {
+    selectedDetail.value = {
+      ...selectedDetail.value,
+      ...current,
+    }
+  }
+}
+
+function startPolling() {
+  stopPolling()
+  pollTimer = window.setInterval(() => {
+    if (runningRows.value.length || quickLoading.value || previewLoading.value) {
+      loadSubscriptions(query.pageNo, { silent: true })
+    }
+  }, 5000)
+}
+
+function stopPolling() {
+  if (pollTimer) {
+    window.clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
 onMounted(async () => {
   await Promise.all([searchNovels(), loadChannelOptions(), loadSubscriptions()])
+  startPolling()
+})
+
+onBeforeUnmount(() => {
+  stopPolling()
 })
 </script>
 
