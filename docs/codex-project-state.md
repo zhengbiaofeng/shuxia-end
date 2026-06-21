@@ -309,6 +309,25 @@ npm run build
   - Backend: `mvn -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\pom.xml" -pl ":sx-book" -am -DskipTests compile` passed.
   - Frontend: `npm run build` passed with existing dependency/chunk-size warnings.
 
+## 2026-06-21 Novel bqglll Full-Catalog Fix Note
+
+- Root cause for the `https://m.bqglll.cc/look/104952/` 17-chapter result:
+  - The mobile detail page exposes only a short recent-chapter fragment.
+  - The full chapter catalog is available on the `www` detail page for the same path.
+- Backend one-click novel sync now derives mobile `m.` catalog parsing to the `www.` host while preserving the path.
+- The practice source example was verified externally:
+  - derived catalog URL: `https://www.bqglll.cc/look/104952/`
+  - real chapter links after filtering expand/control anchors: `688`
+  - first link: `https://www.bqglll.cc/look/104952/1.html`
+  - last link: `https://www.bqglll.cc/look/104952/688.html`
+- Auto-created one-click rules now use `dd:not(.more) a` and filter non-content URLs such as `javascript:` so the expand link does not shift chapter title/link pairing.
+- For the practice source,正文 fetching can use the site's chapter JSON API when a source book id is parsed from the detail page. The API returned正文 and `cs=688` for the example.
+- No max chapter cap is applied by default; full-book missing-chapter sync is the normal one-click path. `maxChapters` remains only for explicit advanced/debug overrides.
+- User-provided website credentials must not be stored in code, docs, rule remarks, or fixtures. Current verification did not require website login.
+- Backend handoff doc updated: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-web-sync-phase1-backend-readme.md`
+- Verification:
+  - Backend: `mvn -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\pom.xml" -pl ":jeecg-system-start" -am -DskipTests package` passed.
+
 ## Integration Priority
 
 Current user priority:
