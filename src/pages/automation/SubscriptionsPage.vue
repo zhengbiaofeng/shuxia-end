@@ -746,6 +746,113 @@ onMounted(async () => {
   margin-top: 0;
 }
 
+.quick-sync-panel {
+  background: #ffffff;
+  border: 1px solid var(--admin-panel-border);
+  border-radius: 8px;
+  box-shadow: var(--admin-shadow-card);
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.quick-sync-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.quick-sync-header span {
+  color: #617098;
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.quick-sync-header h2 {
+  color: #102557;
+  font-size: 22px;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.quick-sync-form {
+  align-items: flex-end;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(260px, 1fr) 128px 150px 118px auto;
+}
+
+.quick-sync-form :deep(.el-form-item) {
+  margin-bottom: 0;
+}
+
+.quick-url-field {
+  min-width: 0;
+}
+
+.quick-number {
+  width: 100%;
+}
+
+.quick-sync-result {
+  align-items: center;
+  background: #f8fbff;
+  border: 1px solid #dbe7ff;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(180px, 1fr) auto auto;
+  padding: 12px 14px;
+}
+
+.quick-result-title,
+.quick-result-actions {
+  min-width: 0;
+}
+
+.quick-result-title {
+  display: grid;
+  gap: 3px;
+}
+
+.quick-result-title strong {
+  color: #102557;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-result-title span {
+  color: #617098;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-result-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quick-result-stats span {
+  background: #ffffff;
+  border: 1px solid #dbe7ff;
+  border-radius: 6px;
+  color: #314a80;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 5px 8px;
+}
+
+.quick-result-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .novel-cell,
 .url-cell,
 .status-stack {
@@ -906,6 +1013,20 @@ onMounted(async () => {
 }
 
 @media (max-width: 860px) {
+  .quick-sync-header,
+  .quick-sync-result {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .quick-sync-header {
+    display: grid;
+  }
+
+  .quick-sync-form {
+    grid-template-columns: 1fr;
+  }
+
   .form-grid,
   .sample-grid {
     grid-template-columns: 1fr;
