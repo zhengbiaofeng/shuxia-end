@@ -320,6 +320,7 @@ import {
   fetchNovelSyncDetail,
   fetchNovelSyncPage,
   fetchScrapeChannelsPage,
+  quickSyncNovelByUrl,
   runNovelSyncNow,
   updateNovelSyncSubscription,
 } from '../../api/automation'
@@ -331,6 +332,7 @@ const detailVisible = ref(false)
 const formVisible = ref(false)
 const previewVisible = ref(false)
 const previewLoading = ref(false)
+const quickLoading = ref(false)
 const submitting = ref(false)
 const statusLoadingId = ref('')
 const rows = ref([])
@@ -338,6 +340,7 @@ const metrics = ref([])
 const total = ref(0)
 const selectedDetail = ref(null)
 const previewResult = ref(null)
+const quickResult = ref(null)
 const editingId = ref('')
 const formRef = ref(null)
 const novelOptions = ref([])
@@ -350,6 +353,12 @@ const query = reactive({
   pageSize: 10,
   keyword: '',
   status: undefined,
+})
+const quickForm = reactive({
+  detailUrl: '',
+  maxChapters: 5,
+  requestDelayMs: 1000,
+  syncChapters: true,
 })
 const form = reactive(defaultForm())
 const pageActions = [
