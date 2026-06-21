@@ -681,6 +681,28 @@ function normalizeNovelSyncRunResult(item = {}) {
   }
 }
 
+function normalizeNovelQuickSyncResult(item = {}) {
+  return {
+    raw: item,
+    detailUrl: item.detailUrl || '',
+    bookId: item.bookId || '',
+    bookName: item.bookName || '--',
+    authorName: item.authorName || '--',
+    sourceId: item.sourceId || '',
+    sourceName: item.sourceName || '--',
+    ruleId: item.ruleId || '',
+    ruleName: item.ruleName || '--',
+    subscriptionId: item.subscriptionId || '',
+    createdBook: Boolean(item.createdBook),
+    createdChannel: Boolean(item.createdChannel),
+    createdRule: Boolean(item.createdRule),
+    createdSubscription: Boolean(item.createdSubscription),
+    matchedBy: item.matchedBy || '',
+    message: item.message || '同步完成',
+    runResult: normalizeNovelSyncRunResult(item.runResult || {}),
+  }
+}
+
 function buildNovelSyncMetrics(rows = [], total = rows.length) {
   return [
     metric('同步订阅', total, '条', '当前筛选结果', 'blue', DataAnalysis),
