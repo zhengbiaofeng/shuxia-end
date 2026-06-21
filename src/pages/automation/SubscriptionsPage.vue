@@ -184,9 +184,6 @@
             <el-form-item label="Cron 表达式" prop="cronExpr">
               <el-input v-model="form.cronExpr" placeholder="0 */6 * * *" />
             </el-form-item>
-            <el-form-item label="每次最多章节">
-              <el-input-number v-model="form.maxChapters" class="form-control" :min="1" :max="200" />
-            </el-form-item>
             <el-form-item label="请求间隔 ms">
               <el-input-number v-model="form.requestDelayMs" class="form-control" :min="0" :max="10000" :step="500" />
             </el-form-item>
@@ -242,7 +239,7 @@
             <el-descriptions-item label="最近状态">{{ selectedDetail.lastSyncStatus }} / {{ selectedDetail.lastSyncMessage }}</el-descriptions-item>
             <el-descriptions-item label="最近任务">{{ selectedDetail.latestTaskSummary }}</el-descriptions-item>
             <el-descriptions-item label="高级参数">
-              最多 {{ selectedDetail.maxChapters }} 章，请求间隔 {{ selectedDetail.requestDelayMs }} ms
+              请求间隔 {{ selectedDetail.requestDelayMs }} ms
             </el-descriptions-item>
           </el-descriptions>
           <section class="detail-actions">
@@ -411,7 +408,6 @@ function defaultForm() {
     cronExpr: '0 */6 * * *',
     status: 1,
     remark: '',
-    maxChapters: 5,
     requestDelayMs: 1000,
     syncChapters: true,
     overwriteMetadata: false,
@@ -587,7 +583,6 @@ async function openEdit(row) {
       cronExpr: detail.cron === '--' ? '0 */6 * * *' : detail.cron,
       status: detail.statusValue,
       remark: detail.remark || '',
-      maxChapters: detail.maxChapters || 5,
       requestDelayMs: detail.requestDelayMs ?? 1000,
       syncChapters: detail.syncChapters !== false,
       overwriteMetadata: Boolean(detail.overwriteMetadata),
@@ -673,7 +668,6 @@ async function executeSubscription(row, syncChapters) {
     previewResult.value = await runNovelSyncNow({
       subscriptionId: row.id,
       syncChapters,
-      maxChapters: row.maxChapters,
       requestDelayMs: row.requestDelayMs,
     })
     ElMessage.success(syncChapters ? '同步任务已执行' : '解析预览已完成')
