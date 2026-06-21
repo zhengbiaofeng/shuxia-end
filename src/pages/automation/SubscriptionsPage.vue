@@ -468,6 +468,42 @@ function handlePageAction(action) {
   loadSubscriptions(query.pageNo)
 }
 
+async function submitQuickSync() {
+  const detailUrl = quickForm.detailUrl.trim()
+  if (!detailUrl) {
+    ElMessage.warning('请先输入小说链接')
+    return
+  }
+  if (!/^https?:\/\//i.test(detailUrl)) {
+    ElMessage.warning('请输入 http 或 https 开头的小说链接')
+    return
+  }
+  quickLoading.value = true
+  quickResult.value = null
+  try {
+    quickResult.value = await quickSyncNovelByUrl({
+      detailUrl,
+      maxChapters: quickForm.maxChapters,
+      requestDelayMs: quickForm.requestDelayMs,
+      syncChapters: quickForm.syncChapters,
+    })
+    previewResult.value = quickResult.value.runResult
+    previewVisible.value = true
+    ElMessage.success(quickForm.syncChapters ? '小说同步已完成' : '解析预览已完成')
+    await loadSubscriptions(1)
+  } catch (error) {
+    ElMessage.error(error.message || '小说链接同步失败')
+  } finally {
+    quickLoading.value = false
+  }
+}
+
+function openQuickPreview() {
+  if (!quickResult.value) return
+  previewResult.value = quickResult.value.runResult
+  previewVisible.value = true
+}
+
 async function loadSubscriptions(pageNo = query.pageNo) {
   query.pageNo = pageNo
   loading.value = true
