@@ -61,6 +61,44 @@
         </div>
       </section>
 
+      <section v-if="runningRows.length" class="runtime-panel">
+        <header class="runtime-header">
+          <div>
+            <span>后台同步</span>
+            <h2>{{ runningRows.length }} 个任务运行中</h2>
+          </div>
+          <div class="runtime-actions">
+            <el-button :icon="RefreshRight" :loading="pollLoading" @click="loadSubscriptions(query.pageNo)">
+              刷新进度
+            </el-button>
+            <el-button @click="router.push('/automation/tasks')">任务中心</el-button>
+          </div>
+        </header>
+        <div class="runtime-list">
+          <article v-for="row in runningRows" :key="row.id" class="runtime-item">
+            <div class="runtime-title">
+              <strong :title="row.name">{{ row.name }}</strong>
+              <span :title="row.latestTaskLatestRemoteChapter">{{ row.latestTaskLatestRemoteChapter }}</span>
+            </div>
+            <div class="runtime-progress">
+              <el-progress :percentage="row.progress" :stroke-width="8" />
+              <span>{{ row.progressText }} · {{ row.latestTaskDurationText }}</span>
+            </div>
+            <p :title="row.runningSummary">{{ row.runningSummary }}</p>
+            <el-button
+              v-if="row.canTerminate"
+              :icon="CircleClose"
+              :loading="actionTaskLoadingId === row.taskId"
+              type="danger"
+              plain
+              @click="stopRunningTask(row)"
+            >
+              停止
+            </el-button>
+          </article>
+        </div>
+      </section>
+
       <ResourceMetricGrid :items="metrics" />
 
       <AdminFilterBar
@@ -101,7 +139,16 @@
         <template #lastSyncStatus="{ row }">
           <div class="status-stack">
             <AdminStatusBadge :label="row.lastSyncStatus" :tone="row.lastSyncTone" dot />
-            <span :title="row.lastSyncMessage">{{ row.lastSyncMessage }}</span>
+            <el-progress
+              v-if="row.isRunning"
+              :percentage="row.progress"
+              :show-text="false"
+              :stroke-width="6"
+              class="table-progress"
+            />
+            <span :title="row.isRunning ? row.runningSummary : row.lastSyncMessage">
+              {{ row.isRunning ? row.runningSummary : row.lastSyncMessage }}
+            </span>
           </div>
         </template>
         <template #status="{ row }">
@@ -244,7 +291,16 @@
           </el-descriptions>
           <section class="detail-actions">
             <el-button :icon="View" @click="previewSubscription(selectedDetail)">预览解析</el-button>
-            <el-button type="primary" :icon="VideoPlay" @click="runSubscription(selectedDetail)">立即同步</el-button>
+            <el-button type="primary" :icon="VideoPlay" :disabled="selectedDetail.isRunning" @click="runSubscription(selectedDetail)">立即同步</el-button>
+            <el-button
+              v-if="selectedDetail.canTerminate"
+              :icon="CircleClose"
+              type="danger"
+              plain
+              @click="stopRunningTask(selectedDetail)"
+            >
+              停止任务
+            </el-button>
             <el-button :icon="EditPen" @click="openEdit(selectedDetail)">编辑</el-button>
           </section>
         </template>
