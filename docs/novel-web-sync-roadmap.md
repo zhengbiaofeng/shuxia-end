@@ -1,12 +1,14 @@
 # Novel Web Sync Roadmap
 
-Updated: 2026-06-20
+Updated: 2026-06-21
 
 This document is the working plan for adding scheduled web novel synchronization to Shuxia. Future implementation steps should follow this checklist unless the user explicitly changes the direction.
 
 ## Goal
 
-Build a reliable flow that lets an admin configure a novel website source, bind it to local novels, and let the backend periodically fetch new chapters into the existing novel library.
+Build a reliable flow that lets an admin paste a single novel detail/catalog URL, then let the software automatically prepare the novel tracking record, source rule, subscription, content cleanup, and scheduled chapter updates.
+
+This is scoped to the Novel surface and future serial content such as comics. It must not change the normal Books surface: ordinary books are still user-prepared files or local storage sources that are uploaded/scanned into the library. Web crawlers should not become the default ingestion path for normal books.
 
 The first practice source is:
 
@@ -28,8 +30,10 @@ This source is for development and rule verification only. Do not present it as 
 
 ## Product Principles
 
-- Phase 1 updates existing novels from a configured detail/catalog URL. It does not discover a whole site.
-- Phase 2 can discover new novels from category/ranking/search pages and auto-create records.
+- Phase 1 starts from a single pasted novel URL. The software should automatically create or reuse only `bizType=novel` / `bookType=novel` records, source channel/rule configuration, and a sync subscription.
+- Existing manual subscription/rule configuration remains available as an advanced troubleshooting path, not the primary user path.
+- Phase 2 starts from a website URL and discovers novel detail URLs from category/ranking/search/list pages. It does not apply to ordinary book-file ingestion.
+- Future comics can reuse the same serial-content crawl/update model, but should stay out of the ordinary Books file-ingestion flow.
 - Manual metadata edits win by default. Scheduled sync should add chapters, not overwrite a user-maintained title, cover, intro, category, or tags unless an explicit overwrite option is enabled.
 - Crawled chapter content must pass a content scrubbing step before storage. The system should remove ads, source-site notices, script/style leftovers, navigation text, duplicated titles, update prompts, and other unrelated boilerplate instead of saving raw page text.
 - The backend creates tasks and runs long work asynchronously. Frontend write APIs should not block until hundreds of chapters are downloaded.
@@ -38,7 +42,15 @@ This source is for development and rule verification only. Do not present it as 
 
 ## Phase 1: Existing Novel Scheduled Chapter Sync
 
-Objective: bind one existing local novel to one source detail URL, then manually or periodically fetch only missing chapters.
+Objective: paste one novel detail/catalog URL, then automatically create/reuse the novel tracking record, source channel/rule, and subscription, then manually or periodically fetch only missing chapters.
+
+### 0. Product Boundary
+
+- [x] Keep one-click web crawling inside the Novel Sync page.
+- [x] Do not add web-crawler entry points to the normal Books page.
+- [x] Ordinary books remain user-prepared upload/local-scan imports.
+- [x] One-click sync may create/reuse only novel records (`bizType=novel`, `bookType=novel`).
+- [ ] Add the same boundary to future comic sync planning before implementation.
 
 ### 1. Backend Rule Engine
 
@@ -128,10 +140,17 @@ Objective: bind one existing local novel to one source detail URL, then manually
 - [x] Add task log rows for per-chapter failures, with chapter title and URL.
 - [x] Add pause/terminate checks during long chapter loops.
 - [x] Add a retry path for failed/paused tasks if existing task center actions do not cover it.
+- [x] Add one-click novel URL sync endpoint.
+  - `POST /sx/book/scrape/quickSync`
+  - Accepts `detailUrl`, optional `bookId`, `syncChapters`, `maxChapters`, `requestDelayMs`, and `cronExpr`.
+  - Auto-creates/reuses only novel-scoped source/channel/rule/subscription records.
+  - Reuses existing `runNow` execution path for actual chapter parsing and storage.
 
 ### 4. Frontend Phase 1
 
 - [x] Rename or reshape the current "Update Subscriptions" page into a usable "Novel Sync" page.
+- [x] Add a first-screen single URL entry point so the common path is paste URL -> automatic sync.
+- [x] Keep advanced add/edit/preview/debug controls available below the one-click path.
 - [x] Add table columns:
   - novel name
   - source site
@@ -196,7 +215,9 @@ Objective: bind one existing local novel to one source detail URL, then manually
 
 ## Phase 2: Discover New Novels From Website Pages
 
-Objective: configure category/ranking/search/list pages so the system can discover novel detail URLs, create missing local novel records, classify/tag them, then create subscriptions for later updates.
+Objective: paste or configure a novel website URL so the system can discover novel detail URLs, create missing novel records, classify/tag them, then create subscriptions for later updates.
+
+This remains a serial-content crawl feature. It must not replace Books upload/local-scan import for ordinary books.
 
 ### 1. Discovery Rule Model
 
