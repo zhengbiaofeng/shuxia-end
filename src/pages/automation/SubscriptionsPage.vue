@@ -7,6 +7,63 @@
     @action="handlePageAction"
   >
     <div class="novel-sync-stack">
+      <section class="quick-sync-panel">
+        <header class="quick-sync-header">
+          <div>
+            <span>小说追更</span>
+            <h2>粘贴单本链接，自动同步</h2>
+          </div>
+          <el-tag effect="plain" type="info">仅用于小说站点追更</el-tag>
+        </header>
+
+        <el-form class="quick-sync-form" :model="quickForm" label-position="top" @submit.prevent>
+          <el-form-item class="quick-url-field" label="小说详情或目录链接">
+            <el-input
+              v-model="quickForm.detailUrl"
+              clearable
+              placeholder="https://example.com/novel/123/"
+              size="large"
+              @keyup.enter="submitQuickSync"
+            />
+          </el-form-item>
+          <el-form-item label="最多章节">
+            <el-input-number v-model="quickForm.maxChapters" :max="200" :min="1" class="quick-number" />
+          </el-form-item>
+          <el-form-item label="请求间隔 ms">
+            <el-input-number
+              v-model="quickForm.requestDelayMs"
+              :max="10000"
+              :min="0"
+              :step="500"
+              class="quick-number"
+            />
+          </el-form-item>
+          <el-form-item label="立即同步">
+            <el-switch v-model="quickForm.syncChapters" active-text="同步" inactive-text="预览" />
+          </el-form-item>
+          <el-button :icon="VideoPlay" :loading="quickLoading" size="large" type="primary" @click="submitQuickSync">
+            开始自动同步
+          </el-button>
+        </el-form>
+
+        <div v-if="quickResult" class="quick-sync-result">
+          <div class="quick-result-title">
+            <strong>{{ quickResult.bookName }}</strong>
+            <span>{{ quickResult.authorName }} / {{ quickResult.sourceName }}</span>
+          </div>
+          <div class="quick-result-stats">
+            <span>新增 {{ quickResult.runResult.addedChapterCount }}</span>
+            <span>跳过 {{ quickResult.runResult.skippedChapterCount }}</span>
+            <span>失败 {{ quickResult.runResult.failedChapterCount }}</span>
+            <span>订阅 {{ quickResult.createdSubscription ? '已创建' : '已复用' }}</span>
+          </div>
+          <div class="quick-result-actions">
+            <el-button text type="primary" @click="openQuickPreview">查看结果</el-button>
+            <el-button text @click="router.push('/automation/tasks')">任务中心</el-button>
+          </div>
+        </div>
+      </section>
+
       <ResourceMetricGrid :items="metrics" />
 
       <AdminFilterBar
