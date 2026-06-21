@@ -984,6 +984,91 @@ onBeforeUnmount(() => {
   justify-content: flex-end;
 }
 
+.runtime-panel {
+  background: #ffffff;
+  border: 1px solid #dbe7ff;
+  border-radius: 8px;
+  box-shadow: var(--admin-shadow-card);
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.runtime-header {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.runtime-header span {
+  color: #617098;
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.runtime-header h2 {
+  color: #102557;
+  font-size: 20px;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.runtime-actions,
+.runtime-list {
+  display: flex;
+  gap: 10px;
+}
+
+.runtime-list {
+  flex-direction: column;
+}
+
+.runtime-item {
+  align-items: center;
+  background: #f8fbff;
+  border: 1px solid #dbe7ff;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(180px, 1fr) minmax(220px, 360px) minmax(260px, 1.3fr) auto;
+  padding: 12px 14px;
+}
+
+.runtime-title,
+.runtime-progress {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.runtime-title strong {
+  color: #102557;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.runtime-title span,
+.runtime-progress span,
+.runtime-item p {
+  color: #617098;
+  font-size: 13px;
+}
+
+.runtime-title span,
+.runtime-item p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.runtime-item p {
+  margin: 0;
+}
+
 .novel-cell,
 .url-cell,
 .status-stack {
@@ -1008,6 +1093,10 @@ onBeforeUnmount(() => {
   max-width: 320px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.table-progress {
+  max-width: 300px;
 }
 
 .sync-form {
@@ -1145,13 +1234,20 @@ onBeforeUnmount(() => {
 
 @media (max-width: 860px) {
   .quick-sync-header,
-  .quick-sync-result {
+  .quick-sync-result,
+  .runtime-header,
+  .runtime-item {
     align-items: stretch;
     grid-template-columns: 1fr;
   }
 
-  .quick-sync-header {
+  .quick-sync-header,
+  .runtime-header {
     display: grid;
+  }
+
+  .runtime-actions {
+    flex-wrap: wrap;
   }
 
   .quick-sync-form {
