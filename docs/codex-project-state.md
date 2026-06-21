@@ -158,6 +158,12 @@ This document is the handoff snapshot for new Codex threads. Read it before star
   - Common user flow: `/automation/smart-scrape` for URL -> parse -> preview -> import.
   - Advanced flow remains `/automation/rules` and `/automation/channels` for scan-rule debugging and fallback configuration.
   - The sidebar automation group now lists Smart Scrape before Scan Rules.
+- Novel Sync now treats full-book website sync as a background SCRAPE task:
+  - One-click URL sync and row-level sync submit a task instead of waiting for the whole book in the browser request.
+  - The page shows a running-task panel, row progress bars, elapsed time, processed/total chapter counts, and a stop action.
+  - Backend progress fields are exposed through subscription list/detail VOs.
+  - bqglll-style full catalog parsing is restricted to same-book chapter URLs so recommendation links are not imported as chapters.
+  - Scope remains Novel Sync only; ordinary Books upload/local-scan import is unaffected.
 
 ## Known Local Commands
 
