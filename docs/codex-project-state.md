@@ -334,6 +334,28 @@ npm run build
 - Verification:
   - Backend: `mvn -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\pom.xml" -pl ":jeecg-system-start" -am -DskipTests package` passed.
 
+## 2026-06-21 Novel bqg Hash-Route Repair Note
+
+- Root cause for `Could not parse query 'a::attr(href)'`:
+  - Auto-generated chapter URL selector used comma-separated `a::attr(href)` branches.
+  - The selector helper only supported one terminal `::attr(...)`, so Jsoup saw an invalid CSS selector.
+- Backend fix:
+  - New auto rules use plain CSS chapter link selectors.
+  - Legacy comma-separated per-branch `::attr(...)` selectors are now normalized by `SxScrapeSelectorSupport`.
+- Root cause for `https://a830aa480783925d254.bqg907.cc/#/book/113680/` not producing a full catalog:
+  - The URL is a JS hash route; server-side HTML fetch returns the app shell, not the book catalog.
+  - The site exposes real data through `/api/book`, `/api/booklist`, and `/api/chapter`.
+- Backend fix:
+  - Quick sync extracts book id `113680` from the hash route.
+  - bqg API mode now loads `/api/booklist` for the full catalog and `/api/chapter` for content.
+  - External check for this URL returned 688 catalog entries.
+- Local DB repair:
+  - Auto rule selectors were updated to plain CSS.
+  - Existing bqg907 rule remark was compacted to fit `sx_scrape_rule.remark varchar(500)` and now has `chapterContentMode=bqg-api`, `chapterApiBookId=113680`, `chapterApiDirId=113680`.
+- Backend handoff doc updated: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-web-sync-phase1-backend-readme.md`
+- Verification:
+  - Backend: `mvn -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\pom.xml" -pl ":jeecg-system-start" -am -DskipTests package` passed.
+
 ## Integration Priority
 
 Current user priority:
