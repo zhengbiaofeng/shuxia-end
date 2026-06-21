@@ -282,7 +282,7 @@ npm run build
   - `contentLineFilters`, `contentLineRegexFilters`
 - Manual `POST /sx/book/scrape/runNow` accepts `maxChapters` and `requestDelayMs` overrides.
 - Chapter sync now supports catalog-page parsing, max-chapter limits, per-chapter request delay, content cleanup, suspiciously-short content failure, non-2xx HTTP failure, and per-chapter failure logs with URL.
-- Compatibility note: backend default max chapter limit is `200` so existing subscriptions are not unexpectedly limited to development defaults; new test/UI runs can still pass `maxChapters=5`.
+- Compatibility note: backend default max chapter limit is now unlimited; `maxChapters` only limits runs when explicitly set by advanced/debug flows.
 - No SQL migration was added in this slice. Practice source/channel/rule fixtures and real end-to-end sync verification remain next steps.
 - Backend handoff doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-web-sync-phase1-backend-readme.md`
 - Verification:
@@ -297,11 +297,11 @@ npm run build
   - Do not surface web-crawler entry points on the normal Books page.
 - Added backend one-click novel URL endpoint:
   - `POST /sx/book/scrape/quickSync`
-  - Inputs: `detailUrl`, optional `bookId`, `syncChapters`, `maxChapters`, `requestDelayMs`, `cronExpr`.
-  - Behavior: parse the pasted URL, create/reuse only novel-scoped records, prepare source channel/rule/subscription, then reuse `runNow` for chapter sync.
+  - Inputs: `detailUrl`, optional `bookId`, `syncChapters`, `requestDelayMs`, `cronExpr`.
+  - Behavior: parse the pasted URL, create/reuse only novel-scoped records, prepare source channel/rule/subscription, then reuse `runNow` for full missing-chapter sync.
 - Novel Sync page now has a first-screen URL input panel:
   - paste novel detail/catalog URL
-  - set max chapters and request delay
+  - set request delay
   - choose sync vs preview
   - open run result and task center after completion
 - Existing advanced subscription table/forms remain available under the one-click path for troubleshooting and manual management.
