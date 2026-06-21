@@ -37,7 +37,7 @@ This source is for development and rule verification only. Do not present it as 
 - Manual metadata edits win by default. Scheduled sync should add chapters, not overwrite a user-maintained title, cover, intro, category, or tags unless an explicit overwrite option is enabled.
 - Crawled chapter content must pass a content scrubbing step before storage. The system should remove ads, source-site notices, script/style leftovers, navigation text, duplicated titles, update prompts, and other unrelated boilerplate instead of saving raw page text.
 - The backend creates tasks and runs long work asynchronously. Frontend write APIs should not block until hundreds of chapters are downloaded.
-- Fetch politely: single-site concurrency starts at 1, chapter request intervals are configurable, and each run has a max chapter limit.
+- Fetch politely: single-site concurrency starts at 1, chapter request intervals are configurable, and advanced/debug runs may set an explicit max chapter limit. The common one-click path should sync all missing chapters.
 - Never add anti-captcha, login bypass, paywall bypass, or hidden authorization workarounds.
 
 ## Phase 1: Existing Novel Scheduled Chapter Sync
@@ -70,9 +70,8 @@ Objective: paste one novel detail/catalog URL, then automatically create/reuse t
   - Preferred: explicit `catalogUrlSelector` or `catalogUrlTemplate` on the rule.
   - Acceptable MVP fallback for bqglll: derive `detailUrl + "list.html"` when the source rule enables it.
 - [x] Ensure chapter list parsing can use the catalog page rather than only the detail page.
-- [x] Add per-run max chapter count.
-  - Suggested default for development: 5.
-  - Suggested production default: configurable, conservative.
+- [x] Add optional per-run max chapter count for advanced/debug runs.
+  - Default behavior for one-click sync: no chapter-count limit; sync all missing chapters.
 - [x] Add per-request delay or site-level throttle.
   - Suggested default: 1000-3000 ms between chapter fetches.
 - [x] Add a content scrubbing pipeline before chapter content is stored.
@@ -142,7 +141,8 @@ Objective: paste one novel detail/catalog URL, then automatically create/reuse t
 - [x] Add a retry path for failed/paused tasks if existing task center actions do not cover it.
 - [x] Add one-click novel URL sync endpoint.
   - `POST /sx/book/scrape/quickSync`
-  - Accepts `detailUrl`, optional `bookId`, `syncChapters`, `maxChapters`, `requestDelayMs`, and `cronExpr`.
+  - Accepts `detailUrl`, optional `bookId`, `syncChapters`, `requestDelayMs`, and `cronExpr`.
+  - Does not apply a chapter-count limit by default.
   - Auto-creates/reuses only novel-scoped source/channel/rule/subscription records.
   - Reuses existing `runNow` execution path for actual chapter parsing and storage.
 
@@ -203,7 +203,7 @@ Objective: paste one novel detail/catalog URL, then automatically create/reuse t
 - [ ] Create channel and rule.
 - [ ] Debug parse detail URL.
 - [ ] Debug parse full catalog URL.
-- [ ] Run immediate sync with max 1-5 chapters.
+- [ ] Run immediate sync and confirm it attempts all missing chapters.
 - [ ] Confirm chapters are inserted into the selected novel.
 - [ ] Confirm inserted chapter content has been scrubbed and does not contain ads, source-site notices, navigation text, recommendation text, or footer boilerplate.
 - [ ] Run immediate sync again and confirm duplicate chapters are skipped.
