@@ -267,7 +267,6 @@ export async function quickSyncNovelByUrl(payload = {}) {
     detailUrl: trimText(payload.detailUrl),
     bookId: payload.bookId,
     syncChapters: payload.syncChapters !== false,
-    maxChapters: payload.maxChapters,
     requestDelayMs: payload.requestDelayMs,
     cronExpr: trimText(payload.cronExpr),
   }))
