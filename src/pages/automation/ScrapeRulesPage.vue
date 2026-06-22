@@ -327,6 +327,7 @@ const debugResult = ref(null)
 const batchRule = ref(null)
 const batchResult = ref(null)
 const batchCandidates = ref([])
+const batchForm = reactive(defaultBatchForm())
 const query = reactive({
   pageNo: 1,
   pageSize: 10,
@@ -334,6 +335,10 @@ const query = reactive({
   bizType: '',
   status: undefined,
 })
+const batchScopeOptions = [
+  { label: '单页发现', value: 'single' },
+  { label: '整站发现', value: 'site' },
+]
 
 const searchConfig = computed(() => ({
   placeholder: '搜索扫描源名称',
@@ -371,6 +376,28 @@ const batchRuleDetailSelector = computed(() => {
   const rule = batchRule.value || {}
   return rule.detailUrlSelector || rule.chapterUrlSelector || rule.raw?.detailUrlSelector || rule.raw?.chapterUrlSelector || ''
 })
+const batchStatusText = computed(() => {
+  if (batchLoading.value) return batchForm.scope === 'site' ? '正在整站发现书籍' : '正在按规则发现小说'
+  if (!batchResult.value) return '等待发现候选小说'
+  const pages = batchResult.value.scannedPageCount ? `，扫描 ${batchResult.value.scannedPageCount} 页` : ''
+  return `已发现 ${batchCandidates.value.length} 本${pages}`
+})
+
+function defaultBatchForm() {
+  return {
+    scope: 'single',
+    entryUrlsText: '',
+    detailUrlSelector: '',
+    paginationUrlTemplate: '',
+    nextPageSelector: '',
+    startPage: 1,
+    maxPages: 0,
+    maxItems: 0,
+    requestDelayMs: 1000,
+    sameHostOnly: true,
+    syncChapters: true,
+  }
+}
 
 function priorityTone(priority) {
   if (priority === '高') return 'red'
