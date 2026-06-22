@@ -435,10 +435,6 @@ async function handleRowAction(row, action) {
     await runRuleDebug(row.id)
     return
   }
-  if (action.label === '发现小说') {
-    await openRuleBatchSync(row)
-    return
-  }
   if (action.label === '编辑') {
     editRule(row)
     return
