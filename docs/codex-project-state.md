@@ -400,7 +400,7 @@ npm run build
 - `SxCurrentUserSupport` now has a scoped `runAs/callAs` user override so background batch work can preserve the submitting user's ownership/audit context.
 - Scan Rules page row/detail actions now include `发现小说`; the dialog uses the saved rule configuration directly, auto-discovers candidates on open, and keeps selector/list URL editing in the existing Add/Edit Rule page.
 - Add/Edit Rule now exposes only the `基础信息` top tab; request config and field selectors remain as sections on that page instead of duplicated top-level tabs.
-- The frontend now treats rules + channel binding as a soft-merged `扫描源管理` experience: `/automation/rules` is the main scan-source list, `/automation/channels` is labeled `连接模板配置`, and route titles use the scan-source/template wording while backend rule/channel tables remain separate.
+- The frontend now treats rules + template binding as a soft-merged `扫描源管理` experience: `/automation/rules` is the main scan-source list, `/automation/channels` is labeled `连接模板配置`, and route titles use the scan-source/template wording while backend rule/channel tables remain separate.
 - `连接模板配置` has a top action `返回扫描源` that routes back to `/automation/rules`, so the template page is clearly a child of scan-source management; its create action is labeled `新增连接模板` to distinguish it from `添加扫描源`.
 - Backend handoff doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-rule-batch-sync-readme.md`
 - Verification:
