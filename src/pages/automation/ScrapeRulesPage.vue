@@ -138,36 +138,28 @@
 
     <el-dialog v-model="batchVisible" title="按规则发现并同步小说" width="920px" destroy-on-close>
       <div class="batch-sync">
-        <el-form :model="batchForm" label-width="118px">
-          <el-form-item label="扫描规则">
+        <section class="batch-sync__summary">
+          <div>
+            <span>扫描规则</span>
             <strong>{{ batchRule?.ruleName || batchRule?.name || '--' }}</strong>
-          </el-form-item>
-          <el-form-item label="列表地址">
-            <el-input v-model="batchForm.listUrl" placeholder="默认使用规则的列表/调试/站点地址" clearable />
-          </el-form-item>
-          <el-form-item label="详情链接选择器">
-            <el-input v-model="batchForm.detailUrlSelector" placeholder="默认用章节链接选择器，再退到列表项第一个链接" clearable />
-          </el-form-item>
-          <div class="batch-sync__controls">
-            <el-form-item label="候选数量">
-              <el-input-number v-model="batchForm.maxItems" :min="1" :max="100" />
-            </el-form-item>
-            <el-form-item label="请求间隔">
-              <el-input-number v-model="batchForm.requestDelayMs" :min="0" :max="10000" :step="500" />
-            </el-form-item>
-            <el-form-item label="同步章节">
-              <el-switch v-model="batchForm.syncChapters" />
-            </el-form-item>
           </div>
-        </el-form>
+          <div>
+            <span>列表地址</span>
+            <strong>{{ batchRuleListUrl || '--' }}</strong>
+          </div>
+          <div>
+            <span>详情链接</span>
+            <strong>{{ batchRuleDetailSelector || '自动识别列表项链接' }}</strong>
+          </div>
+        </section>
 
         <div class="batch-sync__toolbar">
           <div>
-            <strong>{{ batchResult ? `已发现 ${batchCandidates.length} 本` : '尚未发现候选小说' }}</strong>
+            <strong>{{ batchLoading ? '正在按规则发现小说' : batchResult ? `已发现 ${batchCandidates.length} 本` : '等待发现候选小说' }}</strong>
             <span v-if="batchResult?.requestUrl">{{ batchResult.requestUrl }}</span>
           </div>
           <div class="batch-sync__toolbar-actions">
-            <el-button :loading="batchLoading" :icon="DataAnalysis" @click="discoverBatchCandidates">发现候选</el-button>
+            <el-button :loading="batchLoading" :icon="DataAnalysis" @click="discoverBatchCandidates">重新发现</el-button>
             <el-button
               type="primary"
               :loading="batchSubmitting"
