@@ -585,6 +585,30 @@ onMounted(() => loadRules())
   gap: 5px;
 }
 
+.entry-url {
+  display: grid;
+  gap: 3px;
+  max-width: 280px;
+}
+
+.entry-url strong,
+.entry-url small {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entry-url strong {
+  color: #102557;
+  font-size: 13px;
+}
+
+.entry-url small {
+  color: #617098;
+  font-size: 12px;
+}
+
 .rule-actions {
   display: inline-flex;
   align-items: center;
