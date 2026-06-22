@@ -234,20 +234,18 @@ import {
 } from '../../api/automation'
 
 const router = useRouter()
-const tabs = ['扫描规则', '扫描渠道']
 const page = {
   ...automationPages.rules,
-  subtitle: '配置和管理内容扫描规则，自动识别并获取内容元数据',
 }
 const columns = [
-  { key: 'name', label: '规则名称' },
-  { key: 'type', label: '类型' },
+  { key: 'name', label: '扫描源' },
   { key: 'content', label: '内容类型' },
   { key: 'source', label: '目标站点' },
+  { key: 'entry', label: '入口地址' },
+  { key: 'rate', label: '渠道绑定' },
   { key: 'enabled', label: '状态' },
   { key: 'priority', label: '优先级' },
   { key: 'lastRun', label: '更新时间' },
-  { key: 'rate', label: '渠道' },
   { key: 'actions', label: '操作' },
 ]
 const selectorFields = [
@@ -294,7 +292,7 @@ const query = reactive({
 })
 
 const searchConfig = computed(() => ({
-  placeholder: '搜索规则名称',
+  placeholder: '搜索扫描源名称',
   value: query.ruleName,
 }))
 const filters = computed(() => [
@@ -341,11 +339,8 @@ function bizLabel(value) {
 }
 
 function handlePageAction(action) {
-  if (action.label === '添加规则') router.push('/automation/rules/new')
-}
-
-function handleTabChange(index) {
-  if (index === 1) router.push('/automation/channels')
+  if (action.label === '添加扫描源') router.push('/automation/rules/new')
+  if (action.label === '高级渠道配置') router.push('/automation/channels')
 }
 
 function handleSearchInput(value) {
@@ -388,7 +383,7 @@ async function loadRules(pageNo = query.pageNo) {
     rows.value = []
     metrics.value = []
     total.value = 0
-    ElMessage.error(error.message || '获取扫描规则失败')
+    ElMessage.error(error.message || '获取扫描源失败')
   } finally {
     loading.value = false
   }
@@ -402,7 +397,7 @@ async function openRuleDetail(row) {
   try {
     selectedRule.value = await fetchScrapeRuleDetail(row.id)
   } catch (error) {
-    ElMessage.error(error.message || '获取扫描规则详情失败')
+    ElMessage.error(error.message || '获取扫描源详情失败')
   } finally {
     detailLoading.value = false
   }
@@ -412,10 +407,10 @@ async function toggleRuleStatus(row, enabled) {
   statusLoadingId.value = row.id
   try {
     await changeScrapeRuleStatus({ id: row.id, status: enabled ? 1 : 0 })
-    ElMessage.success(enabled ? '扫描规则已启用' : '扫描规则已禁用')
+    ElMessage.success(enabled ? '扫描源已启用' : '扫描源已禁用')
     await loadRules(query.pageNo)
   } catch (error) {
-    ElMessage.error(error.message || '切换扫描规则状态失败')
+    ElMessage.error(error.message || '切换扫描源状态失败')
   } finally {
     statusLoadingId.value = ''
   }
@@ -454,7 +449,7 @@ async function runRuleDebug(ruleId) {
   try {
     debugResult.value = await debugScrapeRule({ ruleId, sampleLimit: 5 })
   } catch (error) {
-    ElMessage.error(error.message || '调试扫描规则失败')
+    ElMessage.error(error.message || '调试扫描源失败')
   } finally {
     debugLoading.value = false
   }
@@ -472,14 +467,14 @@ async function openRuleBatchSync(row) {
     batchRule.value = row.ruleName ? row : await fetchScrapeRuleDetail(row.id)
     await discoverBatchCandidates()
   } catch (error) {
-    ElMessage.error(error.message || '获取扫描规则详情失败')
+    ElMessage.error(error.message || '获取扫描源详情失败')
   }
 }
 
 async function discoverBatchCandidates() {
   const ruleId = batchRule.value?.id
   if (!ruleId) {
-    ElMessage.warning('请先选择扫描规则')
+    ElMessage.warning('请先选择扫描源')
     return
   }
   batchLoading.value = true
@@ -521,16 +516,16 @@ async function submitBatchSync() {
 
 async function confirmDeleteRule(row) {
   try {
-    await ElMessageBox.confirm(`确认删除扫描规则「${row.name}」吗？`, '删除确认', {
+    await ElMessageBox.confirm(`确认删除扫描源「${row.name}」吗？`, '删除确认', {
       type: 'warning',
       confirmButtonText: '删除',
       cancelButtonText: '取消',
     })
     await deleteScrapeRule(row.id)
-    ElMessage.success('扫描规则已删除')
+    ElMessage.success('扫描源已删除')
     await loadRules(rows.value.length === 1 && query.pageNo > 1 ? query.pageNo - 1 : query.pageNo)
   } catch (error) {
-    if (error !== 'cancel') ElMessage.error(error.message || '删除扫描规则失败')
+    if (error !== 'cancel') ElMessage.error(error.message || '删除扫描源失败')
   }
 }
 
