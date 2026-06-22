@@ -401,10 +401,17 @@ function readPageResponse(response, fallbackMessage) {
 
 function readResultResponse(response, fallbackMessage) {
   if (!response?.success) {
-    throw new Error(response?.message || fallbackMessage)
+    throw new Error(normalizeBusinessErrorMessage(response?.message, fallbackMessage))
   }
 
   return response.result
+}
+
+function normalizeBusinessErrorMessage(message, fallbackMessage) {
+  const value = String(message || '').trim()
+  if (!value) return fallbackMessage
+  if (/No static resource/i.test(value)) return '接口暂不可用，请确认后端服务已更新'
+  return value
 }
 
 function normalizeScrapeRule(item = {}) {
