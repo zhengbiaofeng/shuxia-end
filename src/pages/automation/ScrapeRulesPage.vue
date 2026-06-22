@@ -2,12 +2,9 @@
   <ResourceShell
     :actions="page.actions"
     :active-menu="page.activeMenu"
-    :active-tab="0"
-    :tabs="tabs"
     :title="page.title"
     :subtitle="page.subtitle"
     @action="handlePageAction"
-    @tab-change="handleTabChange"
   >
     <div class="automation-stack">
       <ResourceMetricGrid :items="metrics" />
@@ -48,6 +45,15 @@
             <AdminStatusBadge v-for="item in row.content" :key="item" :label="item" tone="cyan" />
           </div>
         </template>
+        <template #entry="{ row }">
+          <div class="entry-url">
+            <strong>{{ row.entryUrl }}</strong>
+            <small>{{ row.entryLabel }}</small>
+          </div>
+        </template>
+        <template #rate="{ row }">
+          <AdminStatusBadge :label="row.rate" :tone="row.channelCode === '--' ? 'slate' : 'green'" />
+        </template>
         <template #enabled="{ row }">
           <span @click.stop>
             <el-switch
@@ -70,10 +76,10 @@
         </template>
       </AdminTableCard>
 
-      <AdminInfoBox title="规则说明" :icon="InfoFilled" :items="page.notes" />
+      <AdminInfoBox title="扫描源说明" :icon="InfoFilled" :items="page.notes" />
     </div>
 
-    <el-drawer v-model="detailVisible" title="扫描规则详情" size="640px" destroy-on-close>
+    <el-drawer v-model="detailVisible" title="扫描源详情" size="640px" destroy-on-close>
       <div v-loading="detailLoading" class="detail-panel">
         <template v-if="selectedRule">
           <el-descriptions :column="1" border>
@@ -140,7 +146,7 @@
       <div class="batch-sync">
         <section class="batch-sync__summary">
           <div>
-            <span>扫描规则</span>
+            <span>扫描源</span>
             <strong>{{ batchRule?.ruleName || batchRule?.name || '--' }}</strong>
           </div>
           <div>
