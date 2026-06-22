@@ -373,6 +373,20 @@ npm run build
   - Backend package: `mvn -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\pom.xml" -pl ":jeecg-system-start" -am -DskipTests package` passed.
   - Docker rebuild/restart: `docker compose -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\docker\command\docker-compose.yml" up -d --build jeecg-system-start` completed.
 
+## 2026-06-22 Novel Quick Sync Cover Note
+
+- Root cause for quick-synced novels showing generated template covers:
+  - One-click novel sync parsed a remote `coverUrl`, but book creation only persisted `cover_file_id`.
+  - Because no remote cover file was downloaded/inserted before `createNovelBook`, normal book creation generated a local template cover.
+  - For bqg hash-route domains, fallback cover URL derivation also needed to normalize random app-shell subdomains to the root `www.bqg*.cc` image host.
+- Backend fix:
+  - `SxNovelQuickSyncService` now downloads the parsed remote cover, validates image bytes/types, uploads it through the existing OSS/MinIO cover path, inserts an `sx_book_file` cover row, and passes that file id into novel creation.
+  - Existing quick-sync novels with generated `*-template-cover.svg` can replace that template with the real remote cover on the next quick sync; manually maintained non-template covers are not overwritten.
+  - Backend handoff doc updated: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-web-sync-phase1-backend-readme.md`
+- Verification:
+  - External probe confirmed `https://www.bqg907.cc/bookimg/113/113680.jpg` returns HTTP 200 `image/jpeg`.
+  - Backend: `mvn -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\pom.xml" -pl ":sx-book" -am -DskipTests compile` passed.
+
 ## Integration Priority
 
 Current user priority:
