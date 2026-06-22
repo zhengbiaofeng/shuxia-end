@@ -189,10 +189,10 @@
               <el-form-item v-if="batchForm.scope === 'site'" label="起始页码">
                 <el-input-number v-model="batchForm.startPage" class="batch-sync__number" :min="1" />
               </el-form-item>
-              <el-form-item v-if="batchForm.scope === 'site'" label="最大页数">
+              <el-form-item v-if="batchForm.scope === 'site'" label="最大页数（0=不限）">
                 <el-input-number v-model="batchForm.maxPages" class="batch-sync__number" :min="0" />
               </el-form-item>
-              <el-form-item label="最大候选数">
+              <el-form-item label="最大候选数（0=不限）">
                 <el-input-number v-model="batchForm.maxItems" class="batch-sync__number" :min="0" />
               </el-form-item>
               <el-form-item label="同步章节">
