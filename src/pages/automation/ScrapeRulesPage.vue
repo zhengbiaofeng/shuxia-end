@@ -212,7 +212,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
-import { DataAnalysis, Delete, EditPen, InfoFilled, View } from '@element-plus/icons-vue'
+import { DataAnalysis, Delete, EditPen, InfoFilled, Refresh, View } from '@element-plus/icons-vue'
 import { AdminActionIcons, AdminFilterBar, AdminInfoBox, AdminStatusBadge, AdminTableCard } from '../../components/admin'
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
@@ -220,10 +220,12 @@ import { automationPages } from '../../config/adminModules'
 import {
   BIZ_TYPE_OPTIONS,
   STATUS_OPTIONS,
+  batchSyncScrapeRuleNovels,
   bizTypeValue,
   changeScrapeRuleStatus,
   debugScrapeRule,
   deleteScrapeRule,
+  discoverScrapeRuleNovels,
   fetchScrapeRuleDetail,
   fetchScrapeRulesPage,
   normalizeBizType,
@@ -261,6 +263,7 @@ const selectorFields = [
 const ruleActions = [
   { label: '查看', icon: View, boxed: true },
   { label: '调试', icon: DataAnalysis },
+  { label: '发现小说', icon: Refresh },
   { label: '编辑', icon: EditPen },
   { label: '删除', icon: Delete, danger: true },
 ]
@@ -270,18 +273,31 @@ const detailLoading = ref(false)
 const detailVisible = ref(false)
 const debugLoading = ref(false)
 const debugVisible = ref(false)
+const batchLoading = ref(false)
+const batchSubmitting = ref(false)
+const batchVisible = ref(false)
 const statusLoadingId = ref('')
 const rows = ref([])
 const metrics = ref([])
 const total = ref(0)
 const selectedRule = ref(null)
 const debugResult = ref(null)
+const batchRule = ref(null)
+const batchResult = ref(null)
+const batchCandidates = ref([])
 const query = reactive({
   pageNo: 1,
   pageSize: 10,
   ruleName: '',
   bizType: '',
   status: undefined,
+})
+const batchForm = reactive({
+  listUrl: '',
+  detailUrlSelector: '',
+  maxItems: 20,
+  requestDelayMs: 1000,
+  syncChapters: true,
 })
 
 const searchConfig = computed(() => ({
