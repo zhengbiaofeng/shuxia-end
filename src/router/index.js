@@ -31,7 +31,7 @@ const TaskStatsPage = () => import('../pages/logs/TaskStatsPage.vue')
 const adminModuleRoutes = [
   { path: '/automation/smart-scrape', name: 'automation-smart-scrape', component: SmartScrapePage, meta: { title: '智能抓取', requiresAuth: true } },
   { path: '/automation/rules', name: 'automation-rules', component: ScrapeRulesPage, meta: { title: '扫描源管理', requiresAuth: true } },
-  { path: '/automation/channels', name: 'automation-channels', component: ScrapeChannelsPage, meta: { title: '高级渠道配置', requiresAuth: true } },
+  { path: '/automation/channels', name: 'automation-channels', component: ScrapeChannelsPage, meta: { title: '连接模板配置', requiresAuth: true } },
   { path: '/automation/rules/new', name: 'automation-rules-new', component: AddScrapeRulePage, meta: { title: '添加扫描源', requiresAuth: true } },
   { path: '/automation/tasks', name: 'automation-tasks', component: TaskCenterPage, meta: { title: '任务中心', requiresAuth: true } },
   { path: '/automation/subscriptions', name: 'automation-subscriptions', component: SubscriptionsPage, meta: { title: '小说同步', requiresAuth: true } },
