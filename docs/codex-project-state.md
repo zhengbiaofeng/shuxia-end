@@ -356,6 +356,23 @@ npm run build
 - Verification:
   - Backend: `mvn -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\pom.xml" -pl ":jeecg-system-start" -am -DskipTests package` passed.
 
+## 2026-06-21 Novel bqg Runtime Verification Note
+
+- The hash-route URL `https://a830aa480783925d254.bqg907.cc/#/book/113680/` was verified against the rebuilt local backend.
+- `POST /sx/book/scrape/quickSync` with `syncChapters=false` returned clean data:
+  - book: `机武风暴`
+  - author: `骷髅精灵`
+  - chapter count: `688`
+  - latest chapter: `第689章 第三纪元天启时代 （终章）`
+- Backend now archives same-URL duplicate failed subscriptions before logic delete, avoiding the `uk_sx_scrape_subscription_user_book_source` collision that previously kept old failed rows visible.
+- The active subscription row now has:
+  - `last_sync_status=success`
+  - `last_sync_message=title=机武风暴; author=骷髅精灵; chapters=688; latest=第689章 第三纪元天启时代 （终章）`
+- The ordinary Books page remains out of scope; these changes are in the Novel Sync scrape path only.
+- Verification:
+  - Backend package: `mvn -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\pom.xml" -pl ":jeecg-system-start" -am -DskipTests package` passed.
+  - Docker rebuild/restart: `docker compose -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\docker\command\docker-compose.yml" up -d --build jeecg-system-start` completed.
+
 ## Integration Priority
 
 Current user priority:
