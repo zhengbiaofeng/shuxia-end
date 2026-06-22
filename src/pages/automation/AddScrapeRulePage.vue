@@ -143,6 +143,7 @@ import ResourceShell from '../../components/resource/ResourceShell.vue'
 import {
   BIZ_TYPE_OPTIONS,
   REQUEST_METHOD_OPTIONS,
+  analyzeScrapeRule,
   createScrapeRule,
   debugScrapeRule,
   fetchScrapeChannelsPage,
