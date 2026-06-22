@@ -528,6 +528,7 @@ function normalizeScrapeRuleDiscover(item = {}) {
     httpStatus: item.httpStatus,
     responseLength: Number(item.responseLength || 0),
     listMatchCount: Number(item.listMatchCount || 0),
+    scannedPageCount: Number(item.scannedPageCount || 0),
     candidateCount: Number(item.candidateCount ?? candidates.length),
     passed: Boolean(item.passed),
     errorMessage: item.errorMessage || '',
