@@ -122,6 +122,7 @@
         </section>
 
         <div class="side-actions">
+          <el-button :loading="analyzing" :icon="DataAnalysis" @click="runAnalyze">自动分析非必填项</el-button>
           <el-button :loading="debugging" :icon="DataAnalysis" @click="runDebug">调试扫描源</el-button>
           <el-button :loading="submitting" type="primary" @click="submitForm">保存扫描源</el-button>
         </div>
