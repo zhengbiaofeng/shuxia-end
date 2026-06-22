@@ -71,26 +71,29 @@ export const automationPages = {
     ],
   },
   rules: {
-    title: '扫描规则',
-    subtitle: '配置和管理内容扫描规则，自动识别并获取内容元数据',
-    activeMenu: '扫描规则',
-    actions: [{ label: '添加规则', icon: Plus, type: 'primary' }],
+    title: '扫描源管理',
+    subtitle: '统一配置站点、访问方式和字段解析规则，用于发现和同步网络内容',
+    activeMenu: '扫描源管理',
+    actions: [
+      { label: '高级渠道配置', icon: Setting },
+      { label: '添加扫描源', icon: Plus, type: 'primary' },
+    ],
     filters: {
-      search: { placeholder: '搜索规则名称、类型、目标站点' },
+      search: { placeholder: '搜索扫描源名称、站点或渠道' },
       filters: [
         { label: '全部类型', value: '全部类型', options: ['全部类型', '书籍', '小说', '漫画', '有声'] },
         { label: '全部状态', value: '全部状态', options: ['全部状态', '启用', '禁用'] },
       ],
     },
     notes: [
-      '规则列表直接来自 /sx/book/scrape-rule/list',
-      '规则数量和启用状态按接口返回值计算',
+      '扫描源列表直接来自 /sx/book/scrape-rule/list，前端将规则和渠道绑定信息合并展示',
+      '站点访问配置可在添加/编辑扫描源时维护；高级渠道配置仅用于复用或测试独立渠道',
     ],
   },
   channels: {
-    title: '扫描渠道管理',
-    subtitle: '管理元数据来源、连接状态和接口配置',
-    activeMenu: '扫描规则',
+    title: '高级渠道配置',
+    subtitle: '维护可复用的站点连接配置，普通扫描源可直接在编辑页内配置请求信息',
+    activeMenu: '扫描源管理',
     actions: [{ label: '添加渠道', icon: Plus, type: 'primary' }],
     filters: {
       search: { placeholder: '搜索渠道名称、接口地址' },
