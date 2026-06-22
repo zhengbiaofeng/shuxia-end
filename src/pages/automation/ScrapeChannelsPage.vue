@@ -2,12 +2,9 @@
   <ResourceShell
     :actions="page.actions"
     :active-menu="page.activeMenu"
-    :active-tab="1"
-    :tabs="tabs"
     :title="page.title"
     :subtitle="page.subtitle"
     @action="handlePageAction"
-    @tab-change="handleTabChange"
   >
     <div class="automation-stack">
       <ResourceMetricGrid :items="metrics" />
@@ -201,10 +198,8 @@ import {
 } from '../../api/automation'
 
 const router = useRouter()
-const tabs = ['扫描规则', '扫描渠道']
 const page = {
   ...automationPages.channels,
-  subtitle: '管理元数据来源、连接状态和接口配置',
 }
 const columns = [
   { key: 'name', label: '渠道名称' },
@@ -330,10 +325,6 @@ function formatRate(value) {
 
 function handlePageAction(action) {
   if (action.label === '添加渠道') openCreateDialog()
-}
-
-function handleTabChange(index) {
-  if (index === 0) router.push('/automation/rules')
 }
 
 function handleSearchInput(value) {
