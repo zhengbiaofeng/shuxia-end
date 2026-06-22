@@ -164,6 +164,11 @@ This document is the handoff snapshot for new Codex threads. Read it before star
   - Backend progress fields are exposed through subscription list/detail VOs.
   - bqglll-style full catalog parsing is restricted to same-book chapter URLs so recommendation links are not imported as chapters.
   - Scope remains Novel Sync only; ordinary Books upload/local-scan import is unaffected.
+- Scan Rules "Discover novels" now supports whole-site novel discovery and batch sync:
+  - `/sx/book/scrape-rule/discover` accepts single or multiple entry URLs, optional `nextPageSelector`, optional `paginationUrlTemplate`, optional `startPage`, optional `maxPages`, optional `maxItems`, `sameHostOnly`, and request delay.
+  - There is no default page or item cap. Empty or `0` max pages/items means unlimited; discovery stops from site/data signals such as no next page, repeated page URL, templated page with no new candidates, request failure, or explicit user limits.
+  - The Scan Rules discovery dialog has single-page and whole-site modes, previews discovered candidates, shows scanned page count, and then submits selected candidates through the existing novel sync pipeline.
+  - Backend handoff doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-rule-batch-sync-readme.md`
 
 ## Known Local Commands
 
