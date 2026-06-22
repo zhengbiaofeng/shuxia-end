@@ -115,7 +115,7 @@ export async function fetchScrapeChannelsPage(params = {}) {
   const response = await request.get('/sx/book/scrape-channel/list', {
     params: { pageNo: 1, pageSize: 10, ...cleanParams(params) },
   })
-  const page = readPageResponse(response, '获取扫描渠道失败')
+  const page = readPageResponse(response, '获取连接模板失败')
   const rows = page.records.map(normalizeScrapeChannel)
 
   return {
@@ -125,7 +125,7 @@ export async function fetchScrapeChannelsPage(params = {}) {
     pageSize: page.pageSize,
     metrics: [
       metric('渠道总数', page.total, '个', '接口返回总数', 'blue', Key),
-      metric('当前页启用', rows.filter((row) => row.enabled).length, '个', '可用于扫描规则', 'green', CircleCheck),
+      metric('当前页启用', rows.filter((row) => row.enabled).length, '个', '可作为连接模板复用', 'green', CircleCheck),
       metric('关联规则', sum(rows.map((row) => row.raw.linkedRuleCount)), '条', '当前页累计', 'purple', TrendCharts),
       metric('测试成功率', formatAveragePercent(rows.map((row) => row.raw.successRate)), '', '当前页平均', 'cyan', Finished),
     ],
@@ -133,40 +133,40 @@ export async function fetchScrapeChannelsPage(params = {}) {
 }
 
 export async function fetchScrapeChannelDetail(id) {
-  if (!id) throw new Error('缺少渠道ID')
+  if (!id) throw new Error('缺少连接模板ID')
   const response = await request.get(`/sx/book/scrape-channel/detail/${encodeURIComponent(id)}`)
-  return normalizeScrapeChannelDetail(readResultResponse(response, '获取扫描渠道详情失败') || {})
+  return normalizeScrapeChannelDetail(readResultResponse(response, '获取连接模板详情失败') || {})
 }
 
 export async function createScrapeChannel(payload) {
   const response = await request.post('/sx/book/scrape-channel/add', normalizeScrapeChannelPayload(payload))
-  if (!response?.success) throw new Error(response?.message || '新增扫描渠道失败')
+  if (!response?.success) throw new Error(response?.message || '新增连接模板失败')
   return response.result
 }
 
 export async function updateScrapeChannel(payload) {
   const response = await request.post('/sx/book/scrape-channel/edit', normalizeScrapeChannelPayload(payload))
-  if (!response?.success) throw new Error(response?.message || '编辑扫描渠道失败')
+  if (!response?.success) throw new Error(response?.message || '编辑连接模板失败')
   return response.result
 }
 
 export async function changeScrapeChannelStatus({ id, status }) {
   const response = await request.post('/sx/book/scrape-channel/changeStatus', { id, status })
-  if (!response?.success) throw new Error(response?.message || '切换扫描渠道状态失败')
+  if (!response?.success) throw new Error(response?.message || '切换连接模板状态失败')
   return response.result
 }
 
 export async function deleteScrapeChannel(id) {
-  if (!id) throw new Error('缺少渠道ID')
+  if (!id) throw new Error('缺少连接模板ID')
   const response = await request.delete('/sx/book/scrape-channel/delete', { params: { id } })
-  if (!response?.success) throw new Error(response?.message || '删除扫描渠道失败')
+  if (!response?.success) throw new Error(response?.message || '删除连接模板失败')
   return response.result
 }
 
 export async function testScrapeChannel(id) {
-  if (!id) throw new Error('缺少渠道ID')
+  if (!id) throw new Error('缺少连接模板ID')
   const response = await request.post('/sx/book/scrape-channel/test', { id })
-  return readResultResponse(response, '测试扫描渠道失败')
+  return readResultResponse(response, '测试连接模板失败')
 }
 
 export async function fetchTaskCenterPage(params = {}) {
