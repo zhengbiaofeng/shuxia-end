@@ -286,13 +286,6 @@ const query = reactive({
   bizType: '',
   status: undefined,
 })
-const batchForm = reactive({
-  listUrl: '',
-  detailUrlSelector: '',
-  maxItems: 20,
-  requestDelayMs: 1000,
-  syncChapters: true,
-})
 
 const searchConfig = computed(() => ({
   placeholder: '搜索规则名称',
@@ -321,6 +314,14 @@ const debugSamples = computed(() => {
     { label: '章节标题', value: (result.chapterTitleSamples || []).join(' / ') || '--' },
     { label: '章节链接', value: (result.chapterUrlSamples || []).join(' / ') || '--' },
   ]
+})
+const batchRuleListUrl = computed(() => {
+  const rule = batchRule.value || {}
+  return rule.listUrl || rule.debugUrl || rule.baseUrl || rule.raw?.listUrl || rule.raw?.debugUrl || rule.raw?.baseUrl || ''
+})
+const batchRuleDetailSelector = computed(() => {
+  const rule = batchRule.value || {}
+  return rule.detailUrlSelector || rule.chapterUrlSelector || rule.raw?.detailUrlSelector || rule.raw?.chapterUrlSelector || ''
 })
 
 function priorityTone(priority) {
@@ -463,11 +464,7 @@ async function openRuleBatchSync(row) {
   batchRule.value = null
   try {
     batchRule.value = row.ruleName ? row : await fetchScrapeRuleDetail(row.id)
-    batchForm.listUrl = batchRule.value.listUrl || batchRule.value.debugUrl || batchRule.value.raw?.listUrl || ''
-    batchForm.detailUrlSelector = ''
-    batchForm.maxItems = 20
-    batchForm.requestDelayMs = 1000
-    batchForm.syncChapters = true
+    await discoverBatchCandidates()
   } catch (error) {
     ElMessage.error(error.message || '获取扫描规则详情失败')
   }
@@ -483,12 +480,7 @@ async function discoverBatchCandidates() {
   batchResult.value = null
   batchCandidates.value = []
   try {
-    const result = await discoverScrapeRuleNovels({
-      ruleId,
-      listUrl: batchForm.listUrl,
-      detailUrlSelector: batchForm.detailUrlSelector,
-      maxItems: batchForm.maxItems,
-    })
+    const result = await discoverScrapeRuleNovels({ ruleId })
     batchResult.value = result
     batchCandidates.value = result.candidates
     if (result.candidates.length) {
@@ -510,12 +502,7 @@ async function submitBatchSync() {
   try {
     const result = await batchSyncScrapeRuleNovels({
       ruleId,
-      listUrl: batchForm.listUrl,
-      detailUrlSelector: batchForm.detailUrlSelector,
       detailUrls: batchCandidates.value.map((item) => item.detailUrl),
-      maxItems: batchForm.maxItems,
-      syncChapters: batchForm.syncChapters,
-      requestDelayMs: batchForm.requestDelayMs,
     })
     ElMessage.success(`批量同步任务已提交：${result.taskId || '--'}`)
     batchVisible.value = false
