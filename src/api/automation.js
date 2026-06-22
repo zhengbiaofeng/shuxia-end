@@ -101,8 +101,15 @@ export async function discoverScrapeRuleNovels(payload = {}) {
   const response = await request.post('/sx/book/scrape-rule/discover', cleanParams({
     ruleId: payload.ruleId,
     listUrl: trimText(payload.listUrl),
+    entryUrls: Array.isArray(payload.entryUrls) ? payload.entryUrls.map(trimText).filter(Boolean) : undefined,
     detailUrlSelector: trimText(payload.detailUrlSelector),
+    paginationUrlTemplate: trimText(payload.paginationUrlTemplate),
+    nextPageSelector: trimText(payload.nextPageSelector),
+    startPage: payload.startPage,
     maxItems: payload.maxItems,
+    maxPages: payload.maxPages,
+    sameHostOnly: payload.sameHostOnly,
+    requestDelayMs: payload.requestDelayMs,
   }))
   return normalizeScrapeRuleDiscover(readResultResponse(response, '按规则发现小说失败') || {})
 }
@@ -111,9 +118,15 @@ export async function batchSyncScrapeRuleNovels(payload = {}) {
   const response = await request.post('/sx/book/scrape-rule/batchSync', cleanParams({
     ruleId: payload.ruleId,
     listUrl: trimText(payload.listUrl),
+    entryUrls: Array.isArray(payload.entryUrls) ? payload.entryUrls.map(trimText).filter(Boolean) : undefined,
     detailUrlSelector: trimText(payload.detailUrlSelector),
+    paginationUrlTemplate: trimText(payload.paginationUrlTemplate),
+    nextPageSelector: trimText(payload.nextPageSelector),
+    startPage: payload.startPage,
+    maxPages: payload.maxPages,
     detailUrls: Array.isArray(payload.detailUrls) ? payload.detailUrls.map(trimText).filter(Boolean) : undefined,
     maxItems: payload.maxItems,
+    sameHostOnly: payload.sameHostOnly,
     syncChapters: payload.syncChapters !== false,
     requestDelayMs: payload.requestDelayMs,
     cronExpr: trimText(payload.cronExpr),
