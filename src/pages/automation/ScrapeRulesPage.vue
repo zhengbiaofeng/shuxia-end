@@ -99,6 +99,7 @@
 
           <section class="detail-actions">
             <el-button type="primary" :icon="DataAnalysis" @click="debugSelectedRule">调试规则</el-button>
+            <el-button type="success" :icon="Refresh" @click="openRuleBatchSync(selectedRule)">发现小说</el-button>
             <el-button :icon="EditPen" @click="editRule(selectedRule)">编辑</el-button>
           </section>
         </template>
@@ -129,6 +130,79 @@
           </section>
         </template>
         <el-empty v-else description="暂无调试结果" />
+      </div>
+    </el-dialog>
+
+    <el-dialog v-model="batchVisible" title="按规则发现并同步小说" width="920px" destroy-on-close>
+      <div class="batch-sync">
+        <el-form :model="batchForm" label-width="118px">
+          <el-form-item label="扫描规则">
+            <strong>{{ batchRule?.ruleName || batchRule?.name || '--' }}</strong>
+          </el-form-item>
+          <el-form-item label="列表地址">
+            <el-input v-model="batchForm.listUrl" placeholder="默认使用规则的列表/调试/站点地址" clearable />
+          </el-form-item>
+          <el-form-item label="详情链接选择器">
+            <el-input v-model="batchForm.detailUrlSelector" placeholder="默认用章节链接选择器，再退到列表项第一个链接" clearable />
+          </el-form-item>
+          <div class="batch-sync__controls">
+            <el-form-item label="候选数量">
+              <el-input-number v-model="batchForm.maxItems" :min="1" :max="100" />
+            </el-form-item>
+            <el-form-item label="请求间隔">
+              <el-input-number v-model="batchForm.requestDelayMs" :min="0" :max="10000" :step="500" />
+            </el-form-item>
+            <el-form-item label="同步章节">
+              <el-switch v-model="batchForm.syncChapters" />
+            </el-form-item>
+          </div>
+        </el-form>
+
+        <div class="batch-sync__toolbar">
+          <div>
+            <strong>{{ batchResult ? `已发现 ${batchCandidates.length} 本` : '尚未发现候选小说' }}</strong>
+            <span v-if="batchResult?.requestUrl">{{ batchResult.requestUrl }}</span>
+          </div>
+          <div class="batch-sync__toolbar-actions">
+            <el-button :loading="batchLoading" :icon="DataAnalysis" @click="discoverBatchCandidates">发现候选</el-button>
+            <el-button
+              type="primary"
+              :loading="batchSubmitting"
+              :disabled="!batchCandidates.length"
+              :icon="Refresh"
+              @click="submitBatchSync"
+            >
+              提交同步
+            </el-button>
+          </div>
+        </div>
+
+        <el-alert
+          v-if="batchResult?.errorMessage"
+          :title="batchResult.errorMessage"
+          type="warning"
+          show-icon
+          :closable="false"
+        />
+
+        <el-table v-loading="batchLoading" :data="batchCandidates" class="batch-sync__table" height="360">
+          <el-table-column label="书名" min-width="180">
+            <template #default="{ row }">
+              <div class="candidate-title">
+                <strong>{{ row.title }}</strong>
+                <small>{{ row.author }}</small>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="latestChapterTitle" label="最新章节" min-width="160" show-overflow-tooltip />
+          <el-table-column prop="detailUrl" label="详情地址" min-width="260" show-overflow-tooltip />
+          <el-table-column prop="coverUrl" label="封面" width="90">
+            <template #default="{ row }">
+              <el-image v-if="row.coverUrl" :src="row.coverUrl" fit="cover" class="candidate-cover" />
+              <span v-else>--</span>
+            </template>
+          </el-table-column>
+        </el-table>
       </div>
     </el-dialog>
   </ResourceShell>
