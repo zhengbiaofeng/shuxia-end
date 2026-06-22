@@ -75,7 +75,7 @@ export const automationPages = {
     subtitle: '统一配置站点、访问方式和字段解析规则，用于发现和同步网络内容',
     activeMenu: '扫描源管理',
     actions: [
-      { label: '高级渠道配置', icon: Setting },
+      { label: '连接模板配置', icon: Setting },
       { label: '添加扫描源', icon: Plus, type: 'primary' },
     ],
     filters: {
@@ -87,19 +87,19 @@ export const automationPages = {
     },
     notes: [
       '扫描源列表直接来自 /sx/book/scrape-rule/list，前端将规则和渠道绑定信息合并展示',
-      '站点访问配置可在添加/编辑扫描源时维护；高级渠道配置仅用于复用或测试独立渠道',
+      '站点访问配置可在添加/编辑扫描源时维护；连接模板仅用于复用或测试独立访问配置',
     ],
   },
   channels: {
-    title: '高级渠道配置',
-    subtitle: '维护可复用的站点连接配置，普通扫描源可直接在编辑页内配置请求信息',
+    title: '连接模板配置',
+    subtitle: '维护可复用的站点访问模板，普通扫描源可直接在编辑页内配置请求信息',
     activeMenu: '扫描源管理',
     actions: [
       { label: '返回扫描源', icon: RefreshRight },
-      { label: '添加渠道', icon: Plus, type: 'primary' },
+      { label: '新增连接模板', icon: Plus, type: 'primary' },
     ],
     filters: {
-      search: { placeholder: '搜索渠道名称、接口地址' },
+      search: { placeholder: '搜索模板名称、站点或接口地址' },
       filters: [{ label: '全部类型', value: '全部类型', options: ['全部类型', '书籍', '小说', '漫画', '有声'] }],
     },
   },
