@@ -86,7 +86,7 @@ export const automationPages = {
       ],
     },
     notes: [
-      '扫描源列表直接来自 /sx/book/scrape-rule/list，前端将规则和渠道绑定信息合并展示',
+      '扫描源列表直接来自 /sx/book/scrape-rule/list，前端将规则和模板绑定信息合并展示',
       '站点访问配置可在添加/编辑扫描源时维护；连接模板仅用于复用或测试独立访问配置',
     ],
   },
