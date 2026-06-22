@@ -87,6 +87,16 @@ export async function debugScrapeRule(payload = {}) {
   return readResultResponse(response, '调试扫描规则失败')
 }
 
+export async function analyzeScrapeRule(payload = {}) {
+  const response = await request.post('/sx/book/scrape-rule/analyze', cleanParams({
+    url: trimText(payload.url),
+    bizType: trimText(payload.bizType),
+    requestMethod: payload.requestMethod || 'GET',
+    requestHeadersJson: trimText(payload.requestHeadersJson),
+  }))
+  return normalizeScrapeRuleAnalyze(readResultResponse(response, '自动分析扫描源失败') || {})
+}
+
 export async function discoverScrapeRuleNovels(payload = {}) {
   const response = await request.post('/sx/book/scrape-rule/discover', cleanParams({
     ruleId: payload.ruleId,
