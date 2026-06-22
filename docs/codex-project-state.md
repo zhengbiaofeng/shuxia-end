@@ -387,6 +387,23 @@ npm run build
   - External probe confirmed `https://www.bqg907.cc/bookimg/113/113680.jpg` returns HTTP 200 `image/jpeg`.
   - Backend: `mvn -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\pom.xml" -pl ":sx-book" -am -DskipTests compile` passed.
 
+## 2026-06-22 Scan Rule Novel Batch Sync Note
+
+- Scan Rules can now drive Novel Sync discovery/import:
+  - `POST /sx/book/scrape-rule/discover` previews novel candidates from an enabled `bizType=novel` rule.
+  - `POST /sx/book/scrape-rule/batchSync` submits a server-side serial batch sync task.
+- Discovery convention:
+  - `listSelector` selects repeated novel items on the list page.
+  - `titleSelector`, `authorSelector`, `introSelector`, and `coverSelector` are extracted inside each item.
+  - detail URL priority is explicit `detailUrlSelector`, then rule `chapterUrlSelector`, then the item/first link.
+- Batch sync creates a parent `SCRAPE` task with `executeMode=RULE_BATCH_SYNC` and reuses one-click Novel Sync per candidate, so channel/rule/book/subscription creation and chapter storage stay on the existing Novel Sync pipeline.
+- `SxCurrentUserSupport` now has a scoped `runAs/callAs` user override so background batch work can preserve the submitting user's ownership/audit context.
+- Scan Rules page row/detail actions now include `发现小说`, with a dialog for previewing candidates and submitting the batch sync.
+- Backend handoff doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-rule-batch-sync-readme.md`
+- Verification:
+  - Backend: `mvn -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\pom.xml" -pl ":sx-book" -am -DskipTests compile` passed.
+  - Frontend: `npm run build` passed with existing Rolldown pure-annotation and chunk-size warnings.
+
 ## Integration Priority
 
 Current user priority:
