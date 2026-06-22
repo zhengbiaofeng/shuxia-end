@@ -3,7 +3,7 @@
     active-menu="扫描规则"
     :actions="actions"
     :subtitle="pageSubtitle"
-    :tabs="['基础信息', '请求配置', '字段选择器']"
+    :tabs="['基础信息']"
     :title="pageTitle"
     @action="handleAction"
   >
@@ -159,7 +159,7 @@ const debugResult = ref(null)
 const channelOptions = ref([])
 const isEdit = computed(() => Boolean(route.query.id))
 const pageTitle = computed(() => (isEdit.value ? '编辑扫描规则' : '添加扫描规则'))
-const pageSubtitle = computed(() => '配置内容来源、请求策略和字段选择器，保存前可直接调试真实页面')
+const pageSubtitle = computed(() => '在一个页面内配置内容来源、请求策略和字段选择器，保存前可直接调试真实页面')
 const actions = computed(() => [
   { label: '取消' },
   { label: '调试规则', icon: DataAnalysis },
@@ -195,6 +195,7 @@ const rules = {
 }
 const tips = [
   '业务类型会按后端规则保存为 ebook、novel、comic、audio',
+  '请求配置和字段选择器都在基础信息页内维护，避免重复配置',
   '请求头 JSON 留空时后端会使用默认 User-Agent',
   '调试至少需要调试地址和一个选择器命中项',
 ]
