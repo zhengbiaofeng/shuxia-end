@@ -1,6 +1,6 @@
 <template>
   <ResourceShell
-    active-menu="扫描规则"
+    active-menu="扫描源管理"
     :actions="actions"
     :subtitle="pageSubtitle"
     :tabs="['基础信息']"
@@ -19,8 +19,8 @@
         <section class="form-section">
           <h2>基础信息</h2>
           <div class="form-grid">
-            <el-form-item label="规则名称" prop="ruleName">
-              <el-input v-model="form.ruleName" placeholder="请输入规则名称" />
+            <el-form-item label="扫描源名称" prop="ruleName">
+              <el-input v-model="form.ruleName" placeholder="请输入扫描源名称" />
             </el-form-item>
             <el-form-item label="内容类型" prop="bizType">
               <el-select v-model="form.bizType" placeholder="请选择内容类型" filterable @change="loadChannelOptions">
@@ -30,8 +30,8 @@
             <el-form-item label="站点名称" prop="siteName">
               <el-input v-model="form.siteName" placeholder="例如：豆瓣读书" />
             </el-form-item>
-            <el-form-item label="目标渠道">
-              <el-select v-model="form.channelCode" placeholder="可选，选择已配置渠道" filterable clearable allow-create>
+            <el-form-item label="高级渠道">
+              <el-select v-model="form.channelCode" placeholder="可选，复用已配置渠道" filterable clearable allow-create>
                 <el-option
                   v-for="channel in channelOptions"
                   :key="channel.code"
@@ -91,10 +91,10 @@
       </el-form>
 
       <aside class="rule-form__side">
-        <h2>{{ isEdit ? '编辑规则' : '创建规则' }}</h2>
+        <h2>{{ isEdit ? '编辑扫描源' : '创建扫描源' }}</h2>
         <div class="preview-step active"><span>1</span><strong>配置来源</strong><p>填写站点、渠道、请求地址和请求头</p></div>
         <div class="preview-step active"><span>2</span><strong>调试选择器</strong><p>保存前可以请求真实页面，确认字段命中情况</p></div>
-        <div class="preview-step"><span>3</span><strong>写入规则库</strong><p>保存后会刷新扫描规则列表，可启停和再次调试</p></div>
+        <div class="preview-step"><span>3</span><strong>写入扫描源</strong><p>保存后会刷新扫描源列表，可启停、发现小说和再次调试</p></div>
 
         <section v-if="debugResult" class="debug-card" :class="{ 'is-pass': debugResult.passed }">
           <header>
@@ -122,8 +122,8 @@
         </section>
 
         <div class="side-actions">
-          <el-button :loading="debugging" :icon="DataAnalysis" @click="runDebug">调试规则</el-button>
-          <el-button :loading="submitting" type="primary" @click="submitForm">保存规则</el-button>
+          <el-button :loading="debugging" :icon="DataAnalysis" @click="runDebug">调试扫描源</el-button>
+          <el-button :loading="submitting" type="primary" @click="submitForm">保存扫描源</el-button>
         </div>
 
         <AdminInfoBox title="表单提示" :icon="InfoFilled" :items="tips" />
@@ -158,12 +158,12 @@ const debugging = ref(false)
 const debugResult = ref(null)
 const channelOptions = ref([])
 const isEdit = computed(() => Boolean(route.query.id))
-const pageTitle = computed(() => (isEdit.value ? '编辑扫描规则' : '添加扫描规则'))
+const pageTitle = computed(() => (isEdit.value ? '编辑扫描源' : '添加扫描源'))
 const pageSubtitle = computed(() => '在一个页面内配置内容来源、请求策略和字段选择器，保存前可直接调试真实页面')
 const actions = computed(() => [
   { label: '取消' },
-  { label: '调试规则', icon: DataAnalysis },
-  { label: '保存规则', type: 'primary' },
+  { label: '调试扫描源', icon: DataAnalysis },
+  { label: '保存扫描源', type: 'primary' },
 ])
 const bizOptions = BIZ_TYPE_OPTIONS
 const requestMethods = REQUEST_METHOD_OPTIONS
@@ -187,7 +187,7 @@ const selectorFields = [
   { key: 'contentSelector', label: '正文选择器', placeholder: '.content' },
 ]
 const rules = {
-  ruleName: [{ required: true, message: '请输入规则名称', trigger: 'blur' }],
+  ruleName: [{ required: true, message: '请输入扫描源名称', trigger: 'blur' }],
   bizType: [{ required: true, message: '请选择内容类型', trigger: 'change' }],
   siteName: [{ required: true, message: '请输入站点名称', trigger: 'blur' }],
   priority: [{ required: true, message: '请输入优先级', trigger: 'change' }],
@@ -196,6 +196,7 @@ const rules = {
 const tips = [
   '业务类型会按后端规则保存为 ebook、novel、comic、audio',
   '请求配置和字段选择器都在基础信息页内维护，避免重复配置',
+  '高级渠道是可选复用项；没有独立渠道时，也可以直接在本页填写站点请求配置',
   '请求头 JSON 留空时后端会使用默认 User-Agent',
   '调试至少需要调试地址和一个选择器命中项',
 ]
