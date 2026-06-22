@@ -63,7 +63,10 @@
           </span>
         </template>
         <template #actions="{ row }">
-          <AdminActionIcons :actions="ruleActions" @action="(action) => handleRowAction(row, action)" />
+          <div class="rule-actions">
+            <el-button size="small" type="success" :icon="Refresh" @click.stop="openRuleBatchSync(row)">发现小说</el-button>
+            <AdminActionIcons :actions="ruleActions" @action="(action) => handleRowAction(row, action)" />
+          </div>
         </template>
       </AdminTableCard>
 
@@ -263,7 +266,6 @@ const selectorFields = [
 const ruleActions = [
   { label: '查看', icon: View, boxed: true },
   { label: '调试', icon: DataAnalysis },
-  { label: '发现小说', icon: Refresh },
   { label: '编辑', icon: EditPen },
   { label: '删除', icon: Delete, danger: true },
 ]
