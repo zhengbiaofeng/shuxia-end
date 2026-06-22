@@ -605,6 +605,13 @@ onMounted(() => loadRules())
   gap: 5px;
 }
 
+.rule-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
 .priority {
   font-weight: 800;
 }
