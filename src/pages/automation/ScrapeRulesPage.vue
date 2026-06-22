@@ -378,11 +378,17 @@ const batchRuleDetailSelector = computed(() => {
   const rule = batchRule.value || {}
   return rule.detailUrlSelector || rule.chapterUrlSelector || rule.raw?.detailUrlSelector || rule.raw?.chapterUrlSelector || ''
 })
+const batchDialogTitle = computed(() => (batchForm.scope === 'site' ? '整站发现并同步小说' : '单页发现并同步小说'))
 const batchStatusText = computed(() => {
   if (batchLoading.value) return batchForm.scope === 'site' ? '正在整站发现书籍' : '正在按规则发现小说'
   if (!batchResult.value) return '等待发现候选小说'
   const pages = batchResult.value.scannedPageCount ? `，扫描 ${batchResult.value.scannedPageCount} 页` : ''
   return `已发现 ${batchCandidates.value.length} 本${pages}`
+})
+const batchDiscoverButtonText = computed(() => {
+  if (batchLoading.value) return batchForm.scope === 'site' ? '整站发现中' : '发现中'
+  if (!batchResult.value) return batchForm.scope === 'site' ? '开始整站发现' : '开始单页发现'
+  return batchForm.scope === 'site' ? '重新整站发现' : '重新单页发现'
 })
 
 function defaultBatchForm() {
@@ -528,7 +534,7 @@ async function runRuleDebug(ruleId) {
   }
 }
 
-async function openRuleBatchSync(row) {
+async function openRuleBatchSync(row, scope = 'single') {
   if (!row?.id) return
   batchVisible.value = true
   batchLoading.value = false
@@ -537,14 +543,22 @@ async function openRuleBatchSync(row) {
   batchCandidates.value = []
   batchRule.value = null
   Object.assign(batchForm, defaultBatchForm())
+  batchForm.scope = scope === 'site' ? 'site' : 'single'
   try {
     batchRule.value = row.ruleName ? row : await fetchScrapeRuleDetail(row.id)
     batchForm.entryUrlsText = batchRuleListUrl.value
     batchForm.detailUrlSelector = batchRuleDetailSelector.value
-    await discoverBatchCandidates()
+    if (batchForm.scope !== 'site') {
+      await discoverBatchCandidates()
+    }
   } catch (error) {
     ElMessage.error(error.message || '获取扫描源详情失败')
   }
+}
+
+function handleBatchScopeChange() {
+  batchResult.value = null
+  batchCandidates.value = []
 }
 
 async function discoverBatchCandidates() {
