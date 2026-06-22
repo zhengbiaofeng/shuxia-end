@@ -70,7 +70,8 @@
         </template>
         <template #actions="{ row }">
           <div class="rule-actions">
-            <el-button size="small" type="success" :icon="Refresh" @click.stop="openRuleBatchSync(row)">发现小说</el-button>
+            <el-button size="small" type="primary" plain :icon="DataAnalysis" @click.stop="openRuleBatchSync(row, 'single')">单页发现</el-button>
+            <el-button size="small" type="success" :icon="Refresh" @click.stop="openRuleBatchSync(row, 'site')">整站发现</el-button>
             <AdminActionIcons :actions="ruleActions" @action="(action) => handleRowAction(row, action)" />
           </div>
         </template>
@@ -108,7 +109,8 @@
 
           <section class="detail-actions">
             <el-button type="primary" :icon="DataAnalysis" @click="debugSelectedRule">调试扫描源</el-button>
-            <el-button type="success" :icon="Refresh" @click="openRuleBatchSync(selectedRule)">发现小说</el-button>
+            <el-button :icon="DataAnalysis" @click="openRuleBatchSync(selectedRule, 'single')">单页发现</el-button>
+            <el-button type="success" :icon="Refresh" @click="openRuleBatchSync(selectedRule, 'site')">整站发现</el-button>
             <el-button :icon="EditPen" @click="editRule(selectedRule)">编辑</el-button>
           </section>
         </template>
@@ -142,7 +144,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog v-model="batchVisible" title="按规则发现并同步小说" width="920px" destroy-on-close>
+    <el-dialog v-model="batchVisible" :title="batchDialogTitle" width="920px" destroy-on-close>
       <div class="batch-sync">
         <section class="batch-sync__summary">
           <div>
@@ -162,7 +164,7 @@
         <section class="batch-sync__form">
           <div class="batch-sync__mode">
             <span>发现范围</span>
-            <el-segmented v-model="batchForm.scope" :options="batchScopeOptions" />
+            <el-segmented v-model="batchForm.scope" :options="batchScopeOptions" @change="handleBatchScopeChange" />
           </div>
           <el-form label-position="top">
             <el-form-item label="入口地址">
@@ -209,7 +211,7 @@
             <span v-if="batchResult?.requestUrl">{{ batchResult.requestUrl }}</span>
           </div>
           <div class="batch-sync__toolbar-actions">
-            <el-button :loading="batchLoading" :icon="DataAnalysis" @click="discoverBatchCandidates">重新发现</el-button>
+            <el-button :loading="batchLoading" :icon="DataAnalysis" @click="discoverBatchCandidates">{{ batchDiscoverButtonText }}</el-button>
             <el-button
               type="primary"
               :loading="batchSubmitting"
