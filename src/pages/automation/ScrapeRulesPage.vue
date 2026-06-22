@@ -855,6 +855,37 @@ onMounted(() => loadRules())
   line-height: 1.45;
 }
 
+.batch-sync__form {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--admin-panel-border);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.batch-sync__mode {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.batch-sync__mode span {
+  color: #102557;
+  font-weight: 800;
+}
+
+.batch-sync__form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+}
+
+.batch-sync__number {
+  width: 100%;
+}
+
 .batch-sync__toolbar {
   display: flex;
   align-items: center;
