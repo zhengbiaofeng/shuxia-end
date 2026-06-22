@@ -462,6 +462,50 @@ function normalizeScrapeRulePayload(payload = {}) {
   }
 }
 
+function normalizeScrapeRuleDiscover(item = {}) {
+  const candidates = Array.isArray(item.candidates) ? item.candidates.map(normalizeScrapeRuleCandidate) : []
+  return {
+    raw: item,
+    ruleId: item.ruleId || '',
+    ruleName: item.ruleName || '--',
+    siteName: item.siteName || '--',
+    requestUrl: item.requestUrl || '',
+    httpStatus: item.httpStatus,
+    responseLength: Number(item.responseLength || 0),
+    listMatchCount: Number(item.listMatchCount || 0),
+    candidateCount: Number(item.candidateCount ?? candidates.length),
+    passed: Boolean(item.passed),
+    errorMessage: item.errorMessage || '',
+    candidates,
+  }
+}
+
+function normalizeScrapeRuleCandidate(item = {}) {
+  return {
+    id: item.detailUrl || `${item.title || 'candidate'}-${item.author || ''}`,
+    title: item.title || '--',
+    author: item.author || '--',
+    intro: item.intro || '',
+    coverUrl: item.coverUrl || '',
+    detailUrl: item.detailUrl || '',
+    latestChapterTitle: item.latestChapterTitle || '',
+    raw: item,
+  }
+}
+
+function normalizeScrapeRuleBatchSync(item = {}) {
+  return {
+    raw: item,
+    taskId: item.taskId || '',
+    ruleId: item.ruleId || '',
+    ruleName: item.ruleName || '--',
+    requestUrl: item.requestUrl || '',
+    candidateCount: Number(item.candidateCount || 0),
+    submitted: Boolean(item.submitted),
+    message: item.message || '批量同步任务已提交',
+  }
+}
+
 function normalizeScrapeChannel(item = {}) {
   const status = Number(item.status ?? 1)
   const totalTestCount = Number(item.totalTestCount || 0)
