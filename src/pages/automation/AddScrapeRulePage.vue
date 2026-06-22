@@ -30,8 +30,8 @@
             <el-form-item label="站点名称" prop="siteName">
               <el-input v-model="form.siteName" placeholder="例如：豆瓣读书" />
             </el-form-item>
-            <el-form-item label="高级渠道">
-              <el-select v-model="form.channelCode" placeholder="可选，复用已配置渠道" filterable clearable allow-create>
+            <el-form-item label="连接模板">
+              <el-select v-model="form.channelCode" placeholder="可选，复用已配置连接模板" filterable clearable allow-create>
                 <el-option
                   v-for="channel in channelOptions"
                   :key="channel.code"
@@ -196,7 +196,7 @@ const rules = {
 const tips = [
   '业务类型会按后端规则保存为 ebook、novel、comic、audio',
   '请求配置和字段选择器都在基础信息页内维护，避免重复配置',
-  '高级渠道是可选复用项；没有独立渠道时，也可以直接在本页填写站点请求配置',
+  '连接模板是可选复用项；没有独立模板时，也可以直接在本页填写站点请求配置',
   '请求头 JSON 留空时后端会使用默认 User-Agent',
   '调试至少需要调试地址和一个选择器命中项',
 ]
@@ -278,7 +278,7 @@ async function loadChannelOptions() {
     channelOptions.value = data.rows
   } catch (error) {
     channelOptions.value = []
-    ElMessage.warning(error.message || '扫描渠道选项获取失败')
+    ElMessage.warning(error.message || '连接模板选项获取失败')
   }
 }
 
