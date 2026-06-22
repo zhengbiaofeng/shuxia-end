@@ -954,6 +954,7 @@ onMounted(() => loadRules())
   }
 
   .batch-sync__summary,
+  .batch-sync__form-grid,
   .batch-sync__toolbar {
     grid-template-columns: 1fr;
   }
