@@ -159,9 +159,53 @@
           </div>
         </section>
 
+        <section class="batch-sync__form">
+          <div class="batch-sync__mode">
+            <span>发现范围</span>
+            <el-segmented v-model="batchForm.scope" :options="batchScopeOptions" />
+          </div>
+          <el-form label-position="top">
+            <el-form-item label="入口地址">
+              <el-input
+                v-model="batchForm.entryUrlsText"
+                type="textarea"
+                :rows="batchForm.scope === 'site' ? 3 : 1"
+                placeholder="每行一个分类/排行/列表页地址；留空时使用扫描源的列表地址"
+              />
+            </el-form-item>
+            <div class="batch-sync__form-grid">
+              <el-form-item label="详情链接选择器">
+                <el-input v-model="batchForm.detailUrlSelector" placeholder="可选，例如 a::attr(href)" />
+              </el-form-item>
+              <el-form-item label="请求间隔毫秒">
+                <el-input-number v-model="batchForm.requestDelayMs" class="batch-sync__number" :min="0" :step="500" />
+              </el-form-item>
+              <el-form-item v-if="batchForm.scope === 'site'" label="分页 URL 模板">
+                <el-input v-model="batchForm.paginationUrlTemplate" placeholder="可选，例如 /list/{page}.html" />
+              </el-form-item>
+              <el-form-item v-if="batchForm.scope === 'site'" label="下一页选择器">
+                <el-input v-model="batchForm.nextPageSelector" placeholder="可选，例如 .next a::attr(href)" />
+              </el-form-item>
+              <el-form-item v-if="batchForm.scope === 'site'" label="起始页码">
+                <el-input-number v-model="batchForm.startPage" class="batch-sync__number" :min="1" />
+              </el-form-item>
+              <el-form-item v-if="batchForm.scope === 'site'" label="最大页数">
+                <el-input-number v-model="batchForm.maxPages" class="batch-sync__number" :min="0" />
+              </el-form-item>
+              <el-form-item label="最大候选数">
+                <el-input-number v-model="batchForm.maxItems" class="batch-sync__number" :min="0" />
+              </el-form-item>
+              <el-form-item label="同步章节">
+                <el-switch v-model="batchForm.syncChapters" active-text="同步" inactive-text="只建书" />
+              </el-form-item>
+            </div>
+            <el-checkbox v-model="batchForm.sameHostOnly">仅保留同站详情链接</el-checkbox>
+          </el-form>
+        </section>
+
         <div class="batch-sync__toolbar">
           <div>
-            <strong>{{ batchLoading ? '正在按规则发现小说' : batchResult ? `已发现 ${batchCandidates.length} 本` : '等待发现候选小说' }}</strong>
+            <strong>{{ batchStatusText }}</strong>
             <span v-if="batchResult?.requestUrl">{{ batchResult.requestUrl }}</span>
           </div>
           <div class="batch-sync__toolbar-actions">
