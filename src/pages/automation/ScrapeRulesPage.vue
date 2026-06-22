@@ -693,10 +693,36 @@ onMounted(() => loadRules())
   gap: 16px;
 }
 
-.batch-sync__controls {
+.batch-sync__summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+}
+
+.batch-sync__summary div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--admin-panel-border);
+  border-radius: 8px;
+  background: #f8fbff;
+}
+
+.batch-sync__summary span,
+.batch-sync__summary strong {
+  display: block;
+}
+
+.batch-sync__summary span {
+  margin-bottom: 6px;
+  color: #617098;
+  font-size: 12px;
+}
+
+.batch-sync__summary strong {
+  overflow-wrap: anywhere;
+  color: #102557;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .batch-sync__toolbar {
@@ -766,7 +792,7 @@ onMounted(() => loadRules())
     grid-template-columns: 1fr;
   }
 
-  .batch-sync__controls,
+  .batch-sync__summary,
   .batch-sync__toolbar {
     grid-template-columns: 1fr;
   }
