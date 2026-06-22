@@ -86,7 +86,7 @@
             <el-descriptions-item label="扫描源名称">{{ selectedRule.ruleName || '--' }}</el-descriptions-item>
             <el-descriptions-item label="内容类型">{{ bizLabel(selectedRule.bizType) }}</el-descriptions-item>
             <el-descriptions-item label="站点名称">{{ selectedRule.siteName || '--' }}</el-descriptions-item>
-            <el-descriptions-item label="渠道编码">{{ selectedRule.channelCode || '--' }}</el-descriptions-item>
+            <el-descriptions-item label="连接模板编码">{{ selectedRule.channelCode || '--' }}</el-descriptions-item>
             <el-descriptions-item label="站点根地址">{{ selectedRule.baseUrl || '--' }}</el-descriptions-item>
             <el-descriptions-item label="列表地址">{{ selectedRule.listUrl || '--' }}</el-descriptions-item>
             <el-descriptions-item label="调试地址">{{ selectedRule.debugUrl || '--' }}</el-descriptions-item>
@@ -242,7 +242,7 @@ const columns = [
   { key: 'content', label: '内容类型' },
   { key: 'source', label: '目标站点' },
   { key: 'entry', label: '入口地址' },
-  { key: 'rate', label: '渠道绑定' },
+  { key: 'rate', label: '模板绑定' },
   { key: 'enabled', label: '状态' },
   { key: 'priority', label: '优先级' },
   { key: 'lastRun', label: '更新时间' },
