@@ -398,6 +398,7 @@ function buildDebugPayload() {
     chapterTitleSelector: form.chapterTitleSelector,
     chapterUrlSelector: form.chapterUrlSelector,
     contentSelector: form.contentSelector,
+    remark: form.remark,
     sampleLimit: 5,
   }
 }
