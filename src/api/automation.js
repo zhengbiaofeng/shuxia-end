@@ -87,6 +87,30 @@ export async function debugScrapeRule(payload = {}) {
   return readResultResponse(response, '调试扫描规则失败')
 }
 
+export async function discoverScrapeRuleNovels(payload = {}) {
+  const response = await request.post('/sx/book/scrape-rule/discover', cleanParams({
+    ruleId: payload.ruleId,
+    listUrl: trimText(payload.listUrl),
+    detailUrlSelector: trimText(payload.detailUrlSelector),
+    maxItems: payload.maxItems,
+  }))
+  return normalizeScrapeRuleDiscover(readResultResponse(response, '按规则发现小说失败') || {})
+}
+
+export async function batchSyncScrapeRuleNovels(payload = {}) {
+  const response = await request.post('/sx/book/scrape-rule/batchSync', cleanParams({
+    ruleId: payload.ruleId,
+    listUrl: trimText(payload.listUrl),
+    detailUrlSelector: trimText(payload.detailUrlSelector),
+    detailUrls: Array.isArray(payload.detailUrls) ? payload.detailUrls.map(trimText).filter(Boolean) : undefined,
+    maxItems: payload.maxItems,
+    syncChapters: payload.syncChapters !== false,
+    requestDelayMs: payload.requestDelayMs,
+    cronExpr: trimText(payload.cronExpr),
+  }))
+  return normalizeScrapeRuleBatchSync(readResultResponse(response, '按规则批量同步小说失败') || {})
+}
+
 export async function fetchScrapeChannelsPage(params = {}) {
   const response = await request.get('/sx/book/scrape-channel/list', {
     params: { pageNo: 1, pageSize: 10, ...cleanParams(params) },
