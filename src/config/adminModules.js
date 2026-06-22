@@ -94,7 +94,10 @@ export const automationPages = {
     title: '高级渠道配置',
     subtitle: '维护可复用的站点连接配置，普通扫描源可直接在编辑页内配置请求信息',
     activeMenu: '扫描源管理',
-    actions: [{ label: '添加渠道', icon: Plus, type: 'primary' }],
+    actions: [
+      { label: '返回扫描源', icon: RefreshRight },
+      { label: '添加渠道', icon: Plus, type: 'primary' },
+    ],
     filters: {
       search: { placeholder: '搜索渠道名称、接口地址' },
       filters: [{ label: '全部类型', value: '全部类型', options: ['全部类型', '书籍', '小说', '漫画', '有声'] }],
