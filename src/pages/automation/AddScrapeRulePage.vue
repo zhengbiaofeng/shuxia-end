@@ -53,7 +53,10 @@
         </section>
 
         <section class="form-section">
-          <h2>请求配置</h2>
+          <header class="form-section__header">
+            <h2>请求配置</h2>
+            <el-button size="small" :loading="analyzing" :icon="DataAnalysis" @click="runAnalyze">自动分析</el-button>
+          </header>
           <div class="form-grid">
             <el-form-item label="站点根地址">
               <el-input v-model="form.baseUrl" placeholder="https://example.com" />
