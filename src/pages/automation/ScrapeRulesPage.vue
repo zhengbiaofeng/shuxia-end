@@ -433,6 +433,10 @@ async function handleRowAction(row, action) {
     await runRuleDebug(row.id)
     return
   }
+  if (action.label === '发现小说') {
+    await openRuleBatchSync(row)
+    return
+  }
   if (action.label === '编辑') {
     editRule(row)
     return
@@ -456,6 +460,79 @@ async function runRuleDebug(ruleId) {
     ElMessage.error(error.message || '调试扫描规则失败')
   } finally {
     debugLoading.value = false
+  }
+}
+
+async function openRuleBatchSync(row) {
+  if (!row?.id) return
+  batchVisible.value = true
+  batchLoading.value = false
+  batchSubmitting.value = false
+  batchResult.value = null
+  batchCandidates.value = []
+  batchRule.value = null
+  try {
+    batchRule.value = row.ruleName ? row : await fetchScrapeRuleDetail(row.id)
+    batchForm.listUrl = batchRule.value.listUrl || batchRule.value.debugUrl || batchRule.value.raw?.listUrl || ''
+    batchForm.detailUrlSelector = ''
+    batchForm.maxItems = 20
+    batchForm.requestDelayMs = 1000
+    batchForm.syncChapters = true
+  } catch (error) {
+    ElMessage.error(error.message || '获取扫描规则详情失败')
+  }
+}
+
+async function discoverBatchCandidates() {
+  const ruleId = batchRule.value?.id
+  if (!ruleId) {
+    ElMessage.warning('请先选择扫描规则')
+    return
+  }
+  batchLoading.value = true
+  batchResult.value = null
+  batchCandidates.value = []
+  try {
+    const result = await discoverScrapeRuleNovels({
+      ruleId,
+      listUrl: batchForm.listUrl,
+      detailUrlSelector: batchForm.detailUrlSelector,
+      maxItems: batchForm.maxItems,
+    })
+    batchResult.value = result
+    batchCandidates.value = result.candidates
+    if (result.candidates.length) {
+      ElMessage.success(`发现 ${result.candidates.length} 本候选小说`)
+    } else {
+      ElMessage.warning(result.errorMessage || '没有发现候选小说')
+    }
+  } catch (error) {
+    ElMessage.error(error.message || '按规则发现小说失败')
+  } finally {
+    batchLoading.value = false
+  }
+}
+
+async function submitBatchSync() {
+  const ruleId = batchRule.value?.id
+  if (!ruleId || !batchCandidates.value.length) return
+  batchSubmitting.value = true
+  try {
+    const result = await batchSyncScrapeRuleNovels({
+      ruleId,
+      listUrl: batchForm.listUrl,
+      detailUrlSelector: batchForm.detailUrlSelector,
+      detailUrls: batchCandidates.value.map((item) => item.detailUrl),
+      maxItems: batchForm.maxItems,
+      syncChapters: batchForm.syncChapters,
+      requestDelayMs: batchForm.requestDelayMs,
+    })
+    ElMessage.success(`批量同步任务已提交：${result.taskId || '--'}`)
+    batchVisible.value = false
+  } catch (error) {
+    ElMessage.error(error.message || '提交批量同步失败')
+  } finally {
+    batchSubmitting.value = false
   }
 }
 
