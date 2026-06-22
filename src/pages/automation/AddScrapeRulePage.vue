@@ -156,14 +156,17 @@ const router = useRouter()
 const formRef = ref(null)
 const loading = ref(false)
 const submitting = ref(false)
+const analyzing = ref(false)
 const debugging = ref(false)
 const debugResult = ref(null)
 const channelOptions = ref([])
 const isEdit = computed(() => Boolean(route.query.id))
 const pageTitle = computed(() => (isEdit.value ? '编辑扫描源' : '添加扫描源'))
 const pageSubtitle = computed(() => '在一个页面内配置内容来源、请求策略和字段选择器，保存前可直接调试真实页面')
+const ACTION_ANALYZE = '自动分析'
 const actions = computed(() => [
   { label: '取消' },
+  { label: ACTION_ANALYZE, icon: DataAnalysis },
   { label: '调试扫描源', icon: DataAnalysis },
   { label: '保存扫描源', type: 'primary' },
 ])
