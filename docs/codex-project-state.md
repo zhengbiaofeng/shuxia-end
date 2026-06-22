@@ -169,6 +169,9 @@ This document is the handoff snapshot for new Codex threads. Read it before star
   - There is no default page or item cap. Empty or `0` max pages/items means unlimited; discovery stops from site/data signals such as no next page, repeated page URL, templated page with no new candidates, request failure, or explicit user limits.
   - The Scan Rules discovery dialog has single-page and whole-site modes, previews discovered candidates, shows scanned page count, and then submits selected candidates through the existing novel sync pipeline.
   - Backend handoff doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-rule-batch-sync-readme.md`
+- Auto analysis on Add Scan Source depends on the updated backend package exposing `POST /sx/book/scrape-rule/analyze`.
+  - If the UI shows `No static resource sx/book/scrape-rule/analyze`, the running backend jar/container is stale even if the local source contains the controller method.
+  - Frontend now normalizes that backend business error to `接口暂不可用，请确认后端服务已更新`.
 
 ## Known Local Commands
 
