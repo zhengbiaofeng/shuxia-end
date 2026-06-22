@@ -83,7 +83,7 @@
       <div v-loading="detailLoading" class="detail-panel">
         <template v-if="selectedRule">
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="规则名称">{{ selectedRule.ruleName || '--' }}</el-descriptions-item>
+            <el-descriptions-item label="扫描源名称">{{ selectedRule.ruleName || '--' }}</el-descriptions-item>
             <el-descriptions-item label="内容类型">{{ bizLabel(selectedRule.bizType) }}</el-descriptions-item>
             <el-descriptions-item label="站点名称">{{ selectedRule.siteName || '--' }}</el-descriptions-item>
             <el-descriptions-item label="渠道编码">{{ selectedRule.channelCode || '--' }}</el-descriptions-item>
@@ -107,7 +107,7 @@
           </section>
 
           <section class="detail-actions">
-            <el-button type="primary" :icon="DataAnalysis" @click="debugSelectedRule">调试规则</el-button>
+            <el-button type="primary" :icon="DataAnalysis" @click="debugSelectedRule">调试扫描源</el-button>
             <el-button type="success" :icon="Refresh" @click="openRuleBatchSync(selectedRule)">发现小说</el-button>
             <el-button :icon="EditPen" @click="editRule(selectedRule)">编辑</el-button>
           </section>
