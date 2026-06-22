@@ -472,6 +472,13 @@ onMounted(async () => {
   font-size: var(--admin-text-section);
 }
 
+.form-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
