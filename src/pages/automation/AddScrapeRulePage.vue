@@ -258,6 +258,10 @@ function handleAction(action) {
     router.push('/automation/rules')
     return
   }
+  if (action.label === ACTION_ANALYZE) {
+    runAnalyze()
+    return
+  }
   if (action.label === '调试扫描源') {
     runDebug()
     return
@@ -288,6 +292,78 @@ async function loadChannelOptions() {
     channelOptions.value = []
     ElMessage.warning(error.message || '连接模板选项获取失败')
   }
+}
+
+async function runAnalyze() {
+  await formRef.value?.validateField(['requestHeadersJson']).catch(() => {
+    throw new Error('请先修正请求头 JSON')
+  })
+  const url = firstFilled(form.debugUrl, form.listUrl, form.baseUrl)
+  if (!url) {
+    ElMessage.warning('请先填写调试地址、列表地址或站点根地址')
+    return
+  }
+  analyzing.value = true
+  debugResult.value = null
+  try {
+    const result = await analyzeScrapeRule({
+      url,
+      bizType: form.bizType,
+      requestMethod: form.requestMethod,
+      requestHeadersJson: form.requestHeadersJson,
+    })
+    const filledCount = applyAnalyzeResult(result)
+    debugResult.value = {
+      passed: result.passed,
+      requestUrl: result.requestUrl,
+      httpStatus: result.httpStatus,
+      responseLength: result.responseLength,
+      listMatchCount: result.listMatchCount,
+      chapterMatchCount: result.chapterMatchCount,
+      documentTitle: result.documentTitle,
+      errorMessage: result.errorMessage || (result.notes || []).join('；'),
+    }
+    if (filledCount > 0) {
+      ElMessage.success(`已自动填充 ${filledCount} 个空字段，请继续调试确认`)
+    } else {
+      ElMessage.info('没有新的空字段可填充，请查看调试结果')
+    }
+  } catch (error) {
+    ElMessage.error(error.message || '自动分析扫描源失败')
+  } finally {
+    analyzing.value = false
+  }
+}
+
+function applyAnalyzeResult(result = {}) {
+  const fields = [
+    'baseUrl',
+    'listUrl',
+    'debugUrl',
+    'requestMethod',
+    'requestHeadersJson',
+    'listSelector',
+    'titleSelector',
+    'authorSelector',
+    'introSelector',
+    'coverSelector',
+    'chapterSelector',
+    'chapterTitleSelector',
+    'chapterUrlSelector',
+    'contentSelector',
+  ]
+  let filledCount = 0
+  fields.forEach((field) => {
+    if (!form[field] && result[field]) {
+      form[field] = result[field]
+      filledCount += 1
+    }
+  })
+  return filledCount
+}
+
+function firstFilled(...values) {
+  return values.find((value) => typeof value === 'string' && value.trim())?.trim() || ''
 }
 
 async function runDebug() {
