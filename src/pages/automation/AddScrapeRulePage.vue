@@ -351,6 +351,7 @@ function applyAnalyzeResult(result = {}) {
     'chapterTitleSelector',
     'chapterUrlSelector',
     'contentSelector',
+    'remark',
   ]
   let filledCount = 0
   fields.forEach((field) => {
