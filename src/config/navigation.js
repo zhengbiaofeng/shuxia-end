@@ -46,7 +46,7 @@ const baseSideMenus = [
     title: '自动化',
     items: [
       { label: '智能抓取', icon: DataAnalysis, path: '/automation/smart-scrape' },
-      { label: '扫描规则', icon: RefreshRight },
+      { label: '扫描源管理', icon: RefreshRight },
       { label: '任务中心', icon: Briefcase },
       { label: '小说同步', icon: SwitchButton },
     ],
