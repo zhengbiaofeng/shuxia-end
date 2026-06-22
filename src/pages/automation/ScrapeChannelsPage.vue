@@ -58,12 +58,12 @@
       </AdminTableCard>
     </div>
 
-    <el-drawer v-model="detailVisible" title="扫描渠道详情" size="600px" destroy-on-close>
+    <el-drawer v-model="detailVisible" title="连接模板详情" size="600px" destroy-on-close>
       <div v-loading="detailLoading" class="detail-panel">
         <template v-if="selectedChannel">
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="渠道编码">{{ selectedChannel.channelCode || '--' }}</el-descriptions-item>
-            <el-descriptions-item label="渠道名称">{{ selectedChannel.channelName || '--' }}</el-descriptions-item>
+            <el-descriptions-item label="模板编码">{{ selectedChannel.channelCode || '--' }}</el-descriptions-item>
+            <el-descriptions-item label="模板名称">{{ selectedChannel.channelName || '--' }}</el-descriptions-item>
             <el-descriptions-item label="内容类型">{{ bizLabel(selectedChannel.bizType) }}</el-descriptions-item>
             <el-descriptions-item label="站点名称">{{ selectedChannel.siteName || '--' }}</el-descriptions-item>
             <el-descriptions-item label="站点根地址">{{ selectedChannel.baseUrl || '--' }}</el-descriptions-item>
@@ -80,24 +80,24 @@
             <el-button :icon="EditPen" @click="openEditDialog(selectedChannel)">编辑</el-button>
           </section>
         </template>
-        <el-empty v-else description="暂无渠道详情" />
+        <el-empty v-else description="暂无连接模板详情" />
       </div>
     </el-drawer>
 
     <el-dialog
       v-model="formVisible"
-      :title="editingChannel ? '编辑扫描渠道' : '添加扫描渠道'"
+      :title="editingChannel ? '编辑连接模板' : '新增连接模板'"
       width="720px"
       destroy-on-close
       @closed="resetForm"
     >
       <el-form ref="formRef" :model="form" :rules="rules" class="channel-form" label-position="top">
         <div class="form-grid">
-          <el-form-item label="渠道编码" prop="channelCode">
+          <el-form-item label="模板编码" prop="channelCode">
             <el-input v-model="form.channelCode" :disabled="channelCodeLocked" placeholder="小写字母、数字、中划线" />
           </el-form-item>
-          <el-form-item label="渠道名称" prop="channelName">
-            <el-input v-model="form.channelName" placeholder="请输入渠道名称" />
+          <el-form-item label="模板名称" prop="channelName">
+            <el-input v-model="form.channelName" placeholder="请输入模板名称" />
           </el-form-item>
           <el-form-item label="内容类型" prop="bizType">
             <el-select v-model="form.bizType" placeholder="请选择内容类型" filterable>
@@ -134,7 +134,7 @@
           />
         </el-form-item>
         <el-form-item label="备注">
-          <el-input v-model="form.remark" :rows="2" placeholder="请输入渠道备注" type="textarea" />
+          <el-input v-model="form.remark" :rows="2" placeholder="请输入模板备注" type="textarea" />
         </el-form-item>
       </el-form>
 
@@ -147,7 +147,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="testVisible" title="渠道连接测试结果" width="680px" destroy-on-close>
+    <el-dialog v-model="testVisible" title="连接模板测试结果" width="680px" destroy-on-close>
       <div v-loading="testDialogLoading" class="test-result">
         <template v-if="testResult">
           <div class="test-result__header">
@@ -202,7 +202,7 @@ const page = {
   ...automationPages.channels,
 }
 const columns = [
-  { key: 'name', label: '渠道名称' },
+  { key: 'name', label: '模板名称' },
   { key: 'type', label: '内容类型' },
   { key: 'site', label: '站点' },
   { key: 'endpoint', label: '接口地址' },
@@ -253,7 +253,7 @@ const enabled = computed({
 })
 const channelCodeLocked = computed(() => Boolean(editingChannel.value?.raw?.linkedRuleCount))
 const searchConfig = computed(() => ({
-  placeholder: '搜索渠道编码、名称或站点',
+  placeholder: '搜索模板编码、名称或站点',
   value: query.keyword,
 }))
 const filters = computed(() => [
@@ -270,10 +270,10 @@ const filters = computed(() => [
 ])
 const rules = {
   channelCode: [
-    { required: true, message: '请输入渠道编码', trigger: 'blur' },
-    { pattern: /^[a-z0-9-]+$/, message: '渠道编码仅支持小写字母、数字和中划线', trigger: 'blur' },
+    { required: true, message: '请输入模板编码', trigger: 'blur' },
+    { pattern: /^[a-z0-9-]+$/, message: '模板编码仅支持小写字母、数字和中划线', trigger: 'blur' },
   ],
-  channelName: [{ required: true, message: '请输入渠道名称', trigger: 'blur' }],
+  channelName: [{ required: true, message: '请输入模板名称', trigger: 'blur' }],
   bizType: [{ required: true, message: '请选择内容类型', trigger: 'change' }],
   priority: [{ required: true, message: '请输入优先级', trigger: 'change' }],
   requestHeadersJson: [{ validator: validateJson, trigger: 'blur' }],
@@ -328,7 +328,7 @@ function handlePageAction(action) {
     router.push('/automation/rules')
     return
   }
-  if (action.label === '添加渠道') openCreateDialog()
+  if (action.label === '新增连接模板') openCreateDialog()
 }
 
 function handleSearchInput(value) {
@@ -371,7 +371,7 @@ async function loadChannels(pageNo = query.pageNo) {
     rows.value = []
     metrics.value = []
     total.value = 0
-    ElMessage.error(error.message || '获取扫描渠道失败')
+    ElMessage.error(error.message || '获取连接模板失败')
   } finally {
     loading.value = false
   }
@@ -385,7 +385,7 @@ async function openChannelDetail(row) {
   try {
     selectedChannel.value = await fetchScrapeChannelDetail(row.id)
   } catch (error) {
-    ElMessage.error(error.message || '获取扫描渠道详情失败')
+    ElMessage.error(error.message || '获取连接模板详情失败')
   } finally {
     detailLoading.value = false
   }
@@ -405,7 +405,7 @@ async function openEditDialog(row) {
     const detail = row.channelCode ? row : await fetchScrapeChannelDetail(row.id)
     assignForm(detail)
   } catch (error) {
-    ElMessage.error(error.message || '获取扫描渠道详情失败')
+    ElMessage.error(error.message || '获取连接模板详情失败')
   }
 }
 
@@ -419,10 +419,10 @@ async function toggleChannelStatus(row, enabledValue) {
   statusLoadingId.value = row.id
   try {
     await changeScrapeChannelStatus({ id: row.id, status: enabledValue ? 1 : 0 })
-    ElMessage.success(enabledValue ? '扫描渠道已启用' : '扫描渠道已禁用')
+    ElMessage.success(enabledValue ? '连接模板已启用' : '连接模板已禁用')
     await loadChannels(query.pageNo)
   } catch (error) {
-    ElMessage.error(error.message || '切换扫描渠道状态失败')
+    ElMessage.error(error.message || '切换连接模板状态失败')
   } finally {
     statusLoadingId.value = ''
   }
@@ -465,7 +465,7 @@ async function runChannelTest(id) {
     await loadChannels(query.pageNo)
     if (selectedChannel.value?.id === id) selectedChannel.value = await fetchScrapeChannelDetail(id)
   } catch (error) {
-    ElMessage.error(error.message || '测试扫描渠道失败')
+    ElMessage.error(error.message || '测试连接模板失败')
   } finally {
     testDialogLoading.value = false
     testLoadingId.value = ''
@@ -478,15 +478,15 @@ async function submitForm() {
   try {
     if (editingChannel.value) {
       await updateScrapeChannel(form)
-      ElMessage.success('扫描渠道已保存')
+      ElMessage.success('连接模板已保存')
     } else {
       await createScrapeChannel(form)
-      ElMessage.success('扫描渠道已创建')
+      ElMessage.success('连接模板已创建')
     }
     formVisible.value = false
     await loadChannels(query.pageNo)
   } catch (error) {
-    ElMessage.error(error.message || '保存扫描渠道失败')
+    ElMessage.error(error.message || '保存连接模板失败')
   } finally {
     submitting.value = false
   }
@@ -494,16 +494,16 @@ async function submitForm() {
 
 async function confirmDeleteChannel(row) {
   try {
-    await ElMessageBox.confirm(`确认删除扫描渠道「${row.name}」吗？`, '删除确认', {
+    await ElMessageBox.confirm(`确认删除连接模板「${row.name}」吗？`, '删除确认', {
       type: 'warning',
       confirmButtonText: '删除',
       cancelButtonText: '取消',
     })
     await deleteScrapeChannel(row.id)
-    ElMessage.success('扫描渠道已删除')
+    ElMessage.success('连接模板已删除')
     await loadChannels(rows.value.length === 1 && query.pageNo > 1 ? query.pageNo - 1 : query.pageNo)
   } catch (error) {
-    if (error !== 'cancel') ElMessage.error(error.message || '删除扫描渠道失败')
+    if (error !== 'cancel') ElMessage.error(error.message || '删除连接模板失败')
   }
 }
 
