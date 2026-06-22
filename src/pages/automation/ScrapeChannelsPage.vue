@@ -324,6 +324,10 @@ function formatRate(value) {
 }
 
 function handlePageAction(action) {
+  if (action.label === '返回扫描源') {
+    router.push('/automation/rules')
+    return
+  }
   if (action.label === '添加渠道') openCreateDialog()
 }
 
