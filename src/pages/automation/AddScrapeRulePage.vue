@@ -250,11 +250,11 @@ function handleAction(action) {
     router.push('/automation/rules')
     return
   }
-  if (action.label === '调试规则') {
+  if (action.label === '调试扫描源') {
     runDebug()
     return
   }
-  if (action.label === '保存规则') {
+  if (action.label === '保存扫描源') {
     submitForm()
   }
 }
@@ -266,7 +266,7 @@ async function loadRule() {
     assignForm(await fetchScrapeRuleDetail(route.query.id))
     await loadChannelOptions()
   } catch (error) {
-    ElMessage.error(error.message || '获取扫描规则详情失败')
+    ElMessage.error(error.message || '获取扫描源详情失败')
   } finally {
     loading.value = false
   }
@@ -292,7 +292,7 @@ async function runDebug() {
     debugResult.value = await debugScrapeRule(buildDebugPayload())
     ElMessage[debugResult.value?.passed ? 'success' : 'warning'](debugResult.value?.passed ? '调试通过' : '调试未通过，请检查选择器')
   } catch (error) {
-    ElMessage.error(error.message || '调试扫描规则失败')
+    ElMessage.error(error.message || '调试扫描源失败')
   } finally {
     debugging.value = false
   }
@@ -323,14 +323,14 @@ async function submitForm() {
   try {
     if (isEdit.value) {
       await updateScrapeRule(form)
-      ElMessage.success('扫描规则已保存')
+      ElMessage.success('扫描源已保存')
     } else {
       await createScrapeRule(form)
-      ElMessage.success('扫描规则已创建')
+      ElMessage.success('扫描源已创建')
     }
     router.push('/automation/rules')
   } catch (error) {
-    ElMessage.error(error.message || '保存扫描规则失败')
+    ElMessage.error(error.message || '保存扫描源失败')
   } finally {
     submitting.value = false
   }
