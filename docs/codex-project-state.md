@@ -390,8 +390,11 @@ npm run build
 ## 2026-06-22 Scan Rule Novel Batch Sync Note
 
 - Scan Rules can now drive Novel Sync discovery/import:
+  - `POST /sx/book/scrape-rule/analyze` fetches a supplied page URL server-side and returns candidate request config plus selectors for list/title/author/intro/cover/chapter/content fields.
   - `POST /sx/book/scrape-rule/discover` previews novel candidates from an enabled `bizType=novel` rule.
   - `POST /sx/book/scrape-rule/batchSync` submits a server-side serial batch sync task.
+- Add/Edit Scan Source now has auto-analysis actions in the request config section and side action area; it uses debug URL, then list URL, then base URL, and fills only currently empty fields so manual selectors are preserved.
+- Auto-analysis is a candidate generator rather than a final guarantee; the expected flow is paste URL, auto-analyze, then run scan-source debug before saving.
 - Discovery convention:
   - `listSelector` selects repeated novel items on the list page.
   - `titleSelector`, `authorSelector`, `introSelector`, and `coverSelector` are extracted inside each item.
