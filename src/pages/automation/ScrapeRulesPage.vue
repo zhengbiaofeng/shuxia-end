@@ -534,8 +534,11 @@ async function openRuleBatchSync(row) {
   batchResult.value = null
   batchCandidates.value = []
   batchRule.value = null
+  Object.assign(batchForm, defaultBatchForm())
   try {
     batchRule.value = row.ruleName ? row : await fetchScrapeRuleDetail(row.id)
+    batchForm.entryUrlsText = batchRuleListUrl.value
+    batchForm.detailUrlSelector = batchRuleDetailSelector.value
     await discoverBatchCandidates()
   } catch (error) {
     ElMessage.error(error.message || '获取扫描源详情失败')
@@ -552,7 +555,7 @@ async function discoverBatchCandidates() {
   batchResult.value = null
   batchCandidates.value = []
   try {
-    const result = await discoverScrapeRuleNovels({ ruleId })
+    const result = await discoverScrapeRuleNovels(buildBatchPayload(ruleId))
     batchResult.value = result
     batchCandidates.value = result.candidates
     if (result.candidates.length) {
@@ -573,7 +576,7 @@ async function submitBatchSync() {
   batchSubmitting.value = true
   try {
     const result = await batchSyncScrapeRuleNovels({
-      ruleId,
+      ...buildBatchPayload(ruleId),
       detailUrls: batchCandidates.value.map((item) => item.detailUrl),
     })
     ElMessage.success(`批量同步任务已提交：${result.taskId || '--'}`)
@@ -583,6 +586,37 @@ async function submitBatchSync() {
   } finally {
     batchSubmitting.value = false
   }
+}
+
+function buildBatchPayload(ruleId) {
+  const entryUrls = normalizeEntryUrls(batchForm.entryUrlsText)
+  return {
+    ruleId,
+    entryUrls,
+    listUrl: entryUrls[0] || batchRuleListUrl.value,
+    detailUrlSelector: batchForm.detailUrlSelector || batchRuleDetailSelector.value,
+    paginationUrlTemplate: batchForm.scope === 'site' ? batchForm.paginationUrlTemplate : '',
+    nextPageSelector: batchForm.scope === 'site' ? batchForm.nextPageSelector : '',
+    startPage: batchForm.scope === 'site' ? batchForm.startPage : undefined,
+    maxPages: batchForm.scope === 'site' ? optionalPositive(batchForm.maxPages) : undefined,
+    maxItems: optionalPositive(batchForm.maxItems),
+    sameHostOnly: batchForm.sameHostOnly,
+    requestDelayMs: optionalPositive(batchForm.requestDelayMs) ?? 0,
+    syncChapters: batchForm.syncChapters,
+  }
+}
+
+function normalizeEntryUrls(value) {
+  if (!value || typeof value !== 'string') return []
+  return value
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+function optionalPositive(value) {
+  const number = Number(value)
+  return Number.isFinite(number) && number > 0 ? number : undefined
 }
 
 async function confirmDeleteRule(row) {
