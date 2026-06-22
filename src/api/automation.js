@@ -513,6 +513,8 @@ function normalizeScrapeRuleAnalyze(item = {}) {
     chapterTitleSelector: item.chapterTitleSelector || '',
     chapterUrlSelector: item.chapterUrlSelector || '',
     contentSelector: item.contentSelector || '',
+    apiMode: item.apiMode || '',
+    remark: item.remark || '',
     httpStatus: item.httpStatus,
     documentTitle: item.documentTitle || '',
     responseLength: Number(item.responseLength || 0),
