@@ -475,6 +475,35 @@ function normalizeScrapeRulePayload(payload = {}) {
   }
 }
 
+function normalizeScrapeRuleAnalyze(item = {}) {
+  return {
+    raw: item,
+    requestUrl: item.requestUrl || '',
+    baseUrl: item.baseUrl || '',
+    listUrl: item.listUrl || '',
+    debugUrl: item.debugUrl || '',
+    requestMethod: item.requestMethod || 'GET',
+    requestHeadersJson: item.requestHeadersJson || '',
+    listSelector: item.listSelector || '',
+    titleSelector: item.titleSelector || '',
+    authorSelector: item.authorSelector || '',
+    introSelector: item.introSelector || '',
+    coverSelector: item.coverSelector || '',
+    chapterSelector: item.chapterSelector || '',
+    chapterTitleSelector: item.chapterTitleSelector || '',
+    chapterUrlSelector: item.chapterUrlSelector || '',
+    contentSelector: item.contentSelector || '',
+    httpStatus: item.httpStatus,
+    documentTitle: item.documentTitle || '',
+    responseLength: Number(item.responseLength || 0),
+    listMatchCount: Number(item.listMatchCount || 0),
+    chapterMatchCount: Number(item.chapterMatchCount || 0),
+    passed: Boolean(item.passed),
+    errorMessage: item.errorMessage || '',
+    notes: Array.isArray(item.notes) ? item.notes : [],
+  }
+}
+
 function normalizeScrapeRuleDiscover(item = {}) {
   const candidates = Array.isArray(item.candidates) ? item.candidates.map(normalizeScrapeRuleCandidate) : []
   return {
