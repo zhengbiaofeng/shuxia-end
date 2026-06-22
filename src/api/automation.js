@@ -387,6 +387,7 @@ function readResultResponse(response, fallbackMessage) {
 function normalizeScrapeRule(item = {}) {
   const priority = Number(item.priority || 0)
   const status = Number(item.status ?? 1)
+  const entryUrl = item.listUrl || item.debugUrl || item.baseUrl || '--'
 
   return {
     raw: item,
@@ -397,6 +398,8 @@ function normalizeScrapeRule(item = {}) {
     content: [normalizeBizType(item.bizType)].filter(Boolean),
     source: item.siteName || item.baseUrl || '--',
     channelCode: item.channelCode || '--',
+    entryUrl,
+    entryLabel: item.listUrl ? '列表地址' : item.debugUrl ? '调试地址' : item.baseUrl ? '站点根地址' : '未配置入口',
     enabled: status === 1,
     statusLabel: status === 1 ? '启用' : '禁用',
     statusTone: status === 1 ? 'green' : 'slate',
