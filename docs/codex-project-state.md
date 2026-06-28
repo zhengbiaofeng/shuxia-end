@@ -173,6 +173,10 @@ This document is the handoff snapshot for new Codex threads. Read it before star
   - If the UI shows `No static resource sx/book/scrape-rule/analyze`, the running backend jar/container is stale even if the local source contains the controller method.
   - Frontend now normalizes that backend business error to `接口暂不可用，请确认后端服务已更新`.
 
+- BQG hash-route list pages such as `https://*.bqg*.cc/#/` are API-backed.
+  - Auto analysis now detects those URLs, calls `/api/sort` or `/api/search`, renders an internal temporary HTML structure, and fills generated selectors plus JSON `remark` with `apiMode=bqg-list-api`.
+  - Add/Edit Scan Source keeps that generated `remark` and sends it during debug, so `auto analyze -> debug -> save -> discover novels` stays on the API-backed path instead of re-fetching the empty app shell.
+
 ## Known Local Commands
 
 Use PowerShell path changes like this, not `cd /d`:
