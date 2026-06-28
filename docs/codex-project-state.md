@@ -412,6 +412,7 @@ npm run build
   - `titleSelector`, `authorSelector`, `introSelector`, and `coverSelector` are extracted inside each item.
   - detail URL priority is explicit `detailUrlSelector`, then rule `chapterUrlSelector`, then the item/first link.
 - Batch sync creates a parent `SCRAPE` task with `executeMode=RULE_BATCH_SYNC` and reuses one-click Novel Sync per candidate, so channel/rule/book/subscription creation and chapter storage stay on the existing Novel Sync pipeline.
+  - Batch parent tasks now fill legacy non-null `sx_scrape_task.subscription_id` with a synthetic `batch-{taskId}` value, fixing submit-sync failures such as `Field 'subscription_id' doesn't have a default value` when testing sources like 七猫.
 - `SxCurrentUserSupport` now has a scoped `runAs/callAs` user override so background batch work can preserve the submitting user's ownership/audit context.
 - Scan Rules page row/detail actions now include `发现小说`; the dialog uses the saved rule configuration directly, auto-discovers candidates on open, and keeps selector/list URL editing in the existing Add/Edit Rule page.
 - Add/Edit Rule now exposes only the `基础信息` top tab; request config and field selectors remain as sections on that page instead of duplicated top-level tabs.
