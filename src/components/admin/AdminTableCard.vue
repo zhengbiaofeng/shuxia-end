@@ -8,7 +8,14 @@
       <table class="admin-table-card__table" :style="{ minWidth }">
         <thead>
           <tr>
-            <th v-if="selectable" class="is-check"><el-checkbox /></th>
+            <th v-if="selectable" class="is-check">
+              <el-checkbox
+                :disabled="!selectableRows.length"
+                :indeterminate="selectionIndeterminate"
+                :model-value="allRowsSelected"
+                @change="toggleAllSelection"
+              />
+            </th>
             <th v-for="column in columns" :key="column.key" :style="column.style">
               {{ column.label }}
             </th>
@@ -21,7 +28,13 @@
             :class="{ 'is-clickable': rowClickable }"
             @click="handleRowClick(row)"
           >
-            <td v-if="selectable" class="is-check" @click.stop><el-checkbox /></td>
+            <td v-if="selectable" class="is-check" @click.stop>
+              <el-checkbox
+                :disabled="!isRowSelectable(row)"
+                :model-value="isRowSelected(row)"
+                @change="(checked) => toggleRowSelection(row, checked)"
+              />
+            </td>
             <td v-for="column in columns" :key="column.key" :style="column.style">
               <slot :name="column.key" :row="row" :column="column" :index="index">
                 {{ row[column.key] }}
@@ -50,13 +63,16 @@
 </template>
 
 <script setup>
+import { computed, ref, watch } from 'vue'
 import ResourcePagination from '../resource/ResourcePagination.vue'
 
-defineProps({
+const props = defineProps({
   columns: { type: Array, required: true },
   rows: { type: Array, default: () => [] },
   minWidth: { type: String, default: '1080px' },
   selectable: { type: Boolean, default: false },
+  rowKey: { type: String, default: 'id' },
+  rowSelectable: { type: Function, default: null },
   pagination: { type: Boolean, default: true },
   total: { type: Number, default: 0 },
   bordered: { type: Boolean, default: false },
@@ -66,11 +82,67 @@ defineProps({
   rowClickable: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['page-change', 'page-size-change', 'row-click'])
+const emit = defineEmits(['page-change', 'page-size-change', 'row-click', 'selection-change'])
+
+const selectedKeys = ref(new Set())
+const selectableRows = computed(() => props.rows.filter((row) => isRowSelectable(row)))
+const selectedRows = computed(() => props.rows.filter((row) => selectedKeys.value.has(rowKeyValue(row))))
+const allRowsSelected = computed(() => selectableRows.value.length > 0 && selectableRows.value.every((row) => selectedKeys.value.has(rowKeyValue(row))))
+const selectionIndeterminate = computed(() => selectedRows.value.length > 0 && !allRowsSelected.value)
+
+watch(
+  () => props.rows,
+  () => {
+    const availableKeys = new Set(props.rows.map((row) => rowKeyValue(row)))
+    const nextKeys = new Set([...selectedKeys.value].filter((key) => availableKeys.has(key)))
+    if (nextKeys.size !== selectedKeys.value.size) {
+      selectedKeys.value = nextKeys
+      emitSelectionChange()
+    }
+  },
+)
 
 function handleRowClick(row) {
   if (!row) return
   emit('row-click', row)
+}
+
+function rowKeyValue(row) {
+  return String(row?.[props.rowKey] ?? row?.id ?? row?.name ?? '')
+}
+
+function isRowSelectable(row) {
+  if (!rowKeyValue(row)) return false
+  return props.rowSelectable ? Boolean(props.rowSelectable(row)) : true
+}
+
+function isRowSelected(row) {
+  return selectedKeys.value.has(rowKeyValue(row))
+}
+
+function toggleRowSelection(row, checked) {
+  if (!isRowSelectable(row)) return
+  const nextKeys = new Set(selectedKeys.value)
+  const key = rowKeyValue(row)
+  if (checked) nextKeys.add(key)
+  else nextKeys.delete(key)
+  selectedKeys.value = nextKeys
+  emitSelectionChange()
+}
+
+function toggleAllSelection(checked) {
+  const nextKeys = new Set(selectedKeys.value)
+  selectableRows.value.forEach((row) => {
+    const key = rowKeyValue(row)
+    if (checked) nextKeys.add(key)
+    else nextKeys.delete(key)
+  })
+  selectedKeys.value = nextKeys
+  emitSelectionChange()
+}
+
+function emitSelectionChange() {
+  emit('selection-change', selectedRows.value)
 }
 </script>
 
