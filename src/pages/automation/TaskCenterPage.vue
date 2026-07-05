@@ -73,7 +73,7 @@
           </template>
           <template #progress="{ row }">
             <div class="progress-cell">
-              <span>{{ row.progress ? `${row.progress}%` : '鎺掗槦涓? }}</span>
+              <span>{{ row.progress ? `${row.progress}%` : '\u6392\u961f\u4e2d' }}</span>
               <el-progress :percentage="row.progress" :status="row.tone === 'red' ? 'exception' : undefined" :show-text="false" :stroke-width="4" />
             </div>
           </template>
@@ -169,7 +169,7 @@ const emptyDetail = {
   status: '鏆傛棤',
   priority: '浠诲姟绫诲瀷锛?-',
   cover: '--',
-  fields: [['浠诲姟ID', '--'], ['浠诲姟绫诲瀷', '--'], ['寮€濮嬫椂闂?, '--'], ['瀹屾垚鏃堕棿', '--'], ['鐩爣鏍煎紡', '--'], ['绔犺妭鏁伴噺', '--']],
+  fields: [['\u4efb\u52a1ID', '--'], ['\u4efb\u52a1\u7c7b\u578b', '--'], ['\u5f00\u59cb\u65f6\u95f4', '--'], ['\u5b8c\u6210\u65f6\u95f4', '--'], ['\u76ee\u6807\u683c\u5f0f', '--'], ['\u7ae0\u8282\u6570\u91cf', '--']],
   logs: [],
   progress: 0,
 }
@@ -184,9 +184,9 @@ const columns = [
   { key: 'name', label: '浠诲姟鍚嶇О' },
   { key: 'kind', label: '绫诲瀷' },
   { key: 'source', label: '鏉ユ簮 / 瑙勫垯' },
-  { key: 'status', label: '鐘舵€? },
+  { key: 'status', label: '\u72b6\u6001' },
   { key: 'progress', label: '杩涘害' },
-  { key: 'start', label: '寮€濮嬫椂闂? },
+  { key: 'start', label: '\u5f00\u59cb\u65f6\u95f4' },
   { key: 'duration', label: '瀹屾垚鏃堕棿' },
   { key: 'actions', label: '鎿嶄綔' },
 ]
@@ -198,9 +198,9 @@ const taskTypeOptions = [
   { label: '鏈湴鎵弿', value: 'LOCAL_SCAN' },
 ]
 const statusOptions = [
-  { label: '鍏ㄩ儴鐘舵€?, value: undefined },
-  { label: '寰呭鐞?, value: 0 },
-  { label: '澶勭悊涓?, value: 1 },
+  { label: '\u5168\u90e8\u72b6\u6001', value: undefined },
+  { label: '\u5f85\u5904\u7406', value: 0 },
+  { label: '\u5904\u7406\u4e2d', value: 1 },
   { label: '鎴愬姛', value: 2 },
   { label: '澶辫触', value: 3 },
 ]
@@ -230,8 +230,8 @@ const filters = computed(() => [
     options: taskTypeOptions.map((item) => item.label),
   },
   {
-    label: '鍏ㄩ儴鐘舵€?,
-    value: statusOptions.find((item) => item.value === query.taskStatus)?.label || '鍏ㄩ儴鐘舵€?,
+    label: '\u5168\u90e8\u72b6\u6001',
+    value: statusOptions.find((item) => item.value === query.taskStatus)?.label || '\u5168\u90e8\u72b6\u6001',
     options: statusOptions.map((item) => item.label),
   },
 ])
@@ -253,7 +253,7 @@ function handleFilterChange(filter) {
   if (filter.label === '鍏ㄩ儴绫诲瀷') {
     query.taskType = taskTypeOptions.find((item) => item.label === filter.value)?.value || ''
   }
-  if (filter.label === '鍏ㄩ儴鐘舵€?) {
+  if (filter.label === '\u5168\u90e8\u72b6\u6001') {
     query.taskStatus = statusOptions.find((item) => item.label === filter.value)?.value
   }
   loadTasks(1)
@@ -372,7 +372,7 @@ async function handleTaskAction(row, action) {
   if (!action.action) return
   try {
     const label = action.label || '鎿嶄綔'
-    await ElMessageBox.confirm(`纭${label}浠诲姟銆?{row.name}銆嶅悧锛焋, '浠诲姟鎿嶄綔纭', {
+    await ElMessageBox.confirm(`\u786e\u8ba4${label}\u4efb\u52a1\u300c${row.name}\u300d\u5417\uff1f`, '\u4efb\u52a1\u64cd\u4f5c\u786e\u8ba4', {
       type: action.action === 'terminate' ? 'warning' : 'info',
       confirmButtonText: label,
       cancelButtonText: '鍙栨秷',
@@ -384,7 +384,7 @@ async function handleTaskAction(row, action) {
       action: action.action,
       remark: `鍓嶇${label}`,
     })
-    ElMessage.success(`浠诲姟宸?{label}`)
+    ElMessage.success(`\u4efb\u52a1\u5df2${label}`)
     await loadTasks(query.pageNo)
   } catch (error) {
     if (error !== 'cancel') ElMessage.error(error.message || '浠诲姟鎿嶄綔澶辫触')
