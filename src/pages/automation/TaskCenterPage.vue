@@ -40,7 +40,7 @@
         >
           <template #header>
             <div class="task-batch-toolbar">
-              <span>宸查€?{{ selectedRows.length }} 椤?/span>
+              <span>&#24050;&#36873; {{ selectedRows.length }} &#39033;</span>
               <el-button
                 :disabled="!selectedRows.length"
                 :icon="Delete"
@@ -49,7 +49,7 @@
                 type="danger"
                 @click="handleBatchDelete"
               >
-                鎵归噺鍒犻櫎
+                &#25209;&#37327;&#21024;&#38500;
               </el-button>
             </div>
           </template>
@@ -73,7 +73,7 @@
           </template>
           <template #progress="{ row }">
             <div class="progress-cell">
-              <span>{{ row.progress ? `${row.progress}%` : '排队中' }}</span>
+              <span>{{ row.progress ? `${row.progress}%` : '鎺掗槦涓? }}</span>
               <el-progress :percentage="row.progress" :status="row.tone === 'red' ? 'exception' : undefined" :show-text="false" :stroke-width="4" />
             </div>
           </template>
@@ -84,7 +84,7 @@
 
         <aside v-loading="detailLoading" class="task-detail">
           <header>
-            <h2>任务详情</h2>
+            <h2>浠诲姟璇︽儏</h2>
             <button type="button" @click="clearSelection"><el-icon><Close /></el-icon></button>
           </header>
           <div class="task-detail__hero">
@@ -106,11 +106,11 @@
           </dl>
           <el-progress :percentage="page.detail.progress" :stroke-width="5" />
           <section class="task-timeline">
-            <h3>执行日志</h3>
+            <h3>鎵ц鏃ュ織</h3>
             <ol v-if="page.detail.logs.length">
               <li v-for="item in page.detail.logs" :key="item">{{ item }}</li>
             </ol>
-            <el-empty v-else description="暂无执行日志" :image-size="58" />
+            <el-empty v-else description="鏆傛棤鎵ц鏃ュ織" :image-size="58" />
           </section>
           <div class="task-detail__actions">
             <el-button
@@ -118,26 +118,26 @@
               :icon="VideoPause"
               :loading="actionLoading === 'pause'"
               type="primary"
-              @click="handleTaskAction(selectedTask, { label: '暂停', action: 'pause' })"
+              @click="handleTaskAction(selectedTask, { label: '鏆傚仠', action: 'pause' })"
             >
-              暂停任务
+              鏆傚仠浠诲姟
             </el-button>
             <el-button
               :disabled="!selectedTask?.canTerminate"
               :icon="CloseBold"
               :loading="actionLoading === 'terminate'"
               type="danger"
-              @click="handleTaskAction(selectedTask, { label: '停止', action: 'terminate' })"
+              @click="handleTaskAction(selectedTask, { label: '鍋滄', action: 'terminate' })"
             >
-              停止任务
+              鍋滄浠诲姟
             </el-button>
             <el-button
               :disabled="!selectedTask?.canRetry"
               :icon="RefreshRight"
               :loading="actionLoading === 'retry'"
-              @click="handleTaskAction(selectedTask, { label: '重试', action: 'retry' })"
+              @click="handleTaskAction(selectedTask, { label: '閲嶈瘯', action: 'retry' })"
             >
-              重新执行
+              閲嶆柊鎵ц
             </el-button>
           </div>
         </aside>
@@ -164,12 +164,12 @@ import {
 } from '../../api/automation'
 
 const emptyDetail = {
-  title: '暂无任务',
-  subtitle: '当前筛选条件下没有任务记录',
-  status: '暂无',
-  priority: '任务类型：--',
+  title: '鏆傛棤浠诲姟',
+  subtitle: '褰撳墠绛涢€夋潯浠朵笅娌℃湁浠诲姟璁板綍',
+  status: '鏆傛棤',
+  priority: '浠诲姟绫诲瀷锛?-',
   cover: '--',
-  fields: [['任务ID', '--'], ['任务类型', '--'], ['开始时间', '--'], ['完成时间', '--'], ['目标格式', '--'], ['章节数量', '--']],
+  fields: [['浠诲姟ID', '--'], ['浠诲姟绫诲瀷', '--'], ['寮€濮嬫椂闂?, '--'], ['瀹屾垚鏃堕棿', '--'], ['鐩爣鏍煎紡', '--'], ['绔犺妭鏁伴噺', '--']],
   logs: [],
   progress: 0,
 }
@@ -181,28 +181,28 @@ const page = reactive({
   detail: emptyDetail,
 })
 const columns = [
-  { key: 'name', label: '任务名称' },
-  { key: 'kind', label: '类型' },
-  { key: 'source', label: '来源 / 规则' },
-  { key: 'status', label: '状态' },
-  { key: 'progress', label: '进度' },
-  { key: 'start', label: '开始时间' },
-  { key: 'duration', label: '完成时间' },
-  { key: 'actions', label: '操作' },
+  { key: 'name', label: '浠诲姟鍚嶇О' },
+  { key: 'kind', label: '绫诲瀷' },
+  { key: 'source', label: '鏉ユ簮 / 瑙勫垯' },
+  { key: 'status', label: '鐘舵€? },
+  { key: 'progress', label: '杩涘害' },
+  { key: 'start', label: '寮€濮嬫椂闂? },
+  { key: 'duration', label: '瀹屾垚鏃堕棿' },
+  { key: 'actions', label: '鎿嶄綔' },
 ]
 const taskTypeOptions = [
-  { label: '全部类型', value: '' },
-  { label: '解析', value: 'PARSE' },
-  { label: '转码', value: 'TRANSCODE' },
-  { label: '切片', value: 'SLICE' },
-  { label: '本地扫描', value: 'LOCAL_SCAN' },
+  { label: '鍏ㄩ儴绫诲瀷', value: '' },
+  { label: '瑙ｆ瀽', value: 'PARSE' },
+  { label: '杞爜', value: 'TRANSCODE' },
+  { label: '鍒囩墖', value: 'SLICE' },
+  { label: '鏈湴鎵弿', value: 'LOCAL_SCAN' },
 ]
 const statusOptions = [
-  { label: '全部状态', value: undefined },
-  { label: '待处理', value: 0 },
-  { label: '处理中', value: 1 },
-  { label: '成功', value: 2 },
-  { label: '失败', value: 3 },
+  { label: '鍏ㄩ儴鐘舵€?, value: undefined },
+  { label: '寰呭鐞?, value: 0 },
+  { label: '澶勭悊涓?, value: 1 },
+  { label: '鎴愬姛', value: 2 },
+  { label: '澶辫触', value: 3 },
 ]
 const loading = ref(false)
 const detailLoading = ref(false)
@@ -220,28 +220,28 @@ const query = reactive({
   taskStatus: undefined,
 })
 const searchConfig = computed(() => ({
-  placeholder: '搜索任务名称、类型、来源...',
+  placeholder: '鎼滅储浠诲姟鍚嶇О銆佺被鍨嬨€佹潵婧?..',
   value: query.keyword,
 }))
 const filters = computed(() => [
   {
-    label: '全部类型',
-    value: taskTypeOptions.find((item) => item.value === query.taskType)?.label || '全部类型',
+    label: '鍏ㄩ儴绫诲瀷',
+    value: taskTypeOptions.find((item) => item.value === query.taskType)?.label || '鍏ㄩ儴绫诲瀷',
     options: taskTypeOptions.map((item) => item.label),
   },
   {
-    label: '全部状态',
-    value: statusOptions.find((item) => item.value === query.taskStatus)?.label || '全部状态',
+    label: '鍏ㄩ儴鐘舵€?,
+    value: statusOptions.find((item) => item.value === query.taskStatus)?.label || '鍏ㄩ儴鐘舵€?,
     options: statusOptions.map((item) => item.label),
   },
 ])
 
 function actionsFor(row) {
   return [
-    { label: '查看', icon: View, boxed: true },
-    { label: '暂停', icon: VideoPause, disabled: !row.canPause, action: 'pause' },
-    { label: '停止', icon: CloseBold, danger: true, disabled: !row.canTerminate, action: 'terminate' },
-    { label: '重试', icon: RefreshRight, disabled: !row.canRetry, action: 'retry' },
+    { label: '鏌ョ湅', icon: View, boxed: true },
+    { label: '鏆傚仠', icon: VideoPause, disabled: !row.canPause, action: 'pause' },
+    { label: '鍋滄', icon: CloseBold, danger: true, disabled: !row.canTerminate, action: 'terminate' },
+    { label: '閲嶈瘯', icon: RefreshRight, disabled: !row.canRetry, action: 'retry' },
   ]
 }
 
@@ -250,10 +250,10 @@ function handleSearchInput(value) {
 }
 
 function handleFilterChange(filter) {
-  if (filter.label === '全部类型') {
+  if (filter.label === '鍏ㄩ儴绫诲瀷') {
     query.taskType = taskTypeOptions.find((item) => item.label === filter.value)?.value || ''
   }
-  if (filter.label === '全部状态') {
+  if (filter.label === '鍏ㄩ儴鐘舵€?) {
     query.taskStatus = statusOptions.find((item) => item.label === filter.value)?.value
   }
   loadTasks(1)
@@ -305,7 +305,7 @@ async function loadTasks(pageNo = query.pageNo) {
     page.rows = []
     page.total = 0
     clearSelection()
-    ElMessage.error(error.message || '获取任务中心失败')
+    ElMessage.error(error.message || '鑾峰彇浠诲姟涓績澶辫触')
   } finally {
     loading.value = false
   }
@@ -346,18 +346,18 @@ async function handleBatchDelete() {
   const rows = selectedRows.value.filter((row) => row.canDelete)
   if (!rows.length) return
   try {
-    await ElMessageBox.confirm(`纭鍒犻櫎宸查€夌殑 ${rows.length} 鏉′换鍔″悧锛熸鍦ㄨ繍琛岀殑浠诲姟涓嶄細琚垹闄ゃ€?, '鎵归噺鍒犻櫎纭', {
+    await ElMessageBox.confirm(`\u786e\u8ba4\u5220\u9664\u5df2\u9009\u7684 ${rows.length} \u6761\u4efb\u52a1\u5417\uff1f\u6b63\u5728\u8fd0\u884c\u7684\u4efb\u52a1\u4e0d\u4f1a\u88ab\u5220\u9664\u3002`, '\u6279\u91cf\u5220\u9664\u786e\u8ba4', {
       type: 'warning',
-      confirmButtonText: '鎵归噺鍒犻櫎',
-      cancelButtonText: '鍙栨秷',
+      confirmButtonText: '\u6279\u91cf\u5220\u9664',
+      cancelButtonText: '\u53d6\u6d88',
     })
     batchDeleteLoading.value = true
     const deletedCount = await batchDeleteTasks(rows.map((row) => ({ taskType: row.taskType, taskId: row.taskId })))
-    ElMessage.success(`宸插垹闄?${deletedCount || rows.length} 鏉′换鍔?`)
+    ElMessage.success(`\u5df2\u5220\u9664 ${deletedCount || rows.length} \u6761\u4efb\u52a1`)
     selectedRows.value = []
     await loadTasks(query.pageNo)
   } catch (error) {
-    if (error !== 'cancel') ElMessage.error(error.message || '鎵归噺鍒犻櫎澶辫触')
+    if (error !== 'cancel') ElMessage.error(error.message || '\u6279\u91cf\u5220\u9664\u5931\u8d25')
   } finally {
     batchDeleteLoading.value = false
   }
@@ -365,29 +365,29 @@ async function handleBatchDelete() {
 
 async function handleTaskAction(row, action) {
   if (!row) return
-  if (action.label === '查看') {
+  if (action.label === '鏌ョ湅') {
     await selectTask(row)
     return
   }
   if (!action.action) return
   try {
-    const label = action.label || '操作'
-    await ElMessageBox.confirm(`确认${label}任务「${row.name}」吗？`, '任务操作确认', {
+    const label = action.label || '鎿嶄綔'
+    await ElMessageBox.confirm(`纭${label}浠诲姟銆?{row.name}銆嶅悧锛焋, '浠诲姟鎿嶄綔纭', {
       type: action.action === 'terminate' ? 'warning' : 'info',
       confirmButtonText: label,
-      cancelButtonText: '取消',
+      cancelButtonText: '鍙栨秷',
     })
     actionLoading.value = action.action
     await runTaskAction({
       taskType: row.taskType,
       taskId: row.taskId,
       action: action.action,
-      remark: `前端${label}`,
+      remark: `鍓嶇${label}`,
     })
-    ElMessage.success(`任务已${label}`)
+    ElMessage.success(`浠诲姟宸?{label}`)
     await loadTasks(query.pageNo)
   } catch (error) {
-    if (error !== 'cancel') ElMessage.error(error.message || '任务操作失败')
+    if (error !== 'cancel') ElMessage.error(error.message || '浠诲姟鎿嶄綔澶辫触')
   } finally {
     actionLoading.value = ''
   }
