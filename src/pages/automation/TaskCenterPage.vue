@@ -28,13 +28,31 @@
           :page-size="query.pageSize"
           :rows="page.rows"
           min-width="1080px"
+          row-key="id"
           row-clickable
           selectable
+          :row-selectable="isTaskSelectable"
           :total="page.total"
           @page-change="loadTasks"
           @page-size-change="handlePageSizeChange"
           @row-click="selectTask"
+          @selection-change="handleSelectionChange"
         >
+          <template #header>
+            <div class="task-batch-toolbar">
+              <span>宸查€?{{ selectedRows.length }} 椤?/span>
+              <el-button
+                :disabled="!selectedRows.length"
+                :icon="Delete"
+                :loading="batchDeleteLoading"
+                plain
+                type="danger"
+                @click="handleBatchDelete"
+              >
+                鎵归噺鍒犻櫎
+              </el-button>
+            </div>
+          </template>
           <template #name="{ row }">
             <div class="task-name">
               <span>{{ row.cover }}</span>
@@ -131,13 +149,14 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Close, CloseBold, RefreshRight, VideoPause, View } from '@element-plus/icons-vue'
+import { Close, CloseBold, Delete, RefreshRight, VideoPause, View } from '@element-plus/icons-vue'
 import { AdminActionIcons, AdminFilterBar, AdminStatusBadge, AdminTableCard } from '../../components/admin'
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
 import { automationPages } from '../../config/adminModules'
 import {
   buildTaskDetail,
+  batchDeleteTasks,
   fetchTaskCenterPage,
   fetchTaskDetail,
   fetchTaskTimeline,
@@ -188,8 +207,10 @@ const statusOptions = [
 const loading = ref(false)
 const detailLoading = ref(false)
 const actionLoading = ref('')
+const batchDeleteLoading = ref(false)
 const activeTab = ref(0)
 const selectedTask = ref(null)
+const selectedRows = ref([])
 const timelineRows = ref([])
 const query = reactive({
   pageNo: 1,
@@ -266,6 +287,7 @@ async function loadTasks(pageNo = query.pageNo) {
     page.metrics = data.metrics
     page.tabs = data.tabs
     page.rows = data.rows
+    selectedRows.value = selectedRows.value.filter((selected) => data.rows.some((row) => row.id === selected.id && row.canDelete))
     page.total = data.total
     query.pageNo = data.current || query.pageNo
     query.pageSize = data.pageSize || query.pageSize
@@ -310,6 +332,35 @@ function clearSelection() {
   selectedTask.value = null
   timelineRows.value = []
   page.detail = emptyDetail
+}
+
+function isTaskSelectable(row) {
+  return Boolean(row?.canDelete)
+}
+
+function handleSelectionChange(rows) {
+  selectedRows.value = rows.filter((row) => row.canDelete)
+}
+
+async function handleBatchDelete() {
+  const rows = selectedRows.value.filter((row) => row.canDelete)
+  if (!rows.length) return
+  try {
+    await ElMessageBox.confirm(`纭鍒犻櫎宸查€夌殑 ${rows.length} 鏉′换鍔″悧锛熸鍦ㄨ繍琛岀殑浠诲姟涓嶄細琚垹闄ゃ€?, '鎵归噺鍒犻櫎纭', {
+      type: 'warning',
+      confirmButtonText: '鎵归噺鍒犻櫎',
+      cancelButtonText: '鍙栨秷',
+    })
+    batchDeleteLoading.value = true
+    const deletedCount = await batchDeleteTasks(rows.map((row) => ({ taskType: row.taskType, taskId: row.taskId })))
+    ElMessage.success(`宸插垹闄?${deletedCount || rows.length} 鏉′换鍔?`)
+    selectedRows.value = []
+    await loadTasks(query.pageNo)
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error(error.message || '鎵归噺鍒犻櫎澶辫触')
+  } finally {
+    batchDeleteLoading.value = false
+  }
 }
 
 async function handleTaskAction(row, action) {
