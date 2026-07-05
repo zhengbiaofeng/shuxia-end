@@ -664,6 +664,7 @@ function normalizeTaskRow(item = {}) {
     canPause: Boolean(item.canPause),
     canTerminate: Boolean(item.canTerminate),
     canRetry: Boolean(item.canRetry),
+    canDelete: Boolean(item.canDelete),
   }
 }
 
