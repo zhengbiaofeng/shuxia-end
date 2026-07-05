@@ -414,6 +414,10 @@ npm run build
 - Batch sync creates a parent `SCRAPE` task with `executeMode=RULE_BATCH_SYNC` and reuses one-click Novel Sync per candidate, so channel/rule/book/subscription creation and chapter storage stay on the existing Novel Sync pipeline.
   - Batch parent tasks now fill legacy non-null `sx_scrape_task.subscription_id` with a synthetic `batch-{taskId}` value, fixing submit-sync failures such as `Field 'subscription_id' doesn't have a default value` when testing sources like 七猫.
   - Rule-batch background execution now preserves the application class loader on the worker thread, fixing candidate failures where Quartz reported it could not find `org.jeecg.modules.quartz.job.SxScrapeSubscriptionJob`.
+  - Rule-batch candidate preparation no longer creates an extra preview scrape task for each discovered candidate, so future batches should not show paired success/failure rows for the same book in Task Center.
+  - Rule-batch quick sync now forwards discovered title/author/intro/cover metadata, reducing numeric-ID book names when a site's detail page is JS-heavy but the list page already exposed readable metadata.
+  - Rule-batch now stops early on `Current rule did not parse syncable chapter titles and links` and records a clear rule-level error. 七猫 can be discovered as a list source, but chapter sync still needs working chapter selectors or a dedicated site adapter/API path.
+  - Existing historical failed tasks remain visible until the user clears completed tasks; the reduced-noise behavior applies to new batches after backend restart.
 - `SxCurrentUserSupport` now has a scoped `runAs/callAs` user override so background batch work can preserve the submitting user's ownership/audit context.
 - Scan Rules page row/detail actions now include `发现小说`; the dialog uses the saved rule configuration directly, auto-discovers candidates on open, and keeps selector/list URL editing in the existing Add/Edit Rule page.
 - Add/Edit Rule now exposes only the `基础信息` top tab; request config and field selectors remain as sections on that page instead of duplicated top-level tabs.
