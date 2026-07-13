@@ -71,12 +71,12 @@ export const automationPages = {
     ],
   },
   rules: {
-    title: '扫描源管理',
-    subtitle: '统一配置站点、访问方式和字段解析规则，用于发现和同步网络内容',
-    activeMenu: '扫描源管理',
+    title: '采集设置',
+    subtitle: '维护站点适配、访问方式和字段解析规则；普通采集请从采集工作台开始',
+    activeMenu: '采集工作台',
     actions: [
-      { label: '连接模板配置', icon: Setting },
-      { label: '添加扫描源', icon: Plus, type: 'primary' },
+      { label: '连接模板', icon: Setting },
+      { label: '添加站点适配', icon: Plus, type: 'primary' },
     ],
     filters: {
       search: { placeholder: '搜索扫描源名称、站点或渠道' },
@@ -91,11 +91,11 @@ export const automationPages = {
     ],
   },
   channels: {
-    title: '连接模板配置',
+    title: '连接模板',
     subtitle: '维护可复用的站点访问模板，普通扫描源可直接在编辑页内配置请求信息',
-    activeMenu: '扫描源管理',
+    activeMenu: '采集工作台',
     actions: [
-      { label: '返回扫描源', icon: RefreshRight },
+      { label: '返回采集设置', icon: RefreshRight },
       { label: '新增连接模板', icon: Plus, type: 'primary' },
     ],
     filters: {

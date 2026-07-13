@@ -11,6 +11,7 @@ const AudioPage = () => import('../pages/AudioPage.vue')
 const StorageManagementPage = () => import('../pages/StorageManagementPage.vue')
 const CategoryManagementPage = () => import('../pages/CategoryManagementPage.vue')
 const TagManagementPage = () => import('../pages/TagManagementPage.vue')
+const CollectionWorkbenchPage = () => import('../pages/automation/CollectionWorkbenchPage.vue')
 const SmartScrapePage = () => import('../pages/automation/SmartScrapePage.vue')
 const ScrapeRulesPage = () => import('../pages/automation/ScrapeRulesPage.vue')
 const ScrapeChannelsPage = () => import('../pages/automation/ScrapeChannelsPage.vue')
@@ -29,12 +30,14 @@ const TaskLogPage = () => import('../pages/logs/TaskLogPage.vue')
 const TaskStatsPage = () => import('../pages/logs/TaskStatsPage.vue')
 
 const adminModuleRoutes = [
-  { path: '/automation/smart-scrape', name: 'automation-smart-scrape', component: SmartScrapePage, meta: { title: '智能抓取', requiresAuth: true } },
-  { path: '/automation/rules', name: 'automation-rules', component: ScrapeRulesPage, meta: { title: '扫描源管理', requiresAuth: true } },
-  { path: '/automation/channels', name: 'automation-channels', component: ScrapeChannelsPage, meta: { title: '连接模板配置', requiresAuth: true } },
-  { path: '/automation/rules/new', name: 'automation-rules-new', component: AddScrapeRulePage, meta: { title: '添加扫描源', requiresAuth: true } },
+  { path: '/automation/collection', name: 'automation-collection', component: CollectionWorkbenchPage, meta: { title: '采集工作台', requiresAuth: true } },
+  { path: '/automation/smart-scrape', name: 'automation-smart-scrape', redirect: '/automation/collection' },
+  { path: '/automation/rules', name: 'automation-rules', component: ScrapeRulesPage, meta: { title: '采集设置', requiresAuth: true } },
+  { path: '/automation/channels', name: 'automation-channels', component: ScrapeChannelsPage, meta: { title: '连接模板', requiresAuth: true } },
+  { path: '/automation/rules/new', name: 'automation-rules-new', component: AddScrapeRulePage, meta: { title: '添加站点适配', requiresAuth: true } },
   { path: '/automation/tasks', name: 'automation-tasks', component: TaskCenterPage, meta: { title: '任务中心', requiresAuth: true } },
-  { path: '/automation/subscriptions', name: 'automation-subscriptions', component: SubscriptionsPage, meta: { title: '小说同步', requiresAuth: true } },
+  { path: '/automation/following', name: 'automation-following', component: SubscriptionsPage, meta: { title: '追更管理', requiresAuth: true } },
+  { path: '/automation/subscriptions', name: 'automation-subscriptions', redirect: '/automation/following' },
   { path: '/permissions/users', name: 'permissions-users', component: UserManagementPage, meta: { title: '用户管理', requiresAuth: true } },
   { path: '/permissions/roles', name: 'permissions-roles', component: RolePermissionPage, meta: { title: '角色权限', requiresAuth: true } },
   { path: '/settings/site', name: 'settings-site', component: SiteSettingsPage, meta: { title: '站点设置', requiresAuth: true } },

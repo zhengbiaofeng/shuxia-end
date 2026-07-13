@@ -45,10 +45,9 @@ const baseSideMenus = [
   {
     title: '自动化',
     items: [
-      { label: '智能抓取', icon: DataAnalysis, path: '/automation/smart-scrape' },
-      { label: '扫描源管理', icon: RefreshRight },
-      { label: '任务中心', icon: Briefcase },
-      { label: '小说同步', icon: SwitchButton },
+      { label: '采集工作台', icon: DataAnalysis, path: '/automation/collection' },
+      { label: '追更管理', icon: SwitchButton, path: '/automation/following' },
+      { label: '任务中心', icon: Briefcase, path: '/automation/tasks' },
     ],
   },
   {
@@ -80,7 +79,7 @@ const menuPathGroups = [
   [],
   [],
   [],
-  ['/automation/smart-scrape', '/automation/rules', '/automation/tasks', '/automation/subscriptions'],
+  ['/automation/collection', '/automation/following', '/automation/tasks'],
   ['/permissions/users', '/permissions/roles'],
   ['/settings/site', '/settings/reader', '/settings/notifications', '/settings/security'],
   ['/logs/operations', '/logs/tasks'],

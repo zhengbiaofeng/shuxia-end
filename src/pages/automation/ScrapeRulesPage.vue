@@ -418,8 +418,8 @@ function bizLabel(value) {
 }
 
 function handlePageAction(action) {
-  if (action.label === '添加扫描源') router.push('/automation/rules/new')
-  if (action.label === '连接模板配置') router.push('/automation/channels')
+  if (action.label === '添加站点适配') router.push('/automation/rules/new')
+  if (action.label === '连接模板') router.push('/automation/channels')
 }
 
 function handleSearchInput(value) {
