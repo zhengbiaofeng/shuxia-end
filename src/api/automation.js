@@ -916,7 +916,7 @@ function normalizeNovelQuickSyncResult(item = {}) {
 
 function buildNovelSyncMetrics(rows = [], total = rows.length) {
   return [
-    metric('同步订阅', total, '条', '当前筛选结果', 'blue', DataAnalysis),
+    metric('追更计划', total, '条', '当前筛选结果', 'blue', DataAnalysis),
     metric('启用中', rows.filter((row) => row.statusValue === 1).length, '条', '可被定时触发', 'green', CircleCheck),
     metric('最近成功', rows.filter((row) => row.lastSyncTone === 'green').length, '条', '当前页统计', 'purple', Finished),
     metric('需要关注', rows.filter((row) => ['red', 'orange'].includes(row.lastSyncTone)).length, '条', '失败或暂停', 'orange', Warning),

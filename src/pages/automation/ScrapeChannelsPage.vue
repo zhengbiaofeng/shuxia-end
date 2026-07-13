@@ -324,7 +324,7 @@ function formatRate(value) {
 }
 
 function handlePageAction(action) {
-  if (action.label === '返回扫描源') {
+  if (action.label === '返回采集设置') {
     router.push('/automation/rules')
     return
   }

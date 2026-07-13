@@ -568,7 +568,7 @@ async function loadSubscriptions(pageNo = query.pageNo, options = {}) {
       rows.value = []
       metrics.value = []
       total.value = 0
-      ElMessage.error(error.message || '获取小说同步订阅失败')
+      ElMessage.error(error.message || '获取追更计划失败')
     }
   } finally {
     if (silent) {
@@ -619,7 +619,7 @@ async function openDetail(row) {
   try {
     selectedDetail.value = await fetchNovelSyncDetail(row.id)
   } catch (error) {
-    ElMessage.error(error.message || '获取小说同步详情失败')
+    ElMessage.error(error.message || '获取追更详情失败')
   } finally {
     detailLoading.value = false
   }
@@ -661,7 +661,7 @@ async function openEdit(row) {
     }
     cronPreset.value = cronPresets.some((item) => item.value === form.cronExpr) ? form.cronExpr : 'custom'
   } catch (error) {
-    ElMessage.error(error.message || '获取小说同步详情失败')
+    ElMessage.error(error.message || '获取追更详情失败')
   }
 }
 
@@ -688,15 +688,15 @@ async function submitForm() {
     }
     if (editingId.value) {
       await updateNovelSyncSubscription(payload)
-      ElMessage.success('小说同步订阅已保存')
+      ElMessage.success('追更计划已保存')
     } else {
       await createNovelSyncSubscription(payload)
-      ElMessage.success('小说同步订阅已创建')
+      ElMessage.success('追更计划已创建')
     }
     formVisible.value = false
     await loadSubscriptions(query.pageNo)
   } catch (error) {
-    ElMessage.error(error.message || '保存小说同步订阅失败')
+    ElMessage.error(error.message || '保存追更计划失败')
   } finally {
     submitting.value = false
   }
@@ -706,10 +706,10 @@ async function toggleStatus(row, enabled) {
   statusLoadingId.value = row.id
   try {
     await changeNovelSyncStatus({ id: row.id, status: enabled ? 1 : 0 })
-    ElMessage.success(enabled ? '同步订阅已启用' : '同步订阅已停用')
+    ElMessage.success(enabled ? '追更计划已启用' : '追更计划已停用')
     await loadSubscriptions(query.pageNo)
   } catch (error) {
-    ElMessage.error(error.message || '切换小说同步状态失败')
+    ElMessage.error(error.message || '切换追更状态失败')
   } finally {
     statusLoadingId.value = ''
   }
@@ -725,7 +725,7 @@ async function handleAllStatusCommand(command) {
   if (!total.value) return
   try {
     await ElMessageBox.confirm(
-      `确认${actionLabel}当前筛选条件下的全部 ${total.value} 条小说同步订阅吗？`,
+      `确认${actionLabel}当前筛选条件下的全部 ${total.value} 条追更计划吗？`,
       `一键${actionLabel}确认`,
       {
         type: enabled ? 'info' : 'warning',
@@ -740,7 +740,7 @@ async function handleAllStatusCommand(command) {
       keyword: query.keyword,
       currentStatus: query.status,
     })
-    ElMessage.success(`已${actionLabel} ${processedCount} 条小说同步订阅`)
+    ElMessage.success(`已${actionLabel} ${processedCount} 条追更计划`)
     clearTableSelection()
     await loadSubscriptions(1)
   } catch (error) {
@@ -756,7 +756,7 @@ async function changeSelectedStatus(enabled) {
   const actionLabel = enabled ? '启用' : '停用'
   try {
     await ElMessageBox.confirm(
-      `确认${actionLabel}已选中的 ${subscriptions.length} 条小说同步订阅吗？`,
+      `确认${actionLabel}已选中的 ${subscriptions.length} 条追更计划吗？`,
       `批量${actionLabel}确认`,
       {
         type: enabled ? 'info' : 'warning',
@@ -769,7 +769,7 @@ async function changeSelectedStatus(enabled) {
       ids: subscriptions.map((row) => row.id),
       status: enabled ? 1 : 0,
     })
-    ElMessage.success(`已${actionLabel} ${processedCount} 条小说同步订阅`)
+    ElMessage.success(`已${actionLabel} ${processedCount} 条追更计划`)
     clearTableSelection()
     await loadSubscriptions(query.pageNo)
   } catch (error) {
@@ -784,7 +784,7 @@ async function deleteSelectedSubscriptions() {
   if (!subscriptions.length) return
   try {
     await ElMessageBox.confirm(
-      `确认删除已选中的 ${subscriptions.length} 条小说同步订阅吗？该操作不会删除小说、章节和历史任务。`,
+      `确认删除已选中的 ${subscriptions.length} 条追更计划吗？该操作不会删除小说、章节和历史任务。`,
       '批量删除确认',
       {
         type: 'warning',
@@ -799,14 +799,14 @@ async function deleteSelectedSubscriptions() {
       detailVisible.value = false
       selectedDetail.value = null
     }
-    ElMessage.success(`已删除 ${deletedCount} 条小说同步订阅`)
+    ElMessage.success(`已删除 ${deletedCount} 条追更计划`)
     clearTableSelection()
     const nextPage = subscriptions.length >= rows.value.length && query.pageNo > 1
       ? query.pageNo - 1
       : query.pageNo
     await loadSubscriptions(nextPage)
   } catch (error) {
-    if (!isDialogCancel(error)) ElMessage.error(error.message || '批量删除小说同步订阅失败')
+    if (!isDialogCancel(error)) ElMessage.error(error.message || '批量删除追更计划失败')
   } finally {
     bulkDeleteLoading.value = false
   }
@@ -816,7 +816,7 @@ async function deleteAllFiltered() {
   if (!total.value) return
   try {
     await ElMessageBox.prompt(
-      `将删除当前筛选条件下的全部 ${total.value} 条小说同步订阅及其定时计划。小说、章节和历史任务不会被删除。请输入“删除全部”确认。`,
+      `将删除当前筛选条件下的全部 ${total.value} 条追更计划。小说、章节和历史任务不会被删除。请输入“删除全部”确认。`,
       '全部删除确认',
       {
         type: 'warning',
@@ -835,11 +835,11 @@ async function deleteAllFiltered() {
     })
     detailVisible.value = false
     selectedDetail.value = null
-    ElMessage.success(`已删除 ${deletedCount} 条小说同步订阅`)
+    ElMessage.success(`已删除 ${deletedCount} 条追更计划`)
     clearTableSelection()
     await loadSubscriptions(1)
   } catch (error) {
-    if (!isDialogCancel(error)) ElMessage.error(error.message || '全部删除小说同步订阅失败')
+    if (!isDialogCancel(error)) ElMessage.error(error.message || '全部删除追更计划失败')
   } finally {
     bulkDeleteLoading.value = false
   }
@@ -883,7 +883,7 @@ async function executeSubscription(row, syncChapters) {
       selectedDetail.value = await fetchNovelSyncDetail(row.id)
     }
   } catch (error) {
-    ElMessage.error(error.message || '执行小说同步失败')
+    ElMessage.error(error.message || '执行追更失败')
   } finally {
     previewLoading.value = false
   }
@@ -897,7 +897,7 @@ async function stopRunningTask(row) {
       taskType: 'SCRAPE',
       taskId: row.taskId,
       action: 'terminate',
-      remark: '用户在小说同步页停止任务',
+      remark: '用户在追更管理页停止任务',
     })
     ElMessage.success('已请求停止同步任务')
     await loadSubscriptions(query.pageNo)
@@ -939,16 +939,16 @@ async function handleRowAction(row, action) {
 
 async function confirmDelete(row) {
   try {
-    await ElMessageBox.confirm(`确认删除《${row.name}》的小说同步订阅吗？`, '删除确认', {
+    await ElMessageBox.confirm(`确认删除《${row.name}》的追更计划吗？`, '删除确认', {
       type: 'warning',
       confirmButtonText: '删除',
       cancelButtonText: '取消',
     })
     await deleteNovelSyncSubscription(row.id)
-    ElMessage.success('小说同步订阅已删除')
+    ElMessage.success('追更计划已删除')
     await loadSubscriptions(rows.value.length === 1 && query.pageNo > 1 ? query.pageNo - 1 : query.pageNo)
   } catch (error) {
-    if (error !== 'cancel') ElMessage.error(error.message || '删除小说同步订阅失败')
+    if (error !== 'cancel') ElMessage.error(error.message || '删除追更计划失败')
   }
 }
 
@@ -998,113 +998,6 @@ onBeforeUnmount(() => {
 
 .novel-sync-stack :deep(.resource-metrics) {
   margin-top: 0;
-}
-
-.quick-sync-panel {
-  background: #ffffff;
-  border: 1px solid var(--admin-panel-border);
-  border-radius: 8px;
-  box-shadow: var(--admin-shadow-card);
-  display: grid;
-  gap: 18px;
-  padding: 20px;
-}
-
-.quick-sync-header {
-  align-items: flex-start;
-  display: flex;
-  gap: 16px;
-  justify-content: space-between;
-}
-
-.quick-sync-header span {
-  color: #617098;
-  display: block;
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.quick-sync-header h2 {
-  color: #102557;
-  font-size: 22px;
-  line-height: 1.25;
-  margin: 0;
-}
-
-.quick-sync-form {
-  align-items: flex-end;
-  display: grid;
-  gap: 14px;
-  grid-template-columns: minmax(260px, 1fr) 150px 118px auto;
-}
-
-.quick-sync-form :deep(.el-form-item) {
-  margin-bottom: 0;
-}
-
-.quick-url-field {
-  min-width: 0;
-}
-
-.quick-number {
-  width: 100%;
-}
-
-.quick-sync-result {
-  align-items: center;
-  background: #f8fbff;
-  border: 1px solid #dbe7ff;
-  border-radius: 8px;
-  display: grid;
-  gap: 12px;
-  grid-template-columns: minmax(180px, 1fr) auto auto;
-  padding: 12px 14px;
-}
-
-.quick-result-title,
-.quick-result-actions {
-  min-width: 0;
-}
-
-.quick-result-title {
-  display: grid;
-  gap: 3px;
-}
-
-.quick-result-title strong {
-  color: #102557;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.quick-result-title span {
-  color: #617098;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.quick-result-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.quick-result-stats span {
-  background: #ffffff;
-  border: 1px solid #dbe7ff;
-  border-radius: 6px;
-  color: #314a80;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 5px 8px;
-}
-
-.quick-result-actions {
-  display: flex;
-  justify-content: flex-end;
 }
 
 .runtime-panel {
@@ -1388,15 +1281,12 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 860px) {
-  .quick-sync-header,
-  .quick-sync-result,
   .runtime-header,
   .runtime-item {
     align-items: stretch;
     grid-template-columns: 1fr;
   }
 
-  .quick-sync-header,
   .runtime-header {
     display: grid;
   }
@@ -1412,10 +1302,6 @@ onBeforeUnmount(() => {
 
   .subscription-batch-actions {
     flex-wrap: wrap;
-  }
-
-  .quick-sync-form {
-    grid-template-columns: 1fr;
   }
 
   .form-grid,
