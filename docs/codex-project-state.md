@@ -437,9 +437,13 @@ npm run build
 
 - Novel Sync now exposes an `一键启停` menu in the filter bar for enabling or disabling all subscriptions matching the current keyword/status filter.
 - The subscriptions table now supports row selection with `批量启用` and `批量停用` actions.
+- The subscriptions table also supports `批量删除` for selected rows, and the filter bar exposes `全部删除` for every subscription matching the current filter.
+- `全部删除` requires typing `删除全部` before the request is submitted.
 - All bulk operations require confirmation and show loading/result feedback.
 - Backend endpoint: `POST /sx/book/subscription/batch-change-status`.
+- Backend deletion endpoint: `POST /sx/book/subscription/batch-delete`.
 - The endpoint supports explicit subscription IDs or all current filter matches, remains scoped to the current user, and synchronizes every processed subscription's Quartz schedule.
+- Batch deletion removes subscription records and Quartz schedules only; books, chapters, and historical task records are retained.
 - No SQL migration is required.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-subscription-batch-status-readme.md`.
 - Verification: frontend `npm run build`, backend `:sx-book` compile, and desktop/narrow browser layout checks passed.
