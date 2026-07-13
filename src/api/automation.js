@@ -245,9 +245,9 @@ export async function batchDeleteTasks(tasks = []) {
   const items = tasks
     .filter((item) => item?.taskType && item?.taskId)
     .map((item) => ({ taskType: item.taskType, taskId: item.taskId }))
-  if (!items.length) throw new Error('璇峰厛閫夋嫨瑕佸垹闄ょ殑浠诲姟')
+  if (!items.length) throw new Error('请先选择要删除的任务')
   const response = await request.post('/sx/book/task/batch-delete', { tasks: items })
-  if (!response?.success) throw new Error(response?.message || '鎵归噺鍒犻櫎浠诲姟澶辫触')
+  if (!response?.success) throw new Error(response?.message || '批量删除任务失败')
   return Number(response.result || 0)
 }
 
