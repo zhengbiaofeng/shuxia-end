@@ -111,6 +111,13 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Recently Completed Work
 
+- Added a read-only novel URL analysis phase for the Collection Workbench:
+  - New backend endpoint: `POST /sx/book/scrape/analyze`.
+  - Analysis parses metadata, existing matches, and chapter overview without creating or updating books, sources, rules, subscriptions, or tasks.
+  - The workbench now calls `analyze` for preview and only calls `quickSync` after explicit collection confirmation.
+  - BQG API-backed hash routes use the existing book/catalog API helpers for read-only chapter counts.
+  - No SQL migration is required; existing quick sync, batch sync, subscription, and task APIs remain compatible.
+  - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-url-readonly-analyze-readme.md`.
 - Consolidated the novel collection workflow into a user-oriented automation information architecture:
   - `/automation/collection` is the new Collection Workbench with `单本采集` and `批量采集` views.
   - Single collection auto-detects Douban metadata pages, novel detail/catalog pages, and list/rank pages; list-like URLs can switch to batch collection with the URL preserved.
