@@ -112,7 +112,7 @@
       >
         <template #actions>
           <el-dropdown
-            :disabled="bulkStatusLoading || !total"
+            :disabled="bulkActionLoading || !total"
             trigger="click"
             @command="handleAllStatusCommand"
           >
@@ -131,6 +131,16 @@
               </el-dropdown-menu>
             </template>
           </el-dropdown>
+          <el-button
+            :disabled="bulkActionLoading || !total"
+            :icon="Delete"
+            :loading="bulkDeleteLoading"
+            type="danger"
+            plain
+            @click="deleteAllFiltered"
+          >
+            全部删除
+          </el-button>
         </template>
       </AdminFilterBar>
 
@@ -175,6 +185,16 @@
               >
                 批量停用
               </el-button>
+              <el-button
+                :disabled="!selectedRows.length"
+                :icon="Delete"
+                :loading="bulkDeleteLoading"
+                type="danger"
+                plain
+                @click="deleteSelectedSubscriptions"
+              >
+                批量删除
+              </el-button>
             </div>
           </div>
         </template>
@@ -209,7 +229,7 @@
           <span @click.stop>
             <el-switch
               :loading="statusLoadingId === row.id"
-              :disabled="bulkStatusLoading"
+              :disabled="bulkActionLoading"
               :model-value="row.statusValue === 1"
               @change="(value) => toggleStatus(row, value)"
             />
@@ -420,6 +440,7 @@ import ResourceShell from '../../components/resource/ResourceShell.vue'
 import { fetchBookList } from '../../api/books'
 import {
   batchChangeNovelSyncStatus,
+  batchDeleteNovelSyncSubscriptions,
   changeNovelSyncStatus,
   createNovelSyncSubscription,
   deleteNovelSyncSubscription,
@@ -444,6 +465,7 @@ const pollLoading = ref(false)
 const submitting = ref(false)
 const statusLoadingId = ref('')
 const bulkStatusLoading = ref(false)
+const bulkDeleteLoading = ref(false)
 const actionTaskLoadingId = ref('')
 const selectedRows = ref([])
 const rows = ref([])
@@ -516,6 +538,7 @@ const formEnabled = computed({
     form.status = value ? 1 : 0
   },
 })
+const bulkActionLoading = computed(() => bulkStatusLoading.value || bulkDeleteLoading.value)
 const runningRows = computed(() => rows.value.filter((row) => row.isRunning))
 
 function defaultForm() {
@@ -851,6 +874,72 @@ async function changeSelectedStatus(enabled) {
     if (!isDialogCancel(error)) ElMessage.error(error.message || `批量${actionLabel}失败`)
   } finally {
     bulkStatusLoading.value = false
+  }
+}
+
+async function deleteSelectedSubscriptions() {
+  const subscriptions = selectedRows.value.filter((row) => row?.id)
+  if (!subscriptions.length) return
+  try {
+    await ElMessageBox.confirm(
+      `确认删除已选中的 ${subscriptions.length} 条小说同步订阅吗？该操作不会删除小说、章节和历史任务。`,
+      '批量删除确认',
+      {
+        type: 'warning',
+        confirmButtonText: '批量删除',
+        cancelButtonText: '取消',
+      },
+    )
+    bulkDeleteLoading.value = true
+    const selectedIds = subscriptions.map((row) => row.id)
+    const deletedCount = await batchDeleteNovelSyncSubscriptions({ ids: selectedIds })
+    if (selectedIds.includes(selectedDetail.value?.id)) {
+      detailVisible.value = false
+      selectedDetail.value = null
+    }
+    ElMessage.success(`已删除 ${deletedCount} 条小说同步订阅`)
+    clearTableSelection()
+    const nextPage = subscriptions.length >= rows.value.length && query.pageNo > 1
+      ? query.pageNo - 1
+      : query.pageNo
+    await loadSubscriptions(nextPage)
+  } catch (error) {
+    if (!isDialogCancel(error)) ElMessage.error(error.message || '批量删除小说同步订阅失败')
+  } finally {
+    bulkDeleteLoading.value = false
+  }
+}
+
+async function deleteAllFiltered() {
+  if (!total.value) return
+  try {
+    await ElMessageBox.prompt(
+      `将删除当前筛选条件下的全部 ${total.value} 条小说同步订阅及其定时计划。小说、章节和历史任务不会被删除。请输入“删除全部”确认。`,
+      '全部删除确认',
+      {
+        type: 'warning',
+        confirmButtonText: '全部删除',
+        cancelButtonText: '取消',
+        inputPlaceholder: '删除全部',
+        inputPattern: /^删除全部$/,
+        inputErrorMessage: '请输入“删除全部”',
+      },
+    )
+    bulkDeleteLoading.value = true
+    const deletedCount = await batchDeleteNovelSyncSubscriptions({
+      allMatched: true,
+      keyword: query.keyword,
+      currentStatus: query.status,
+    })
+    detailVisible.value = false
+    selectedDetail.value = null
+    ElMessage.success(`已删除 ${deletedCount} 条小说同步订阅`)
+    clearTableSelection()
+    await loadSubscriptions(1)
+  } catch (error) {
+    if (!isDialogCancel(error)) ElMessage.error(error.message || '全部删除小说同步订阅失败')
+  } finally {
+    bulkDeleteLoading.value = false
   }
 }
 
