@@ -357,6 +357,18 @@ export async function quickSyncNovelByUrl(payload = {}) {
   return normalizeNovelQuickSyncResult(readResultResponse(response, '小说链接同步失败') || {})
 }
 
+export async function analyzeNovelByUrl(payload = {}) {
+  const response = await request.post('/sx/book/scrape/analyze', cleanParams({
+    detailUrl: trimText(payload.detailUrl),
+    bookId: payload.bookId,
+    title: trimText(payload.title),
+    author: trimText(payload.author),
+    intro: trimText(payload.intro),
+    coverUrl: trimText(payload.coverUrl),
+  }))
+  return normalizeNovelUrlAnalyze(readResultResponse(response, '小说网址分析失败') || {})
+}
+
 export async function analyzeSmartScrapeUrl(url) {
   const response = await request.post('/sx/book/auto-scrape/analyze', { url: trimText(url) })
   return normalizeSmartScrapeAnalyze(readResultResponse(response, '解析 URL 失败') || {})
@@ -911,6 +923,31 @@ function normalizeNovelQuickSyncResult(item = {}) {
     submittedAsync: Boolean(item.submittedAsync),
     message: item.message || '同步任务已提交',
     runResult: normalizeNovelSyncRunResult(item.runResult || {}),
+  }
+}
+
+function normalizeNovelUrlAnalyze(item = {}) {
+  return {
+    raw: item,
+    detailUrl: item.detailUrl || '',
+    bookName: item.bookName || '--',
+    authorName: item.authorName || '--',
+    intro: item.intro || '',
+    coverUrl: item.coverUrl || '',
+    sourceId: item.sourceId || '',
+    sourceName: item.sourceName || '--',
+    ruleId: item.ruleId || '',
+    ruleName: item.ruleName || '',
+    existingBookId: item.existingBookId || '',
+    existingSubscriptionId: item.existingSubscriptionId || '',
+    matchedBy: item.matchedBy || '',
+    existingBook: Boolean(item.existingBook),
+    existingSubscription: Boolean(item.existingSubscription),
+    chapterCount: Number(item.chapterCount || 0),
+    latestChapterTitle: item.latestChapterTitle || '--',
+    chapterTitleSamples: Array.isArray(item.chapterTitleSamples) ? item.chapterTitleSamples : [],
+    warnings: Array.isArray(item.warnings) ? item.warnings : [],
+    message: item.message || '网址分析完成，尚未创建任何记录',
   }
 }
 

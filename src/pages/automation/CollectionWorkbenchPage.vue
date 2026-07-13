@@ -131,33 +131,37 @@
           </footer>
         </section>
 
-        <section v-if="novelResult" class="preview-shell novel-preview">
+        <section v-if="novelAnalysis" class="preview-shell novel-preview">
           <header class="preview-header">
             <div>
               <span class="section-kicker">小说识别结果</span>
-              <h2>{{ novelResult.bookName }}</h2>
-              <p>{{ novelResult.authorName }} · {{ novelResult.sourceName }}</p>
+              <h2>{{ novelAnalysis.bookName }}</h2>
+              <p>{{ novelAnalysis.authorName }} · {{ novelAnalysis.sourceName }}</p>
             </div>
             <AdminStatusBadge
-              :label="novelResult.createdSubscription ? '已建立追更' : '已匹配追更'"
-              tone="green"
+              :label="novelAnalysis.existingSubscription ? '已有追更计划' : '尚未建立追更'"
+              :tone="novelAnalysis.existingSubscription ? 'green' : 'slate'"
               dot
             />
           </header>
 
           <div class="result-facts">
-            <div><span>站点适配</span><strong>{{ novelResult.ruleName || '--' }}</strong></div>
-            <div><span>识别章节</span><strong>{{ novelResult.runResult.chapterCount || 0 }}</strong></div>
-            <div><span>新增章节</span><strong>{{ novelResult.runResult.addedChapterCount || 0 }}</strong></div>
-            <div><span>失败章节</span><strong>{{ novelResult.runResult.failedChapterCount || 0 }}</strong></div>
+            <div><span>来源站点</span><strong>{{ novelAnalysis.sourceName }}</strong></div>
+            <div><span>站点适配</span><strong>{{ novelAnalysis.ruleName || '确认后自动创建' }}</strong></div>
+            <div><span>识别章节</span><strong>{{ novelAnalysis.chapterCount || 0 }}</strong></div>
+            <div><span>本地匹配</span><strong>{{ novelAnalysis.existingBook ? '已有小说' : '将创建新小说' }}</strong></div>
           </div>
 
           <el-alert
             :closable="false"
-            :title="novelResult.message || novelResult.runResult.message"
-            :type="novelResult.runResult.failedChapterCount ? 'warning' : 'info'"
+            :title="novelResult?.message || novelAnalysis.message"
+            :type="novelResult?.runResult?.failedChapterCount ? 'warning' : novelResult ? 'success' : 'info'"
             show-icon
           />
+
+          <div v-if="novelAnalysis.warnings.length" class="inline-notes">
+            <span v-for="item in novelAnalysis.warnings" :key="item">{{ item }}</span>
+          </div>
 
           <footer class="preview-actions">
             <el-button @click="resetSingle">重新输入</el-button>
@@ -221,7 +225,7 @@
         </section>
 
         <el-empty
-          v-if="!metadataPreview && !novelResult && !importedBookId"
+          v-if="!metadataPreview && !novelAnalysis && !importedBookId"
           description="输入网址后，解析预览会显示在这里"
         />
       </section>
@@ -396,6 +400,7 @@ import ResourceShell from '../../components/resource/ResourceShell.vue'
 import {
   analyzeSmartScrapeUrl,
   analyzeSmartScrapeWebContent,
+  analyzeNovelByUrl,
   batchSyncScrapeRuleNovels,
   discoverScrapeRuleNovels,
   fetchScrapeRuleDetail,
@@ -418,6 +423,7 @@ const singleAnalyzing = ref(false)
 const novelExecuting = ref(false)
 const singlePhase = ref('input')
 const advancedVisible = ref(false)
+const novelAnalysis = ref(null)
 const novelResult = ref(null)
 const singleOptions = reactive({ requestDelayMs: 1000, syncChapters: true })
 
@@ -538,13 +544,11 @@ async function analyzeSingle() {
       return
     }
 
-    novelResult.value = await quickSyncNovelByUrl({
+    novelAnalysis.value = await analyzeNovelByUrl({
       detailUrl: singleUrl.value,
-      requestDelayMs: singleOptions.requestDelayMs,
-      syncChapters: false,
     })
     singlePhase.value = 'preview'
-    ElMessage.success('小说信息解析完成，已创建或复用追更记录')
+    ElMessage.success('小说信息解析完成，尚未创建任何记录')
   } catch (error) {
     ElMessage.error(error.message || '网址解析失败')
   } finally {
@@ -671,6 +675,7 @@ async function startContentCollection() {
 
 function resetSingleResults() {
   metadataPreview.value = null
+  novelAnalysis.value = null
   novelResult.value = null
   importedBookId.value = ''
   contentUrl.value = ''
