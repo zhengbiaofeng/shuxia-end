@@ -442,7 +442,7 @@ npm run build
 - The endpoint supports explicit subscription IDs or all current filter matches, remains scoped to the current user, and synchronizes every processed subscription's Quartz schedule.
 - No SQL migration is required.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-subscription-batch-status-readme.md`.
-- Verification: frontend `npm run build` and backend `:sx-book` compile passed.
+- Verification: frontend `npm run build`, backend `:sx-book` compile, and desktop/narrow browser layout checks passed.
 
 ## Integration Priority
 
