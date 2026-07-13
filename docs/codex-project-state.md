@@ -50,7 +50,7 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 - Automation frontend copy now uses "scan rule/channel" wording, while backend endpoints still use the mature `/scrape-*` route names.
   - Scan rules use `/sx/book/scrape-rule/detail/{id}`, `/add`, `/edit`, `/changeStatus`, `/delete`, and `/debug`.
   - Scan channels use `/sx/book/scrape-channel/detail/{id}`, `/add`, `/edit`, `/changeStatus`, `/delete`, and `/test`.
-  - Task center uses `/sx/book/task/detail/{id}`, `/sx/book/task/timeline/{id}`, and `/sx/book/task/{id}/{action}` for pause, terminate, and retry actions.
+  - Task center uses `/sx/book/task/detail/{id}`, `/sx/book/task/timeline/{id}`, `/sx/book/task/{id}/{action}` for pause, terminate, and retry actions, and `POST /sx/book/task/batch-delete` for finished-task batch deletion.
 - Site settings now drive global branding:
   - Admin edit reads `GET /sx/book/site-setting/detail` and saves with `POST /sx/book/site-setting/save`.
   - Public branding reads `GET /sx/book/site-setting/public` for login page, sidebar logo/name, browser title, and default footer.
@@ -176,6 +176,11 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 - BQG hash-route list pages such as `https://*.bqg*.cc/#/` are API-backed.
   - Auto analysis now detects those URLs, calls `/api/sort` or `/api/search`, renders an internal temporary HTML structure, and fills generated selectors plus JSON `remark` with `apiMode=bqg-list-api`.
   - Add/Edit Scan Source keeps that generated `remark` and sends it during debug, so `auto analyze -> debug -> save -> discover novels` stays on the API-backed path instead of re-fetching the empty app shell.
+- Task Center batch delete is available:
+  - The backend exposes `POST /sx/book/task/batch-delete`.
+  - Only completed or failed `SCRAPE`, `TRANSCODE`, `SLICE`, and `LOCAL_SCAN` rows are deletable.
+  - `PARSE` rows are not deleted from Task Center because they are derived from book parse state.
+  - Backend handoff doc: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\task-center-batch-delete-readme.md`
 
 ## Known Local Commands
 
