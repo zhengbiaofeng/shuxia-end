@@ -42,6 +42,10 @@
 
     <div class="admin-filter-bar__spacer" />
 
+    <div v-if="$slots.actions" class="admin-filter-bar__actions">
+      <slot name="actions" />
+    </div>
+
     <el-button v-if="showReset" class="admin-filter-bar__button" :icon="RefreshRight" @click="$emit('reset')">
       重置
     </el-button>
@@ -109,6 +113,12 @@ function emitSearch() {
 .admin-filter-bar__spacer {
   flex: 1;
   min-width: 0;
+}
+
+.admin-filter-bar__actions {
+  align-items: center;
+  display: flex;
+  gap: 10px;
 }
 
 .admin-filter-bar__button {

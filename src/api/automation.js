@@ -302,6 +302,20 @@ export async function changeNovelSyncStatus({ id, status }) {
   return response.result
 }
 
+export async function batchChangeNovelSyncStatus(payload = {}) {
+  const response = await request.post('/sx/book/subscription/batch-change-status', cleanParams({
+    status: payload.status,
+    ids: Array.isArray(payload.ids) ? payload.ids.filter(Boolean) : [],
+    allMatched: Boolean(payload.allMatched),
+    keyword: trimText(payload.keyword),
+    sourceId: payload.sourceId,
+    targetType: payload.targetType,
+    currentStatus: payload.currentStatus,
+  }))
+  if (!response?.success) throw new Error(response?.message || '批量切换小说同步状态失败')
+  return Number(response.result || 0)
+}
+
 export async function deleteNovelSyncSubscription(id) {
   if (!id) throw new Error('缺少订阅ID')
   const response = await request.delete('/sx/book/subscription/delete', { params: { id } })

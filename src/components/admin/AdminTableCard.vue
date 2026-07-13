@@ -144,6 +144,14 @@ function toggleAllSelection(checked) {
 function emitSelectionChange() {
   emit('selection-change', selectedRows.value)
 }
+
+function clearSelection() {
+  if (!selectedKeys.value.size) return
+  selectedKeys.value = new Set()
+  emitSelectionChange()
+}
+
+defineExpose({ clearSelection })
 </script>
 
 <style scoped>

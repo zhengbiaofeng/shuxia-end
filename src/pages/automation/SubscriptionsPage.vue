@@ -109,9 +109,33 @@
         @reset="resetFilters"
         @search="loadSubscriptions(1)"
         @search-input="handleSearchInput"
-      />
+      >
+        <template #actions>
+          <el-dropdown
+            :disabled="bulkStatusLoading || !total"
+            trigger="click"
+            @command="handleAllStatusCommand"
+          >
+            <el-button :icon="SwitchButton" :loading="bulkStatusLoading">
+              一键启停
+              <el-icon class="dropdown-arrow"><ArrowDown /></el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="enable" :disabled="query.status === 1">
+                  启用全部筛选结果
+                </el-dropdown-item>
+                <el-dropdown-item command="disable" :disabled="query.status === 0" divided>
+                  停用全部筛选结果
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </template>
+      </AdminFilterBar>
 
       <AdminTableCard
+        ref="tableRef"
         v-loading="loading"
         :columns="columns"
         :current-page="query.pageNo"
@@ -119,11 +143,41 @@
         :rows="rows"
         min-width="1280px"
         row-clickable
+        selectable
         :total="total"
         @page-change="loadSubscriptions"
         @page-size-change="handlePageSizeChange"
         @row-click="openDetail"
+        @selection-change="handleSelectionChange"
       >
+        <template #header>
+          <div class="subscription-batch-toolbar">
+            <div class="subscription-selection-summary">
+              <strong>批量操作</strong>
+              <span>已选 {{ selectedRows.length }} 条</span>
+            </div>
+            <div class="subscription-batch-actions">
+              <el-button
+                :disabled="!selectedRows.length"
+                :icon="VideoPlay"
+                :loading="bulkStatusLoading"
+                type="primary"
+                plain
+                @click="changeSelectedStatus(true)"
+              >
+                批量启用
+              </el-button>
+              <el-button
+                :disabled="!selectedRows.length"
+                :icon="VideoPause"
+                :loading="bulkStatusLoading"
+                @click="changeSelectedStatus(false)"
+              >
+                批量停用
+              </el-button>
+            </div>
+          </div>
+        </template>
         <template #novel="{ row }">
           <div class="novel-cell">
             <strong :title="row.name">{{ row.name }}</strong>
@@ -155,6 +209,7 @@
           <span @click.stop>
             <el-switch
               :loading="statusLoadingId === row.id"
+              :disabled="bulkStatusLoading"
               :model-value="row.statusValue === 1"
               @change="(value) => toggleStatus(row, value)"
             />
@@ -358,12 +413,13 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
-import { CircleClose, Delete, EditPen, Plus, RefreshRight, Tickets, VideoPlay, View } from '@element-plus/icons-vue'
+import { ArrowDown, CircleClose, Delete, EditPen, Plus, RefreshRight, SwitchButton, Tickets, VideoPause, VideoPlay, View } from '@element-plus/icons-vue'
 import { AdminActionIcons, AdminFilterBar, AdminStatusBadge, AdminTableCard } from '../../components/admin'
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
 import { fetchBookList } from '../../api/books'
 import {
+  batchChangeNovelSyncStatus,
   changeNovelSyncStatus,
   createNovelSyncSubscription,
   deleteNovelSyncSubscription,
@@ -387,7 +443,9 @@ const quickLoading = ref(false)
 const pollLoading = ref(false)
 const submitting = ref(false)
 const statusLoadingId = ref('')
+const bulkStatusLoading = ref(false)
 const actionTaskLoadingId = ref('')
+const selectedRows = ref([])
 const rows = ref([])
 const metrics = ref([])
 const total = ref(0)
@@ -396,6 +454,7 @@ const previewResult = ref(null)
 const quickResult = ref(null)
 const editingId = ref('')
 const formRef = ref(null)
+const tableRef = ref(null)
 const novelOptions = ref([])
 const channelOptions = ref([])
 const novelsLoading = ref(false)
@@ -729,6 +788,79 @@ async function toggleStatus(row, enabled) {
   } finally {
     statusLoadingId.value = ''
   }
+}
+
+function handleSelectionChange(value) {
+  selectedRows.value = Array.isArray(value) ? value : []
+}
+
+async function handleAllStatusCommand(command) {
+  const enabled = command === 'enable'
+  const actionLabel = enabled ? '启用' : '停用'
+  if (!total.value) return
+  try {
+    await ElMessageBox.confirm(
+      `确认${actionLabel}当前筛选条件下的全部 ${total.value} 条小说同步订阅吗？`,
+      `一键${actionLabel}确认`,
+      {
+        type: enabled ? 'info' : 'warning',
+        confirmButtonText: `全部${actionLabel}`,
+        cancelButtonText: '取消',
+      },
+    )
+    bulkStatusLoading.value = true
+    const processedCount = await batchChangeNovelSyncStatus({
+      status: enabled ? 1 : 0,
+      allMatched: true,
+      keyword: query.keyword,
+      currentStatus: query.status,
+    })
+    ElMessage.success(`已${actionLabel} ${processedCount} 条小说同步订阅`)
+    clearTableSelection()
+    await loadSubscriptions(1)
+  } catch (error) {
+    if (!isDialogCancel(error)) ElMessage.error(error.message || `一键${actionLabel}失败`)
+  } finally {
+    bulkStatusLoading.value = false
+  }
+}
+
+async function changeSelectedStatus(enabled) {
+  const subscriptions = selectedRows.value.filter((row) => row?.id)
+  if (!subscriptions.length) return
+  const actionLabel = enabled ? '启用' : '停用'
+  try {
+    await ElMessageBox.confirm(
+      `确认${actionLabel}已选中的 ${subscriptions.length} 条小说同步订阅吗？`,
+      `批量${actionLabel}确认`,
+      {
+        type: enabled ? 'info' : 'warning',
+        confirmButtonText: `批量${actionLabel}`,
+        cancelButtonText: '取消',
+      },
+    )
+    bulkStatusLoading.value = true
+    const processedCount = await batchChangeNovelSyncStatus({
+      ids: subscriptions.map((row) => row.id),
+      status: enabled ? 1 : 0,
+    })
+    ElMessage.success(`已${actionLabel} ${processedCount} 条小说同步订阅`)
+    clearTableSelection()
+    await loadSubscriptions(query.pageNo)
+  } catch (error) {
+    if (!isDialogCancel(error)) ElMessage.error(error.message || `批量${actionLabel}失败`)
+  } finally {
+    bulkStatusLoading.value = false
+  }
+}
+
+function clearTableSelection() {
+  tableRef.value?.clearSelection?.()
+  selectedRows.value = []
+}
+
+function isDialogCancel(error) {
+  return error === 'cancel' || error === 'close'
 }
 
 async function previewSubscription(row) {
@@ -1099,6 +1231,38 @@ onBeforeUnmount(() => {
   max-width: 300px;
 }
 
+.subscription-batch-toolbar {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.subscription-selection-summary {
+  align-items: baseline;
+  display: flex;
+  gap: 10px;
+}
+
+.subscription-selection-summary strong {
+  color: #102557;
+  font-size: 14px;
+}
+
+.subscription-selection-summary span {
+  color: #617098;
+  font-size: 13px;
+}
+
+.subscription-batch-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.dropdown-arrow {
+  margin-left: 6px;
+}
+
 .sync-form {
   display: grid;
   gap: 20px;
@@ -1247,6 +1411,15 @@ onBeforeUnmount(() => {
   }
 
   .runtime-actions {
+    flex-wrap: wrap;
+  }
+
+  .subscription-batch-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .subscription-batch-actions {
     flex-wrap: wrap;
   }
 
