@@ -1,70 +1,16 @@
 <template>
   <ResourceShell
     :actions="pageActions"
-    active-menu="小说同步"
-    title="小说同步"
-    subtitle="为本地小说绑定外站详情或目录地址，手动预览解析结果，并按订阅计划同步缺失章节"
+    active-menu="追更管理"
+    title="追更管理"
+    subtitle="管理已建立的小说追更计划、运行状态和批量启停；新增采集请前往采集工作台"
     @action="handlePageAction"
   >
     <div class="novel-sync-stack">
-      <section class="quick-sync-panel">
-        <header class="quick-sync-header">
-          <div>
-            <span>小说追更</span>
-            <h2>粘贴单本链接，自动同步</h2>
-          </div>
-          <el-tag effect="plain" type="info">仅用于小说站点追更</el-tag>
-        </header>
-
-        <el-form class="quick-sync-form" :model="quickForm" label-position="top" @submit.prevent>
-          <el-form-item class="quick-url-field" label="小说详情或目录链接">
-            <el-input
-              v-model="quickForm.detailUrl"
-              clearable
-              placeholder="https://example.com/novel/123/"
-              size="large"
-              @keyup.enter="submitQuickSync"
-            />
-          </el-form-item>
-          <el-form-item label="请求间隔 ms">
-            <el-input-number
-              v-model="quickForm.requestDelayMs"
-              :max="10000"
-              :min="0"
-              :step="500"
-              class="quick-number"
-            />
-          </el-form-item>
-          <el-form-item label="立即同步">
-            <el-switch v-model="quickForm.syncChapters" active-text="同步" inactive-text="预览" />
-          </el-form-item>
-          <el-button :icon="VideoPlay" :loading="quickLoading" size="large" type="primary" @click="submitQuickSync">
-            开始自动同步
-          </el-button>
-        </el-form>
-
-        <div v-if="quickResult" class="quick-sync-result">
-          <div class="quick-result-title">
-            <strong>{{ quickResult.bookName }}</strong>
-            <span>{{ quickResult.authorName }} / {{ quickResult.sourceName }}</span>
-          </div>
-          <div class="quick-result-stats">
-            <span>新增 {{ quickResult.runResult.addedChapterCount }}</span>
-            <span>跳过 {{ quickResult.runResult.skippedChapterCount }}</span>
-            <span>失败 {{ quickResult.runResult.failedChapterCount }}</span>
-            <span>订阅 {{ quickResult.createdSubscription ? '已创建' : '已复用' }}</span>
-          </div>
-          <div class="quick-result-actions">
-            <el-button text type="primary" @click="openQuickPreview">查看结果</el-button>
-            <el-button text @click="router.push('/automation/tasks')">任务中心</el-button>
-          </div>
-        </div>
-      </section>
-
       <section v-if="runningRows.length" class="runtime-panel">
         <header class="runtime-header">
           <div>
-            <span>后台同步</span>
+            <span>后台追更</span>
             <h2>{{ runningRows.length }} 个任务运行中</h2>
           </div>
           <div class="runtime-actions">
@@ -243,7 +189,7 @@
 
     <el-dialog
       v-model="formVisible"
-      :title="editingId ? '编辑小说同步' : '新增小说同步'"
+      :title="editingId ? '编辑追更计划' : '新增追更计划'"
       width="860px"
       destroy-on-close
       @closed="resetForm"
@@ -349,7 +295,7 @@
       </template>
     </el-dialog>
 
-    <el-drawer v-model="detailVisible" title="小说同步详情" size="720px" destroy-on-close>
+    <el-drawer v-model="detailVisible" title="追更详情" size="720px" destroy-on-close>
       <div v-loading="detailLoading" class="detail-panel">
         <template v-if="selectedDetail">
           <el-descriptions :column="1" border>
@@ -447,7 +393,6 @@ import {
   fetchNovelSyncDetail,
   fetchNovelSyncPage,
   fetchScrapeChannelsPage,
-  quickSyncNovelByUrl,
   runNovelSyncNow,
   runTaskAction,
   updateNovelSyncSubscription,
@@ -460,7 +405,6 @@ const detailVisible = ref(false)
 const formVisible = ref(false)
 const previewVisible = ref(false)
 const previewLoading = ref(false)
-const quickLoading = ref(false)
 const pollLoading = ref(false)
 const submitting = ref(false)
 const statusLoadingId = ref('')
@@ -473,7 +417,6 @@ const metrics = ref([])
 const total = ref(0)
 const selectedDetail = ref(null)
 const previewResult = ref(null)
-const quickResult = ref(null)
 const editingId = ref('')
 const formRef = ref(null)
 const tableRef = ref(null)
@@ -489,15 +432,10 @@ const query = reactive({
   keyword: '',
   status: undefined,
 })
-const quickForm = reactive({
-  detailUrl: '',
-  requestDelayMs: 1000,
-  syncChapters: true,
-})
 const form = reactive(defaultForm())
 const pageActions = [
   { label: '刷新', icon: RefreshRight },
-  { label: '新增同步', icon: Plus, type: 'primary' },
+  { label: '新增追更', icon: Plus, type: 'primary' },
 ]
 const columns = [
   { key: 'novel', label: '小说' },
@@ -602,47 +540,11 @@ function handlePageSizeChange(size) {
 }
 
 function handlePageAction(action) {
-  if (action.label === '新增同步') {
+  if (action.label === '新增追更') {
     openCreate()
     return
   }
   loadSubscriptions(query.pageNo)
-}
-
-async function submitQuickSync() {
-  const detailUrl = quickForm.detailUrl.trim()
-  if (!detailUrl) {
-    ElMessage.warning('请先输入小说链接')
-    return
-  }
-  if (!/^https?:\/\//i.test(detailUrl)) {
-    ElMessage.warning('请输入 http 或 https 开头的小说链接')
-    return
-  }
-  quickLoading.value = true
-  quickResult.value = null
-  try {
-    quickResult.value = await quickSyncNovelByUrl({
-      detailUrl,
-      requestDelayMs: quickForm.requestDelayMs,
-      syncChapters: quickForm.syncChapters,
-    })
-    previewResult.value = quickResult.value.runResult
-    previewVisible.value = !quickResult.value.submittedAsync
-    ElMessage.success(quickForm.syncChapters ? '同步任务已提交，正在后台处理' : '解析预览已完成')
-    await loadSubscriptions(1)
-    syncSelectedDetail()
-  } catch (error) {
-    ElMessage.error(error.message || '小说链接同步失败')
-  } finally {
-    quickLoading.value = false
-  }
-}
-
-function openQuickPreview() {
-  if (!quickResult.value) return
-  previewResult.value = quickResult.value.runResult
-  previewVisible.value = true
 }
 
 async function loadSubscriptions(pageNo = query.pageNo, options = {}) {
@@ -1064,7 +966,7 @@ function syncSelectedDetail() {
 function startPolling() {
   stopPolling()
   pollTimer = window.setInterval(() => {
-    if (runningRows.value.length || quickLoading.value || previewLoading.value) {
+    if (runningRows.value.length || previewLoading.value) {
       loadSubscriptions(query.pageNo, { silent: true })
     }
   }, 5000)
