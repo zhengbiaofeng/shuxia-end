@@ -927,6 +927,11 @@ function normalizeNovelQuickSyncResult(item = {}) {
 }
 
 function normalizeNovelUrlAnalyze(item = {}) {
+  const warningTextMap = {
+    'No existing source configuration matched; confirmation will create one automatically': '未匹配到现有来源配置，确认采集时会自动创建',
+    'No existing scrape rule matched; confirmation will create an automatic rule': '未匹配到现有站点适配，确认采集时会自动创建',
+    'No chapters were detected during analysis; confirm only after checking the URL type and site adapter': '分析阶段没有识别到章节，请确认网址类型和站点适配后再采集',
+  }
   return {
     raw: item,
     detailUrl: item.detailUrl || '',
@@ -946,8 +951,8 @@ function normalizeNovelUrlAnalyze(item = {}) {
     chapterCount: Number(item.chapterCount || 0),
     latestChapterTitle: item.latestChapterTitle || '--',
     chapterTitleSamples: Array.isArray(item.chapterTitleSamples) ? item.chapterTitleSamples : [],
-    warnings: Array.isArray(item.warnings) ? item.warnings : [],
-    message: item.message || '网址分析完成，尚未创建任何记录',
+    warnings: Array.isArray(item.warnings) ? item.warnings.map((text) => warningTextMap[text] || text) : [],
+    message: '网址分析完成，尚未创建或更新书籍、来源、规则、追更计划和任务',
   }
 }
 
