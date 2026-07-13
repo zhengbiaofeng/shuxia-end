@@ -168,7 +168,7 @@
             </div>
             <div class="subscription-batch-actions">
               <el-button
-                :disabled="!selectedRows.length"
+                :disabled="bulkActionLoading || !selectedRows.length"
                 :icon="VideoPlay"
                 :loading="bulkStatusLoading"
                 type="primary"
@@ -178,7 +178,7 @@
                 批量启用
               </el-button>
               <el-button
-                :disabled="!selectedRows.length"
+                :disabled="bulkActionLoading || !selectedRows.length"
                 :icon="VideoPause"
                 :loading="bulkStatusLoading"
                 @click="changeSelectedStatus(false)"
@@ -186,7 +186,7 @@
                 批量停用
               </el-button>
               <el-button
-                :disabled="!selectedRows.length"
+                :disabled="bulkActionLoading || !selectedRows.length"
                 :icon="Delete"
                 :loading="bulkDeleteLoading"
                 type="danger"
