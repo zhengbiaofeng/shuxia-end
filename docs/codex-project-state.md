@@ -111,6 +111,15 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Recently Completed Work
 
+- Consolidated the novel collection workflow into a user-oriented automation information architecture:
+  - `/automation/collection` is the new Collection Workbench with `单本采集` and `批量采集` views.
+  - Single collection auto-detects Douban metadata pages, novel detail/catalog pages, and list/rank pages; list-like URLs can switch to batch collection with the URL preserved.
+  - Batch collection reuses enabled novel scrape rules as `站点适配`, supports single-page or paginated discovery, candidate selection, and existing batch-sync task submission.
+  - `/automation/following` is now the dedicated Follow Management page. The duplicate quick-URL form was removed; bulk enable/disable, selected delete, and delete-all remain available.
+  - Primary automation navigation is reduced to `采集工作台`, `追更管理`, and `任务中心`. Rule/channel maintenance remains available as the advanced `采集设置` entry.
+  - Legacy `/automation/smart-scrape` and `/automation/subscriptions` routes redirect to the new entry points.
+  - This phase is frontend-only and continues to reuse the existing auto-scrape, quick-sync, discovery, batch-sync, subscription, and task APIs.
+  - Verification: `npm run build` passed; browser checks passed on the default desktop viewport and a 390x844 mobile viewport with no document-level horizontal overflow.
 - Switched frontend login to `POST /sys/mLogin` and removed the login-page image captcha requirement.
 - Logout in the sidebar is now an explicit `退出登录` button and routes back to `/login` after clearing auth state.
 - Removed frontend category mojibake fallback so frontend no longer masks backend dirty data.
