@@ -79,20 +79,20 @@ export const automationPages = {
       { label: '添加站点适配', icon: Plus, type: 'primary' },
     ],
     filters: {
-      search: { placeholder: '搜索扫描源名称、站点或渠道' },
+      search: { placeholder: '搜索站点适配名称、站点或渠道' },
       filters: [
         { label: '全部类型', value: '全部类型', options: ['全部类型', '书籍', '小说', '漫画', '有声'] },
         { label: '全部状态', value: '全部状态', options: ['全部状态', '启用', '禁用'] },
       ],
     },
     notes: [
-      '扫描源列表直接来自 /sx/book/scrape-rule/list，前端将规则和模板绑定信息合并展示',
-      '站点访问配置可在添加/编辑扫描源时维护；连接模板仅用于复用或测试独立访问配置',
+      '站点适配列表直接来自 /sx/book/scrape-rule/list，前端将规则和模板绑定信息合并展示',
+      '站点访问配置可在添加或编辑站点适配时维护；连接模板仅用于复用或测试独立访问配置',
     ],
   },
   channels: {
     title: '连接模板',
-    subtitle: '维护可复用的站点访问模板，普通扫描源可直接在编辑页内配置请求信息',
+    subtitle: '维护可复用的站点访问模板，普通站点适配可直接在编辑页内配置请求信息',
     activeMenu: '采集工作台',
     actions: [
       { label: '返回采集设置', icon: RefreshRight },

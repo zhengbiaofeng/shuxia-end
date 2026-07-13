@@ -1,6 +1,6 @@
 <template>
   <ResourceShell
-    active-menu="扫描源管理"
+    active-menu="采集工作台"
     :actions="actions"
     :subtitle="pageSubtitle"
     :tabs="['基础信息']"
@@ -19,8 +19,8 @@
         <section class="form-section">
           <h2>基础信息</h2>
           <div class="form-grid">
-            <el-form-item label="扫描源名称" prop="ruleName">
-              <el-input v-model="form.ruleName" placeholder="请输入扫描源名称" />
+            <el-form-item label="适配名称" prop="ruleName">
+              <el-input v-model="form.ruleName" placeholder="请输入站点适配名称" />
             </el-form-item>
             <el-form-item label="内容类型" prop="bizType">
               <el-select v-model="form.bizType" placeholder="请选择内容类型" filterable @change="loadChannelOptions">
@@ -94,10 +94,10 @@
       </el-form>
 
       <aside class="rule-form__side">
-        <h2>{{ isEdit ? '编辑扫描源' : '创建扫描源' }}</h2>
+        <h2>{{ isEdit ? '编辑站点适配' : '创建站点适配' }}</h2>
         <div class="preview-step active"><span>1</span><strong>配置来源</strong><p>填写站点、渠道、请求地址和请求头</p></div>
         <div class="preview-step active"><span>2</span><strong>调试选择器</strong><p>保存前可以请求真实页面，确认字段命中情况</p></div>
-        <div class="preview-step"><span>3</span><strong>写入扫描源</strong><p>保存后会刷新扫描源列表，可启停、发现小说和再次调试</p></div>
+        <div class="preview-step"><span>3</span><strong>保存站点适配</strong><p>保存后可在采集工作台用于发现小说，也可以再次调试</p></div>
 
         <section v-if="debugResult" class="debug-card" :class="{ 'is-pass': debugResult.passed }">
           <header>
@@ -126,8 +126,8 @@
 
         <div class="side-actions">
           <el-button :loading="analyzing" :icon="DataAnalysis" @click="runAnalyze">自动分析非必填项</el-button>
-          <el-button :loading="debugging" :icon="DataAnalysis" @click="runDebug">调试扫描源</el-button>
-          <el-button :loading="submitting" type="primary" @click="submitForm">保存扫描源</el-button>
+          <el-button :loading="debugging" :icon="DataAnalysis" @click="runDebug">调试适配</el-button>
+          <el-button :loading="submitting" type="primary" @click="submitForm">保存站点适配</el-button>
         </div>
 
         <AdminInfoBox title="表单提示" :icon="InfoFilled" :items="tips" />
@@ -164,14 +164,14 @@ const debugging = ref(false)
 const debugResult = ref(null)
 const channelOptions = ref([])
 const isEdit = computed(() => Boolean(route.query.id))
-const pageTitle = computed(() => (isEdit.value ? '编辑扫描源' : '添加扫描源'))
+const pageTitle = computed(() => (isEdit.value ? '编辑站点适配' : '添加站点适配'))
 const pageSubtitle = computed(() => '在一个页面内配置内容来源、请求策略和字段选择器，保存前可直接调试真实页面')
 const ACTION_ANALYZE = '自动分析'
 const actions = computed(() => [
   { label: '取消' },
   { label: ACTION_ANALYZE, icon: DataAnalysis },
-  { label: '调试扫描源', icon: DataAnalysis },
-  { label: '保存扫描源', type: 'primary' },
+  { label: '调试适配', icon: DataAnalysis },
+  { label: '保存站点适配', type: 'primary' },
 ])
 const bizOptions = BIZ_TYPE_OPTIONS
 const requestMethods = REQUEST_METHOD_OPTIONS
@@ -195,7 +195,7 @@ const selectorFields = [
   { key: 'contentSelector', label: '正文选择器', placeholder: '.content' },
 ]
 const rules = {
-  ruleName: [{ required: true, message: '请输入扫描源名称', trigger: 'blur' }],
+  ruleName: [{ required: true, message: '请输入站点适配名称', trigger: 'blur' }],
   bizType: [{ required: true, message: '请选择内容类型', trigger: 'change' }],
   siteName: [{ required: true, message: '请输入站点名称', trigger: 'blur' }],
   priority: [{ required: true, message: '请输入优先级', trigger: 'change' }],
@@ -262,11 +262,11 @@ function handleAction(action) {
     runAnalyze()
     return
   }
-  if (action.label === '调试扫描源') {
+  if (action.label === '调试适配') {
     runDebug()
     return
   }
-  if (action.label === '保存扫描源') {
+  if (action.label === '保存站点适配') {
     submitForm()
   }
 }
@@ -278,7 +278,7 @@ async function loadRule() {
     assignForm(await fetchScrapeRuleDetail(route.query.id))
     await loadChannelOptions()
   } catch (error) {
-    ElMessage.error(error.message || '获取扫描源详情失败')
+    ElMessage.error(error.message || '获取站点适配详情失败')
   } finally {
     loading.value = false
   }
@@ -329,7 +329,7 @@ async function runAnalyze() {
       ElMessage.info('没有新的空字段可填充，请查看调试结果')
     }
   } catch (error) {
-    ElMessage.error(error.message || '自动分析扫描源失败')
+    ElMessage.error(error.message || '自动分析站点适配失败')
   } finally {
     analyzing.value = false
   }
@@ -377,7 +377,7 @@ async function runDebug() {
     debugResult.value = await debugScrapeRule(buildDebugPayload())
     ElMessage[debugResult.value?.passed ? 'success' : 'warning'](debugResult.value?.passed ? '调试通过' : '调试未通过，请检查选择器')
   } catch (error) {
-    ElMessage.error(error.message || '调试扫描源失败')
+    ElMessage.error(error.message || '调试站点适配失败')
   } finally {
     debugging.value = false
   }
@@ -409,14 +409,14 @@ async function submitForm() {
   try {
     if (isEdit.value) {
       await updateScrapeRule(form)
-      ElMessage.success('扫描源已保存')
+      ElMessage.success('站点适配已保存')
     } else {
       await createScrapeRule(form)
-      ElMessage.success('扫描源已创建')
+      ElMessage.success('站点适配已创建')
     }
     router.push('/automation/rules')
   } catch (error) {
-    ElMessage.error(error.message || '保存扫描源失败')
+    ElMessage.error(error.message || '保存站点适配失败')
   } finally {
     submitting.value = false
   }

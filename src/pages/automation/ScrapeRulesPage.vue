@@ -77,14 +77,14 @@
         </template>
       </AdminTableCard>
 
-      <AdminInfoBox title="扫描源说明" :icon="InfoFilled" :items="page.notes" />
+      <AdminInfoBox title="站点适配说明" :icon="InfoFilled" :items="page.notes" />
     </div>
 
-    <el-drawer v-model="detailVisible" title="扫描源详情" size="640px" destroy-on-close>
+    <el-drawer v-model="detailVisible" title="站点适配详情" size="640px" destroy-on-close>
       <div v-loading="detailLoading" class="detail-panel">
         <template v-if="selectedRule">
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="扫描源名称">{{ selectedRule.ruleName || '--' }}</el-descriptions-item>
+            <el-descriptions-item label="适配名称">{{ selectedRule.ruleName || '--' }}</el-descriptions-item>
             <el-descriptions-item label="内容类型">{{ bizLabel(selectedRule.bizType) }}</el-descriptions-item>
             <el-descriptions-item label="站点名称">{{ selectedRule.siteName || '--' }}</el-descriptions-item>
             <el-descriptions-item label="连接模板编码">{{ selectedRule.channelCode || '--' }}</el-descriptions-item>
@@ -108,7 +108,7 @@
           </section>
 
           <section class="detail-actions">
-            <el-button type="primary" :icon="DataAnalysis" @click="debugSelectedRule">调试扫描源</el-button>
+            <el-button type="primary" :icon="DataAnalysis" @click="debugSelectedRule">调试适配</el-button>
             <el-button :icon="DataAnalysis" @click="openRuleBatchSync(selectedRule, 'single')">单页发现</el-button>
             <el-button type="success" :icon="Refresh" @click="openRuleBatchSync(selectedRule, 'site')">整站发现</el-button>
             <el-button :icon="EditPen" @click="editRule(selectedRule)">编辑</el-button>
@@ -148,7 +148,7 @@
       <div class="batch-sync">
         <section class="batch-sync__summary">
           <div>
-            <span>扫描源</span>
+            <span>站点适配</span>
             <strong>{{ batchRule?.ruleName || batchRule?.name || '--' }}</strong>
           </div>
           <div>
@@ -172,7 +172,7 @@
                 v-model="batchForm.entryUrlsText"
                 type="textarea"
                 :rows="batchForm.scope === 'site' ? 3 : 1"
-                placeholder="每行一个分类/排行/列表页地址；留空时使用扫描源的列表地址"
+                placeholder="每行一个分类/排行/列表页地址；留空时使用站点适配的列表地址"
               />
             </el-form-item>
             <div class="batch-sync__form-grid">
@@ -284,7 +284,7 @@ const page = {
   ...automationPages.rules,
 }
 const columns = [
-  { key: 'name', label: '扫描源' },
+  { key: 'name', label: '站点适配' },
   { key: 'content', label: '内容类型' },
   { key: 'source', label: '目标站点' },
   { key: 'entry', label: '入口地址' },
@@ -343,7 +343,7 @@ const batchScopeOptions = [
 ]
 
 const searchConfig = computed(() => ({
-  placeholder: '搜索扫描源名称',
+  placeholder: '搜索站点适配名称',
   value: query.ruleName,
 }))
 const filters = computed(() => [
@@ -462,7 +462,7 @@ async function loadRules(pageNo = query.pageNo) {
     rows.value = []
     metrics.value = []
     total.value = 0
-    ElMessage.error(error.message || '获取扫描源失败')
+    ElMessage.error(error.message || '获取站点适配失败')
   } finally {
     loading.value = false
   }
@@ -476,7 +476,7 @@ async function openRuleDetail(row) {
   try {
     selectedRule.value = await fetchScrapeRuleDetail(row.id)
   } catch (error) {
-    ElMessage.error(error.message || '获取扫描源详情失败')
+    ElMessage.error(error.message || '获取站点适配详情失败')
   } finally {
     detailLoading.value = false
   }
@@ -486,10 +486,10 @@ async function toggleRuleStatus(row, enabled) {
   statusLoadingId.value = row.id
   try {
     await changeScrapeRuleStatus({ id: row.id, status: enabled ? 1 : 0 })
-    ElMessage.success(enabled ? '扫描源已启用' : '扫描源已禁用')
+    ElMessage.success(enabled ? '站点适配已启用' : '站点适配已禁用')
     await loadRules(query.pageNo)
   } catch (error) {
-    ElMessage.error(error.message || '切换扫描源状态失败')
+    ElMessage.error(error.message || '切换站点适配状态失败')
   } finally {
     statusLoadingId.value = ''
   }
@@ -528,7 +528,7 @@ async function runRuleDebug(ruleId) {
   try {
     debugResult.value = await debugScrapeRule({ ruleId, sampleLimit: 5 })
   } catch (error) {
-    ElMessage.error(error.message || '调试扫描源失败')
+    ElMessage.error(error.message || '调试站点适配失败')
   } finally {
     debugLoading.value = false
   }
@@ -552,7 +552,7 @@ async function openRuleBatchSync(row, scope = 'single') {
       await discoverBatchCandidates()
     }
   } catch (error) {
-    ElMessage.error(error.message || '获取扫描源详情失败')
+    ElMessage.error(error.message || '获取站点适配详情失败')
   }
 }
 
@@ -564,7 +564,7 @@ function handleBatchScopeChange() {
 async function discoverBatchCandidates() {
   const ruleId = batchRule.value?.id
   if (!ruleId) {
-    ElMessage.warning('请先选择扫描源')
+    ElMessage.warning('请先选择站点适配')
     return
   }
   batchLoading.value = true
@@ -637,16 +637,16 @@ function optionalPositive(value) {
 
 async function confirmDeleteRule(row) {
   try {
-    await ElMessageBox.confirm(`确认删除扫描源「${row.name}」吗？`, '删除确认', {
+    await ElMessageBox.confirm(`确认删除站点适配「${row.name}」吗？`, '删除确认', {
       type: 'warning',
       confirmButtonText: '删除',
       cancelButtonText: '取消',
     })
     await deleteScrapeRule(row.id)
-    ElMessage.success('扫描源已删除')
+    ElMessage.success('站点适配已删除')
     await loadRules(rows.value.length === 1 && query.pageNo > 1 ? query.pageNo - 1 : query.pageNo)
   } catch (error) {
-    if (error !== 'cancel') ElMessage.error(error.message || '删除扫描源失败')
+    if (error !== 'cancel') ElMessage.error(error.message || '删除站点适配失败')
   }
 }
 
