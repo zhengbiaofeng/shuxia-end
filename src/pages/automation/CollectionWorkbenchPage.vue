@@ -470,7 +470,7 @@ const singleKindLabel = computed(() => ({
   novel: '小说详情或目录页',
   batch: '列表或排行页',
 }[singleKind.value] || '自动识别'))
-const singleStepIndex = computed(() => ({ input: 0, preview: 1, result: 2 }[singlePhase.value] ?? 0)
+const singleStepIndex = computed(() => ({ input: 0, preview: 1, result: 2 }[singlePhase.value] ?? 0))
 const metadataWarnings = computed(() => metadataPreview.value?.warnings || [])
 const metadataCoverSrc = computed(() => {
   if (coverLoadFailed.value) return ''
