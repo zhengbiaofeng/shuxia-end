@@ -433,6 +433,17 @@ npm run build
   - Backend: `mvn -f "E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\pom.xml" -pl ":sx-book" -am -DskipTests compile` passed.
   - Frontend: `npm run build` passed with existing Rolldown pure-annotation and chunk-size warnings.
 
+## 2026-07-13 Novel Subscription Batch Status Note
+
+- Novel Sync now exposes an `一键启停` menu in the filter bar for enabling or disabling all subscriptions matching the current keyword/status filter.
+- The subscriptions table now supports row selection with `批量启用` and `批量停用` actions.
+- All bulk operations require confirmation and show loading/result feedback.
+- Backend endpoint: `POST /sx/book/subscription/batch-change-status`.
+- The endpoint supports explicit subscription IDs or all current filter matches, remains scoped to the current user, and synchronizes every processed subscription's Quartz schedule.
+- No SQL migration is required.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-subscription-batch-status-readme.md`.
+- Verification: frontend `npm run build` and backend `:sx-book` compile passed.
+
 ## Integration Priority
 
 Current user priority:
