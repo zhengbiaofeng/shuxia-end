@@ -481,8 +481,6 @@ npm run build
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-subscription-batch-status-readme.md`.
 - Verification: frontend `npm run build`, backend `:sx-book` compile, and desktop/narrow browser layout checks passed.
 
-## Integration Priority
-
 ## 2026-07-14 Qimao Adapter And Task Control Verification
 
 - Added a dedicated Qimao API adapter for book metadata, full chapter catalogs, signed chapter-content requests, and content decryption.
