@@ -111,6 +111,14 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Recently Completed Work
 
+- Fixed stale progress and invalid controls for Collection Workbench batch tasks:
+  - Task Center silently refreshes pending/running rows every 3 seconds and updates the selected task detail without repeated loading overlays.
+  - SCRAPE progress now uses processed counts against total candidates and displays `processed/total`; the previous fixed 50% running value was removed.
+  - `RULE_BATCH_SYNC` parent tasks expose only cooperative termination while running. Pause, resume, and direct retry are disabled because the batch candidate context is not persisted for recovery.
+  - The batch worker checks the parent task before and after candidates and during inter-candidate delays, and no longer overwrites a user-requested `TERMINATED` result during finalization.
+  - The reported 七猫 task was not stuck: it failed about 1.6 seconds after submission because the current rule could not parse chapter titles/links. The stale page state caused the misleading `处理中 50%` display.
+  - Verification passed: frontend build, `:sx-book` compile, full backend package, Docker rebuild, API action flags, browser auto-refresh from `0/5` to `5/5`, and terminate result `TERMINATED`.
+  - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\rule-batch-task-polling-control-readme.md`.
 - Completed the task-center mojibake repair across frontend, backend, and historical data:
   - Task Center static labels, filters, table headings, detail actions, and API fallback errors now use clean Chinese; the task-type filter includes `SCRAPE / 刮削任务`.
   - `SxScrapeExecuteService` and the PDF content reader no longer emit the identified mojibake strings into task errors or logs.

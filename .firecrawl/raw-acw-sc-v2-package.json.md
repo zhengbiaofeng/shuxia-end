@@ -1,0 +1,52 @@
+{
+ "name": "acw-sc-v2",
+ "version": "1.0.0",
+ "description": "",
+ "scripts": {
+ "start": "nodemon app.js",
+ "build": "parcel build src/index.html",
+ "dev": "parcel src/index.html"
+ },
+ "repository": {
+ "type": "git",
+ "url": "git+https://github.com/WangYihang/acw-sc-v2.git"
+ },
+ "author": "Yihang Wang ",
+ "license": "ISC",
+ "bugs": {
+ "url": "https://github.com/WangYihang/acw-sc-v2/issues"
+ },
+ "homepage": "https://github.com/WangYihang/acw-sc-v2#readme",
+ "dependencies": {
+ "@parcel/compressor-brotli": "^2.11.0",
+ "@parcel/compressor-gzip": "^2.11.0",
+ "body-parser": "^1.20.2",
+ "bootstrap": "5.3.2",
+ "esprima": "^4.0.1",
+ "estraverse": "^5.3.0",
+ "express": "^4.18.2",
+ "jsdom": "^25.0.0",
+ "morgan": "^1.10.0",
+ "nodemon": "^3.1.4",
+ "parcel": "^2.12.0",
+ "buffer": "^5.5.0\|\|^6.0.0",
+ "vm-browserify": "^1.1.2",
+ "browserify-zlib": "^0.2.0",
+ "crypto-browserify": "^3.12.0",
+ "https-browserify": "^1.0.0",
+ "os-browserify": "^0.3.0",
+ "path-browserify": "^1.0.0",
+ "events": "^3.1.0",
+ "stream-browserify": "^3.0.0",
+ "prismjs": "^1.29.0",
+ "assert": "^2.0.0",
+ "process": "^0.11.10",
+ "punycode": "^1.4.1",
+ "stream-http": "^3.1.0",
+ "string\_decoder": "^1.3.0",
+ "url": "^0.11.0",
+ "util": "^0.12.3"
+ },
+ "devDependencies": {
+ }
+}
