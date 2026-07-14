@@ -73,7 +73,7 @@
           </template>
           <template #progress="{ row }">
             <div class="progress-cell">
-              <span>{{ row.progress ? `${row.progress}%` : '\u6392\u961f\u4e2d' }}</span>
+              <span>{{ row.progressLabel }}</span>
               <el-progress :percentage="row.progress" :status="row.tone === 'red' ? 'exception' : undefined" :show-text="false" :stroke-width="4" />
             </div>
           </template>
@@ -147,7 +147,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Close, CloseBold, Delete, RefreshRight, VideoPause, View } from '@element-plus/icons-vue'
 import { AdminActionIcons, AdminFilterBar, AdminStatusBadge, AdminTableCard } from '../../components/admin'
@@ -209,10 +209,13 @@ const loading = ref(false)
 const detailLoading = ref(false)
 const actionLoading = ref('')
 const batchDeleteLoading = ref(false)
+const silentRefreshing = ref(false)
 const activeTab = ref(0)
 const selectedTask = ref(null)
 const selectedRows = ref([])
 const timelineRows = ref([])
+const TASK_POLL_INTERVAL_MS = 3000
+let taskPollTimer
 const query = reactive({
   pageNo: 1,
   pageSize: 10,
@@ -280,9 +283,9 @@ function handlePageSizeChange(size) {
   loadTasks(1)
 }
 
-async function loadTasks(pageNo = query.pageNo) {
+async function loadTasks(pageNo = query.pageNo, { silent = false } = {}) {
   query.pageNo = pageNo
-  loading.value = true
+  if (!silent) loading.value = true
   try {
     const data = await fetchTaskCenterPage(query)
     page.metrics = data.metrics
@@ -294,28 +297,30 @@ async function loadTasks(pageNo = query.pageNo) {
     query.pageSize = data.pageSize || query.pageSize
     if (selectedTask.value) {
       const sameTask = data.rows.find((row) => row.taskId === selectedTask.value.taskId && row.taskType === selectedTask.value.taskType)
-      if (sameTask) await selectTask(sameTask)
+      if (sameTask) await selectTask(sameTask, { silent })
       else clearSelection()
-    } else if (data.rows[0]) {
-      await selectTask(data.rows[0])
+    } else if (data.rows[0] && !silent) {
+      await selectTask(data.rows[0], { silent })
     } else {
-      clearSelection()
+      if (!silent) clearSelection()
     }
   } catch (error) {
-    page.metrics = []
-    page.rows = []
-    page.total = 0
-    clearSelection()
-    ElMessage.error(error.message || '获取任务中心数据失败')
+    if (!silent) {
+      page.metrics = []
+      page.rows = []
+      page.total = 0
+      clearSelection()
+      ElMessage.error(error.message || '获取任务中心数据失败')
+    }
   } finally {
-    loading.value = false
+    if (!silent) loading.value = false
   }
 }
 
-async function selectTask(row) {
+async function selectTask(row, { silent = false } = {}) {
   if (!row?.taskType || !row?.taskId) return
   selectedTask.value = row
-  detailLoading.value = true
+  if (!silent) detailLoading.value = true
   try {
     const [detail, timeline] = await Promise.all([
       fetchTaskDetail({ taskType: row.taskType, taskId: row.taskId }).catch(() => row),
@@ -325,7 +330,19 @@ async function selectTask(row) {
     timelineRows.value = timeline.rows || []
     page.detail = buildTaskDetail(detail, timelineRows.value)
   } finally {
-    detailLoading.value = false
+    if (!silent) detailLoading.value = false
+  }
+}
+
+async function pollActiveTasks() {
+  const hasActiveTask = page.rows.some((row) => [0, 1].includes(row.statusValue))
+    || [0, 1].includes(selectedTask.value?.statusValue)
+  if (!hasActiveTask || loading.value || silentRefreshing.value || actionLoading.value) return
+  silentRefreshing.value = true
+  try {
+    await loadTasks(query.pageNo, { silent: true })
+  } finally {
+    silentRefreshing.value = false
   }
 }
 
@@ -394,7 +411,14 @@ async function handleTaskAction(row, action) {
   }
 }
 
-onMounted(loadTasks)
+onMounted(() => {
+  loadTasks()
+  taskPollTimer = window.setInterval(pollActiveTasks, TASK_POLL_INTERVAL_MS)
+})
+
+onBeforeUnmount(() => {
+  window.clearInterval(taskPollTimer)
+})
 </script>
 
 <style scoped>

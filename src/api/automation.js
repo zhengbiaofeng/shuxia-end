@@ -681,7 +681,7 @@ function normalizeScrapeChannelPayload(payload = {}) {
 
 function normalizeTaskRow(item = {}) {
   const statusInfo = taskStatusInfo(item.taskStatus)
-  const progress = taskProgress(item.taskStatus)
+  const progressInfo = taskProgress(item)
   const title = item.bookName || item.taskId || '--'
 
   return {
@@ -696,7 +696,8 @@ function normalizeTaskRow(item = {}) {
     status: item.taskStatusName || statusInfo.label,
     statusValue: Number(item.taskStatus),
     tone: statusInfo.tone,
-    progress,
+    progress: progressInfo.value,
+    progressLabel: progressInfo.label,
     start: formatDateTime(item.createTime),
     duration: item.finishedTime ? formatDateTime(item.finishedTime) : '--',
     cover: String(title).slice(0, 1),
@@ -1235,15 +1236,26 @@ function taskStatusInfo(value) {
   return map[Number(value)] || { label: '--', tone: 'slate' }
 }
 
-function taskProgress(value) {
-  const map = {
-    0: 0,
-    1: 50,
-    2: 100,
-    3: 100,
-  }
+function taskProgress(item = {}) {
+  const status = Number(item.taskStatus)
+  const total = Math.max(0, Number(item.chapterCount || 0))
+  const countValues = [item.addedChapterCount, item.skippedChapterCount, item.failedChapterCount]
+  const hasProcessedCounts = countValues.some((value) => value !== null && value !== undefined && value !== '')
+  const processed = hasProcessedCounts
+    ? countValues.reduce((sum, value) => sum + Math.max(0, Number(value || 0)), 0)
+    : 0
 
-  return map[Number(value)] ?? 0
+  if (status === 0) return { value: 0, label: '排队中' }
+  if (total > 0 && hasProcessedCounts) {
+    const percentage = Math.min(100, Math.round((processed / total) * 100))
+    return {
+      value: status === 1 ? Math.min(99, percentage) : 100,
+      label: `${Math.min(processed, total)}/${total}`,
+    }
+  }
+  if (status === 1) return { value: 1, label: '处理中' }
+  if (status === 2 || status === 3) return { value: 100, label: '100%' }
+  return { value: 0, label: '--' }
 }
 
 function normalizeTaskType(value) {
