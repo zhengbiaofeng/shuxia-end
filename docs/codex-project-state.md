@@ -483,6 +483,19 @@ npm run build
 
 ## Integration Priority
 
+## 2026-07-14 Qimao Adapter And Task Control Verification
+
+- Added a dedicated Qimao API adapter for book metadata, full chapter catalogs, signed chapter-content requests, and content decryption.
+- Qimao Quick Sync no longer depends on WAF-protected page HTML and no longer falls through to the unrelated BQG adapter.
+- Real URL verification for `https://www.qimao.com/shuku/1672986/` resolved the correct title/author, found 911 chapters, and stored readable UTF-8 chapter text.
+- A limited run completed with 3 added chapters and 0 failed chapters.
+- Task Center refreshes the latest task state before pause/terminate/retry and shows paused/terminated tasks with their semantic status and actual processed percentage.
+- Browser verification confirmed live progress, a successful pause action, and correct final task details/timeline.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\qimao-api-adapter-readme.md`.
+- No SQL migration is required.
+
+## Integration Priority
+
 Current user priority:
 
 1. Build a reliable book and novel management chain first.
