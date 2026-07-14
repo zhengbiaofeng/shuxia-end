@@ -51,6 +51,16 @@
               >
                 &#25209;&#37327;&#21024;&#38500;
               </el-button>
+              <el-button
+                :disabled="!page.total"
+                :icon="Delete"
+                :loading="deleteAllLoading"
+                plain
+                type="danger"
+                @click="handleDeleteAll"
+              >
+                &#20840;&#37096;&#21024;&#38500;
+              </el-button>
             </div>
           </template>
           <template #name="{ row }">
@@ -157,6 +167,7 @@ import { automationPages } from '../../config/adminModules'
 import {
   buildTaskDetail,
   batchDeleteTasks,
+  deleteAllMatchedTasks,
   fetchTaskCenterPage,
   fetchTaskDetail,
   fetchTaskTimeline,
@@ -209,6 +220,7 @@ const loading = ref(false)
 const detailLoading = ref(false)
 const actionLoading = ref('')
 const batchDeleteLoading = ref(false)
+const deleteAllLoading = ref(false)
 const silentRefreshing = ref(false)
 const activeTab = ref(0)
 const selectedTask = ref(null)
@@ -378,6 +390,40 @@ async function handleBatchDelete() {
     if (error !== 'cancel') ElMessage.error(error.message || '\u6279\u91cf\u5220\u9664\u5931\u8d25')
   } finally {
     batchDeleteLoading.value = false
+  }
+}
+
+async function handleDeleteAll() {
+  if (!page.total) return
+  try {
+    await ElMessageBox.prompt(
+      `\u5c06\u5220\u9664\u5f53\u524d\u7b5b\u9009\u6761\u4ef6\u4e0b\u7684\u5168\u90e8\u53ef\u5220\u9664\u4efb\u52a1\u3002\u5f85\u5904\u7406\u3001\u5904\u7406\u4e2d\u548c\u4e0d\u53ef\u72ec\u7acb\u5220\u9664\u7684\u4efb\u52a1\u4f1a\u81ea\u52a8\u4fdd\u7559\u3002\u8bf7\u8f93\u5165\u201c\u5220\u9664\u5168\u90e8\u201d\u786e\u8ba4\u3002`,
+      '\u5168\u90e8\u5220\u9664\u786e\u8ba4',
+      {
+        type: 'warning',
+        confirmButtonText: '\u5168\u90e8\u5220\u9664',
+        cancelButtonText: '\u53d6\u6d88',
+        inputPlaceholder: '\u5220\u9664\u5168\u90e8',
+        inputPattern: /^\u5220\u9664\u5168\u90e8$/,
+        inputErrorMessage: '\u8bf7\u8f93\u5165\u201c\u5220\u9664\u5168\u90e8\u201d',
+      },
+    )
+    deleteAllLoading.value = true
+    const deletedCount = await deleteAllMatchedTasks({
+      keyword: query.keyword,
+      taskType: query.taskType,
+      taskStatus: query.taskStatus,
+    })
+    ElMessage.success(`\u5df2\u5220\u9664 ${deletedCount} \u6761\u4efb\u52a1`)
+    selectedRows.value = []
+    clearSelection()
+    await loadTasks(1)
+  } catch (error) {
+    if (error !== 'cancel' && error !== 'close') {
+      ElMessage.error(error.message || '\u5168\u90e8\u5220\u9664\u4efb\u52a1\u5931\u8d25')
+    }
+  } finally {
+    deleteAllLoading.value = false
   }
 }
 

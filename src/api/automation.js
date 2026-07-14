@@ -251,6 +251,18 @@ export async function batchDeleteTasks(tasks = []) {
   return Number(response.result || 0)
 }
 
+export async function deleteAllMatchedTasks(payload = {}) {
+  const response = await request.post('/sx/book/task/batch-delete', cleanParams({
+    tasks: [],
+    allMatched: true,
+    keyword: trimText(payload.keyword),
+    taskType: payload.taskType,
+    taskStatus: payload.taskStatus,
+  }))
+  if (!response?.success) throw new Error(response?.message || '\u5168\u90e8\u5220\u9664\u4efb\u52a1\u5931\u8d25')
+  return Number(response.result || 0)
+}
+
 export async function fetchSubscribePage() {
   const response = await request.get('/sx/book/dashboard/subscribe/list')
   return normalizeSubscribePage(readResultResponse(response, '获取订阅列表失败') || {})
