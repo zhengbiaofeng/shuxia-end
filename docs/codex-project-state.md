@@ -111,6 +111,14 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Recently Completed Work
 
+- Completed the task-center mojibake repair across frontend, backend, and historical data:
+  - Task Center static labels, filters, table headings, detail actions, and API fallback errors now use clean Chinese; the task-type filter includes `SCRAPE / 刮削任务`.
+  - `SxScrapeExecuteService` and the PDF content reader no longer emit the identified mojibake strings into task errors or logs.
+  - Historical task, task-log, subscription, and known fixture chapter-title data was repaired by `sx-book-task-mojibake-repair-20260713.sql`; targeted remaining counts were verified as zero.
+  - `GET /sx/book/site-setting/public` was restored and explicitly whitelisted as anonymous in `ShiroConfig`.
+  - The backend container was rebuilt from the new packaged JAR. The public site-setting endpoint and authenticated task list return clean Chinese.
+  - Verification passed: frontend production build, `:sx-book` compile, full `:jeecg-system-start` package, database checks, and browser Task Center checks with no document-level horizontal overflow.
+  - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\task-center-mojibake-repair-readme.md`.
 - Added a read-only novel URL analysis phase for the Collection Workbench:
   - New backend endpoint: `POST /sx/book/scrape/analyze`.
   - Analysis parses metadata, existing matches, and chapter overview without creating or updating books, sources, rules, subscriptions, or tasks.
