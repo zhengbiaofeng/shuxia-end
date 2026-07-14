@@ -680,7 +680,7 @@ function normalizeScrapeChannelPayload(payload = {}) {
 }
 
 function normalizeTaskRow(item = {}) {
-  const statusInfo = taskStatusInfo(item.taskStatus)
+  const statusInfo = taskDisplayStatusInfo(item)
   const progressInfo = taskProgress(item)
   const title = item.bookName || item.taskId || '--'
 
@@ -1236,8 +1236,17 @@ function taskStatusInfo(value) {
   return map[Number(value)] || { label: '--', tone: 'slate' }
 }
 
+function taskDisplayStatusInfo(item = {}) {
+  const resultStatus = String(item.taskResultStatus || item.resultStatus || '').toUpperCase()
+  if (resultStatus === 'PAUSED') return { label: '\u5df2\u6682\u505c', tone: 'orange' }
+  if (resultStatus === 'TERMINATED') return { label: '\u5df2\u7ec8\u6b62', tone: 'orange' }
+  return taskStatusInfo(item.taskStatus)
+}
+
 function taskProgress(item = {}) {
   const status = Number(item.taskStatus)
+  const resultStatus = String(item.taskResultStatus || item.resultStatus || '').toUpperCase()
+  const stoppedBeforeCompletion = resultStatus === 'PAUSED' || resultStatus === 'TERMINATED'
   const total = Math.max(0, Number(item.chapterCount || 0))
   const countValues = [item.addedChapterCount, item.skippedChapterCount, item.failedChapterCount]
   const hasProcessedCounts = countValues.some((value) => value !== null && value !== undefined && value !== '')
@@ -1249,10 +1258,11 @@ function taskProgress(item = {}) {
   if (total > 0 && hasProcessedCounts) {
     const percentage = Math.min(100, Math.round((processed / total) * 100))
     return {
-      value: status === 1 ? Math.min(99, percentage) : 100,
+      value: status === 1 ? Math.min(99, percentage) : stoppedBeforeCompletion ? percentage : 100,
       label: `${Math.min(processed, total)}/${total}`,
     }
   }
+  if (stoppedBeforeCompletion) return { value: 0, label: '0%' }
   if (status === 1) return { value: 1, label: '处理中' }
   if (status === 2 || status === 3) return { value: 100, label: '100%' }
   return { value: 0, label: '--' }
