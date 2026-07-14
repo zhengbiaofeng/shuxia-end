@@ -65,7 +65,15 @@
           </template>
           <template #name="{ row }">
             <div class="task-name">
-              <span>{{ row.cover }}</span>
+              <span class="task-cover">
+                <img
+                  v-if="row.coverUrl"
+                  :alt="`${row.name}封面`"
+                  :src="row.coverUrl"
+                  @error="handleTaskCoverError(row)"
+                />
+                <template v-else>{{ row.cover }}</template>
+              </span>
               <div>
                 <strong>{{ row.name }}</strong>
                 <small>{{ row.desc }}</small>
@@ -98,7 +106,15 @@
             <button type="button" @click="clearSelection"><el-icon><Close /></el-icon></button>
           </header>
           <div class="task-detail__hero">
-            <span>{{ page.detail.cover }}</span>
+            <span class="task-detail__cover">
+              <img
+                v-if="page.detail.coverUrl"
+                :alt="`${page.detail.title}封面`"
+                :src="page.detail.coverUrl"
+                @error="handleTaskCoverError(page.detail)"
+              />
+              <template v-else>{{ page.detail.cover }}</template>
+            </span>
             <div>
               <strong>{{ page.detail.title }}</strong>
               <small>{{ page.detail.subtitle }}</small>
@@ -180,6 +196,7 @@ const emptyDetail = {
   status: '暂无',
   priority: '任务类型：--',
   cover: '--',
+  coverUrl: '',
   fields: [['\u4efb\u52a1ID', '--'], ['\u4efb\u52a1\u7c7b\u578b', '--'], ['\u5f00\u59cb\u65f6\u95f4', '--'], ['\u5b8c\u6210\u65f6\u95f4', '--'], ['\u76ee\u6807\u683c\u5f0f', '--'], ['\u7ae0\u8282\u6570\u91cf', '--']],
   logs: [],
   progress: 0,
@@ -364,6 +381,10 @@ function clearSelection() {
   page.detail = emptyDetail
 }
 
+function handleTaskCoverError(task) {
+  if (task) task.coverUrl = ''
+}
+
 function isTaskSelectable(row) {
   return Boolean(row?.canDelete)
 }
@@ -528,6 +549,15 @@ onBeforeUnmount(() => {
   background: linear-gradient(135deg, #f8fafc, #dbeafe);
   color: #153673;
   font-weight: 800;
+  overflow: hidden;
+}
+
+.task-cover img,
+.task-detail__cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .task-name strong,

@@ -14,6 +14,10 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Working Agreements
 
+- Product positioning is a hard boundary for future work:
+  - `书籍` means user-owned正版电子书 files deployed on a private local NAS. Its primary source is local directory scanning, batch import, file parsing, and library management; do not invent web-scraping acquisition flows for this domain.
+  - `小说` means online serial fiction collected from free novel sites. Its primary source is rule-based web scraping, ingestion, task monitoring, and subscription updates; do not treat it as a local-file-first domain unless the user explicitly changes the product direction.
+  - When a requirement could cross or blur these two source models, stop and confirm the intended domain with the user before changing behavior.
 - Frontend must reflect backend responses truthfully. Do not add frontend mojibake/data-repair fallbacks that hide backend data quality problems.
 - Prefer existing frontend components and shared styles. Avoid duplicating repeated styles page by page.
 - After backend code changes, create or update a backend handoff document under backend `docs/` so backend colleagues know exactly what changed.

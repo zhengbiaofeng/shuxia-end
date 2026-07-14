@@ -695,6 +695,7 @@ function normalizeTaskRow(item = {}) {
   const statusInfo = taskDisplayStatusInfo(item)
   const progressInfo = taskProgress(item)
   const title = item.bookName || item.taskId || '--'
+  const coverUrl = normalizeResourceUrl(item.coverUrl)
 
   return {
     raw: item,
@@ -713,6 +714,7 @@ function normalizeTaskRow(item = {}) {
     start: formatDateTime(item.createTime),
     duration: item.finishedTime ? formatDateTime(item.finishedTime) : '--',
     cover: String(title).slice(0, 1),
+    coverUrl,
     canPause: Boolean(item.canPause),
     canTerminate: Boolean(item.canTerminate),
     canRetry: Boolean(item.canRetry),
@@ -1200,6 +1202,7 @@ export function buildTaskDetail(row, logs = []) {
       status: '暂无',
       priority: '任务类型：--',
       cover: '--',
+      coverUrl: '',
       fields: [['任务ID', '--'], ['任务类型', '--'], ['开始时间', '--'], ['完成时间', '--'], ['目标格式', '--'], ['章节数量', '--']],
       logs: [],
       progress: 0,
@@ -1213,6 +1216,7 @@ export function buildTaskDetail(row, logs = []) {
     status: row.status,
     priority: `任务类型：${row.kind}`,
     cover: row.cover || row.name?.slice(0, 1) || '--',
+    coverUrl: row.coverUrl || '',
     fields: [
       ['任务ID', row.taskId || source.taskId || '--'],
       ['任务类型', row.kind || '--'],
@@ -1357,6 +1361,18 @@ function cleanParams(params = {}) {
 
 function trimText(value) {
   return typeof value === 'string' ? value.trim() : value
+}
+
+function normalizeResourceUrl(url) {
+  const value = trimText(url)
+  if (!value) return ''
+  if (/^(https?:)?\/\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:')) {
+    return value
+  }
+  if (value.startsWith('/')) {
+    return `${API_BASE_URL.replace(/\/$/, '')}${value}`
+  }
+  return value
 }
 
 function uniqueCount(values) {
