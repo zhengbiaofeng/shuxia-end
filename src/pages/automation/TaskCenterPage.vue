@@ -381,6 +381,25 @@ async function handleBatchDelete() {
   }
 }
 
+function canRunTaskAction(task, action) {
+  if (action === 'pause') return Boolean(task?.canPause)
+  if (action === 'terminate') return Boolean(task?.canTerminate)
+  if (action === 'retry') return Boolean(task?.canRetry)
+  if (action === 'resume') return Boolean(task?.canResume)
+  return true
+}
+
+function taskActionUnavailableMessage(task, action) {
+  const status = task?.status || task?.statusLabel || '\u5f53\u524d\u72b6\u6001'
+  const actionName = {
+    pause: '\u6682\u505c',
+    terminate: '\u7ec8\u6b62',
+    retry: '\u91cd\u8bd5',
+    resume: '\u6062\u590d',
+  }[action] || '\u6267\u884c\u8be5\u64cd\u4f5c'
+  return `\u4efb\u52a1\u72b6\u6001\u5df2\u66f4\u65b0\u4e3a\u300c${status}\u300d\uff0c\u5f53\u524d\u65e0\u9700${actionName}`
+}
+
 async function handleTaskAction(row, action) {
   if (!row) return
   if (action.label === '查看') {
@@ -396,9 +415,15 @@ async function handleTaskAction(row, action) {
       cancelButtonText: '取消',
     })
     actionLoading.value = action.action
+    const latestTask = await fetchTaskDetail({ taskType: row.taskType, taskId: row.taskId })
+    if (!canRunTaskAction(latestTask, action.action)) {
+      ElMessage.info(taskActionUnavailableMessage(latestTask, action.action))
+      await loadTasks(query.pageNo, { silent: true })
+      return
+    }
     await runTaskAction({
-      taskType: row.taskType,
-      taskId: row.taskId,
+      taskType: latestTask.taskType,
+      taskId: latestTask.taskId,
       action: action.action,
       remark: `前端${label}`,
     })
