@@ -499,6 +499,9 @@ npm run build
 - The backend package and Docker image were rebuilt.
 - A real SCRAPE batch-delete call returned `result=1`; the selected verification task became logically deleted and disappeared from normal task queries.
 - No frontend payload change and no SQL migration are required.
+- Task Center now also provides `全部删除` for all deletable tasks matching the current keyword/type/status filters, not only the selected page.
+- The destructive action requires entering `删除全部`; pending, processing, and non-deletable parse rows are retained automatically.
+- Backend all-matched deletion was verified against a unique SCRAPE filter and removed both the task record and its remaining legacy logs without deleting unrelated tasks.
 
 ## Integration Priority
 
