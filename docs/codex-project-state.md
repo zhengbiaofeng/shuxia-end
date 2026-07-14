@@ -492,6 +492,14 @@ npm run build
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\qimao-api-adapter-readme.md`.
 - No SQL migration is required.
 
+## 2026-07-14 Task Center Batch Delete Contract Fix
+
+- Root cause: `SxTaskBatchDeleteDTO` reused `SxTaskActionDTO`, so validation incorrectly required `tasks[*].action` for delete requests.
+- Batch delete now uses a dedicated task reference DTO with only `taskType` and `taskId`.
+- The backend package and Docker image were rebuilt.
+- A real SCRAPE batch-delete call returned `result=1`; the selected verification task became logically deleted and disappeared from normal task queries.
+- No frontend payload change and no SQL migration are required.
+
 ## Integration Priority
 
 Current user priority:
