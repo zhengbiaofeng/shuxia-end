@@ -115,6 +115,12 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Recently Completed Work
 
+- Restored real covers in Task Center without changing content acquisition behavior:
+  - Unified task list/detail responses now expose `coverUrl` from the task's associated `sx_book.cover_file_id` through the existing `/sx/book/preview` proxy.
+  - Task Center list rows and the detail panel render the real cover first, with the existing title-initial placeholder only for unbound tasks, missing covers, or failed image loads.
+  - This preserves the product boundary: books continue to come from user-owned local/NAS files, while novels continue to come from web scraping and subscription updates.
+  - No SQL migration is required. Frontend production build and backend `:sx-book` compile passed.
+  - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\task-center-cover-display-readme.md`.
 - Fixed stale progress and invalid controls for Collection Workbench batch tasks:
   - Task Center silently refreshes pending/running rows every 3 seconds and updates the selected task detail without repeated loading overlays.
   - SCRAPE progress now uses processed counts against total candidates and displays `processed/total`; the previous fixed 50% running value was removed.
