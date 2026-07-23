@@ -550,7 +550,7 @@ async function submitBatchCollection() {
   batchSubmitting.value = true
   try {
     const result = await batchSyncScrapeRuleNovels({
-      ...buildBatchPayload(),
+      ...buildBatchPayload({ includeStorage: true }),
       detailUrls: selectedCandidates.value.map((item) => item.detailUrl),
     })
     ElMessage.success(result.message || `批量采集任务已提交：${result.taskId || '--'}`)
@@ -562,9 +562,9 @@ async function submitBatchCollection() {
   }
 }
 
-function buildBatchPayload() {
+function buildBatchPayload({ includeStorage = false } = {}) {
   const entryUrls = normalizeEntryUrls(batchForm.entryUrlsText)
-  return {
+  const payload = {
     ruleId: selectedRuleId.value,
     entryUrls,
     listUrl: entryUrls[0] || selectedRuleDetail.value?.listUrl || '',
@@ -577,8 +577,9 @@ function buildBatchPayload() {
     sameHostOnly: batchForm.sameHostOnly,
     requestDelayMs: optionalPositive(batchForm.requestDelayMs) ?? 0,
     syncChapters: batchForm.syncChapters,
-    storageLocationId: batchForm.storageLocationId,
   }
+  if (includeStorage) payload.storageLocationId = batchForm.storageLocationId
+  return payload
 }
 
 function formatStorageLocationLabel(location = {}) {
