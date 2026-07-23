@@ -186,6 +186,7 @@ export async function scanLocalBookImport(payload = {}) {
 
 export async function commitLocalBookImport(payload = {}) {
   const response = await request.post('/sx/book/import/local/commit', {
+    storageLocationId: payload.storageLocationId,
     authorName: payload.authorName,
     categoryId: payload.categoryId,
     autoParse: payload.autoParse,

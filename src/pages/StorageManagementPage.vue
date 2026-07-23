@@ -184,6 +184,7 @@ async function handleScanStorage(row) {
     }
 
     const result = await commitLocalBookImport({
+      storageLocationId: row.id,
       authorName: 'NAS导入',
       autoParse: true,
       items: importItems,
