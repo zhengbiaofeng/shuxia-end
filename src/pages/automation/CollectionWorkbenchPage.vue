@@ -190,6 +190,21 @@
               <el-form-item label="发现范围">
                 <el-segmented v-model="batchForm.scope" :options="batchScopeOptions" @change="resetBatchResult" />
               </el-form-item>
+              <el-form-item label="目标存储">
+                <el-select
+                  v-model="batchForm.storageLocationId"
+                  :loading="storageLocationsLoading"
+                  filterable
+                  placeholder="请选择小说存储位置"
+                >
+                  <el-option
+                    v-for="location in novelStorageLocations"
+                    :key="location.id"
+                    :label="formatStorageLocationLabel(location)"
+                    :value="location.id"
+                  />
+                </el-select>
+              </el-form-item>
             </div>
 
             <el-form-item label="入口地址">
@@ -243,7 +258,7 @@
             <div>
               <el-button :loading="batchDiscovering" @click="discoverCandidates">重新发现</el-button>
               <el-button
-                :disabled="!selectedCandidates.length"
+                :disabled="!selectedCandidates.length || !batchForm.storageLocationId"
                 :icon="VideoPlay"
                 :loading="batchSubmitting"
                 type="primary"
