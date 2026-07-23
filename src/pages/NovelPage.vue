@@ -24,6 +24,13 @@
     @tab-change="handleTabChange"
   />
 
+  <StorageMigrationDialog
+    v-model:visible="storageMigrationVisible"
+    :book-ids="selectedNovelIds"
+    biz-type="novel"
+    @submitted="handleStorageMigrationSubmitted"
+  />
+
   <el-dialog v-model="novelFormVisible" :title="editingNovel ? '编辑小说' : '添加小说'" width="620px" destroy-on-close @closed="resetNovelForm">
     <el-form ref="novelFormRef" :model="novelForm" :rules="novelRules" class="novel-form" label-position="top">
       <div class="form-grid">
@@ -283,6 +290,7 @@ import {
   Tickets,
 } from '@element-plus/icons-vue'
 import ContentManagementPage from '../components/content/ContentManagementPage.vue'
+import StorageMigrationDialog from '../components/content/StorageMigrationDialog.vue'
 import {
   batchChangeBookShelfStatus,
   batchDeleteBooks,
@@ -382,6 +390,7 @@ const chapterFormRef = ref()
 const chapterForm = reactive(createEmptyChapterForm())
 const editingChapter = ref(null)
 const selectedNovelIds = ref([])
+const storageMigrationVisible = ref(false)
 const localImportVisible = ref(false)
 const localImportScanning = ref(false)
 const localImportCommitting = ref(false)
@@ -458,6 +467,7 @@ const pageConfig = computed(() => ({
   batchActions: [
     { code: 'batch-online', label: '批量上架', tone: 'primary', loading: batchLoading.value },
     { code: 'batch-offline', label: '批量下架', loading: batchLoading.value },
+    { code: 'batch-migrate-storage', label: '迁移存储', loading: batchLoading.value },
     { code: 'batch-delete', label: '批量删除', tone: 'danger', loading: batchLoading.value },
   ],
 }))
@@ -610,9 +620,19 @@ async function handleBatchAction(action, selectedRows = []) {
     return
   }
 
+  if (code === 'batch-migrate-storage') {
+    storageMigrationVisible.value = true
+    return
+  }
+
   if (code === 'batch-delete') {
     await batchDeleteSelectedNovels(ids, selectedRows)
   }
+}
+
+async function handleStorageMigrationSubmitted() {
+  selectedNovelIds.value = []
+  await loadNovels(pageNo.value)
 }
 
 async function batchShelfNovels(ids, rows, publishStatus) {

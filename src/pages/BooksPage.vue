@@ -22,6 +22,13 @@
     @selection-change="handleSelectionChange"
   />
 
+  <StorageMigrationDialog
+    v-model:visible="storageMigrationVisible"
+    :book-ids="selectedBookIds"
+    biz-type="ebook"
+    @submitted="handleStorageMigrationSubmitted"
+  />
+
   <el-drawer v-model="detailVisible" size="720px" title="书籍详情" destroy-on-close>
     <div v-loading="detailLoading" class="book-detail">
       <template v-if="selectedBook">
@@ -359,6 +366,7 @@ import {
   VideoPlay,
 } from '@element-plus/icons-vue'
 import ContentManagementPage from '../components/content/ContentManagementPage.vue'
+import StorageMigrationDialog from '../components/content/StorageMigrationDialog.vue'
 import { fetchEligibleStorageLocations } from '../api/resourceManagement'
 import {
   batchChangeBookShelfStatus,
@@ -651,6 +659,7 @@ const detailLoading = ref(false)
 const actionLoading = ref(false)
 const batchLoading = ref(false)
 const selectedBookIds = ref([])
+const storageMigrationVisible = ref(false)
 const selectedBook = ref(null)
 const historyLoading = ref(false)
 const logLoading = ref(false)
@@ -714,6 +723,7 @@ const pageConfig = computed(() => ({
   batchActions: [
     { code: 'batch-online', label: '批量上架', tone: 'primary', loading: batchLoading.value },
     { code: 'batch-offline', label: '批量下架', loading: batchLoading.value },
+    { code: 'batch-migrate-storage', label: '迁移存储', loading: batchLoading.value },
     { code: 'batch-delete', label: '批量删除', tone: 'danger', loading: batchLoading.value },
   ],
 }))
@@ -982,9 +992,19 @@ async function handleBatchAction(action, selectedRows = []) {
     return
   }
 
+  if (code === 'batch-migrate-storage') {
+    storageMigrationVisible.value = true
+    return
+  }
+
   if (code === 'batch-delete') {
     await batchDeleteSelectedBooks(ids, selectedRows)
   }
+}
+
+async function handleStorageMigrationSubmitted() {
+  selectedBookIds.value = []
+  await Promise.allSettled([loadBooks(pageNo.value), loadSummary()])
 }
 
 async function batchShelfBooks(ids, rows, publishStatus) {
