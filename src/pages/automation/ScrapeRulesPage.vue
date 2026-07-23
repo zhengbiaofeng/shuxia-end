@@ -214,6 +214,7 @@
           <div class="batch-sync__toolbar-actions">
             <el-button :loading="batchLoading" :icon="DataAnalysis" @click="discoverBatchCandidates">{{ batchDiscoverButtonText }}</el-button>
             <el-button
+              v-if="authStore.hasPermission('sxbook:subscription:execute')"
               type="primary"
               :loading="batchSubmitting"
               :disabled="!batchCandidates.length"

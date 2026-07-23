@@ -141,7 +141,7 @@
 
       <template #footer>
         <el-button @click="formVisible = false">取消</el-button>
-        <el-button :disabled="!editingChannel" :loading="testLoadingId === form.id" :icon="Connection" @click="testFormChannel">
+        <el-button v-if="authStore.hasPermission('sxbook:scrapeChannel:test')" :disabled="!editingChannel" :loading="testLoadingId === form.id" :icon="Connection" @click="testFormChannel">
           连接测试
         </el-button>
         <el-button :loading="submitting" type="primary" @click="submitForm">保存</el-button>
