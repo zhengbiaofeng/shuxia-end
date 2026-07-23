@@ -543,8 +543,8 @@ npm run build
 
 Current user priority:
 
-1. Execute P1: close menu, button, backend permission, data-scope, and system-setting consumer loops with administrator, content-manager, and read-only audit roles.
-2. Then execute P2 book-format and novel-source reliability regression; keep duplicate handling, task logs, storage statistics, and content details consistent.
+1. P1 is complete: menu, route, button and backend permission checks use the same permission codes; administrator, content-manager and read-only audit role baselines are available; reader/security/notification settings have real read/write or read-only flows.
+2. Execute P2 book-format and novel-source reliability regression; keep duplicate handling, task logs, storage statistics, and content details consistent.
 3. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
 4. Defer comic and audio work until their source and processing boundaries are explicitly confirmed.
 5. Keep UI resilient to real backend data and keep tag taxonomy distinct from category taxonomy.
