@@ -30,32 +30,50 @@
               </div>
             </td>
             <td><span class="type-chip" :class="typeTone(row.type)">{{ row.type }}</span></td>
-            <td>{{ row.path }}</td>
-            <td>{{ row.total }}</td>
             <td>
-              <div class="usage-cell">
+              <div class="path-cell" :title="row.path">
+                <strong>{{ row.path }}</strong>
+                <span v-if="row.volume">{{ row.volume }}</span>
+              </div>
+            </td>
+            <td>
+              <span v-if="row.capacityKnown">{{ row.total }}</span>
+              <el-tooltip v-else :content="row.capacityNote || '当前存储源无法获取物理盘容量'" placement="top">
+                <span class="capacity-unknown">容量未知</span>
+              </el-tooltip>
+            </td>
+            <td>
+              <div v-if="row.capacityKnown" class="usage-cell">
                 <span>{{ row.used }}</span>
                 <div><i :style="{ width: `${row.percent}%` }" /></div>
               </div>
+              <span v-else>--</span>
             </td>
             <td>{{ row.free }}</td>
             <td>
-              <span class="status-dot" :class="{ warning: row.status !== '正常' }"><i />{{ row.status }}</span>
+              <el-tooltip :content="row.capacityNote || row.status" placement="top">
+                <span class="status-dot" :class="`is-${row.statusTone}`"><i />{{ row.status }}</span>
+              </el-tooltip>
             </td>
             <td><span class="scan-cell"><el-icon><VideoPlay /></el-icon>{{ row.scan }}</span></td>
             <td>{{ row.files }}</td>
             <td>
               <div class="table-actions">
-                <button
-                  type="button"
-                  title="扫描"
-                  :disabled="!row.scannable || scanningId === row.id"
-                  @click="$emit('scan', row)"
-                >
-                  <el-icon><Loading v-if="scanningId === row.id" /><VideoPlay v-else /></el-icon>
-                </button>
-                <button type="button" title="编辑" @click="$emit('edit', row)"><el-icon><EditPen /></el-icon></button>
-                <button type="button" title="删除" @click="$emit('delete', row)"><el-icon><MoreFilled /></el-icon></button>
+                <el-tooltip content="扫描目录" placement="top">
+                  <button
+                    type="button"
+                    :disabled="!row.scannable || scanningId === row.id"
+                    @click="$emit('scan', row)"
+                  >
+                    <el-icon><Loading v-if="scanningId === row.id" /><VideoPlay v-else /></el-icon>
+                  </button>
+                </el-tooltip>
+                <el-tooltip content="编辑" placement="top">
+                  <button type="button" @click="$emit('edit', row)"><el-icon><EditPen /></el-icon></button>
+                </el-tooltip>
+                <el-tooltip content="删除" placement="top">
+                  <button type="button" class="danger" @click="$emit('delete', row)"><el-icon><Delete /></el-icon></button>
+                </el-tooltip>
               </div>
             </td>
           </tr>
@@ -72,7 +90,7 @@
 </template>
 
 <script setup>
-import { EditPen, FolderOpened, Loading, MoreFilled, VideoPlay } from '@element-plus/icons-vue'
+import { Delete, EditPen, FolderOpened, Loading, VideoPlay } from '@element-plus/icons-vue'
 import ResourcePagination from './ResourcePagination.vue'
 
 defineProps({
@@ -151,6 +169,37 @@ function typeTone(type) {
   white-space: nowrap;
 }
 
+.path-cell {
+  width: min(280px, 20vw);
+  min-width: 170px;
+}
+
+.path-cell strong,
+.path-cell span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.path-cell strong {
+  color: #324a82;
+  font-weight: 600;
+}
+
+.path-cell span {
+  margin-top: 4px;
+  color: #8290ad;
+  font-size: 11px;
+}
+
+.capacity-unknown {
+  color: #8290ad;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+
 .storage-name {
   display: flex;
   align-items: center;
@@ -226,8 +275,12 @@ function typeTone(type) {
   font-weight: 700;
 }
 
-.status-dot.warning {
+.status-dot.is-warning {
   color: #f97316;
+}
+
+.status-dot.is-muted {
+  color: #8290ad;
 }
 
 .status-dot i {
@@ -261,11 +314,17 @@ function typeTone(type) {
   font-size: 16px;
 }
 
-.table-actions button:last-child {
+.table-actions button.danger {
   width: 32px;
   height: 32px;
   border: 1px solid #dfe7f5;
   border-radius: 6px;
+}
+
+.table-actions button.danger:hover {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #e11d48;
 }
 
 .table-actions button:disabled {
