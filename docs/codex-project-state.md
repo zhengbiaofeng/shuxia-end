@@ -523,6 +523,19 @@ npm run build
 - The destructive action requires entering `删除全部`; pending, processing, and non-deletable parse rows are retained automatically.
 - Backend all-matched deletion was verified against a unique SCRAPE filter and removed both the task record and its remaining legacy logs without deleting unrelated tasks.
 
+## 2026-07-23 Configurable Storage Path And Capacity Note
+
+- Storage Management now uses one shared add/edit dialog for local directories and MinIO instead of separate add and generic edit forms.
+- Local storage paths can be typed or selected from directories visible to the backend process. The page can explicitly test readability/writability and shows the containing volume's total, used, and available bytes.
+- The backend exposes root/mount discovery, child-directory browsing, and path probing under `/sx/book/storage/path/*`.
+- Saving an enabled local source now validates the path server-side. Writable sources must pass an actual temporary-file create/write/delete test; read-only sources must exist and be readable.
+- Storage config rows now carry live path status and physical volume statistics. The summary deduplicates multiple paths on the same volume.
+- Unknown capacity is no longer normalized to `0 B`. MinIO physical capacity remains unknown unless a separate infrastructure monitoring integration is added; the ordinary S3/MinIO bucket API does not expose host disk capacity.
+- Docker boundary remains explicit: the page can select only paths already mounted into the running backend container. A new host/NAS path still requires a Compose volume mapping and container recreation before it becomes selectable.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\storage-path-configuration-capacity-20260723.md`.
+- No SQL migration is required.
+- Verification completed: frontend production build, backend `:sx-book` compile, desktop 1280x720 and narrow 390x844 browser checks. New backend APIs still require packaging/restart before live container smoke testing.
+
 ## Integration Priority
 
 Current user priority:
