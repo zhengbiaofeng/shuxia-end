@@ -294,38 +294,45 @@ export async function fetchSecuritySettingsPage() {
   const data = readResultResponse(response, '获取安全设置失败') || {}
 
   return {
+    raw: data,
     sections: [
       {
         title: '登录安全',
         items: [
-          inputItem('密码最小长度', `${data.passwordMinLength ?? ''}`, '用户密码的最小长度'),
-          inputItem('密码最大长度', `${data.passwordMaxLength ?? ''}`, '用户密码的最大长度'),
-          switchItem('要求大写字母', flagToBool(data.requireUppercase), '密码必须包含大写字母'),
-          switchItem('要求小写字母', flagToBool(data.requireLowercase), '密码必须包含小写字母'),
-          switchItem('要求数字', flagToBool(data.requireDigit), '密码必须包含数字'),
-          switchItem('要求特殊字符', flagToBool(data.requireSpecial), '密码必须包含特殊字符'),
+          numberItem('密码最小长度', data.passwordMinLength, 6, 32, '用户密码的最小长度', 'passwordMinLength'),
+          numberItem('密码最大长度', data.passwordMaxLength, 6, 64, '用户密码的最大长度', 'passwordMaxLength'),
+          switchItem('要求大写字母', flagToBool(data.requireUppercase), '密码必须包含大写字母', 'requireUppercase'),
+          switchItem('要求小写字母', flagToBool(data.requireLowercase), '密码必须包含小写字母', 'requireLowercase'),
+          switchItem('要求数字', flagToBool(data.requireDigit), '密码必须包含数字', 'requireDigit'),
+          switchItem('要求特殊字符', flagToBool(data.requireSpecial), '密码必须包含特殊字符', 'requireSpecial'),
         ],
       },
       {
         title: '访问控制',
         items: [
-          switchItem('登录失败锁定', flagToBool(data.loginLockEnabled), '连续失败后锁定账号'),
-          inputItem('失败次数阈值', `${data.loginFailThreshold ?? ''}`, '触发锁定的连续失败次数'),
-          inputItem('锁定时长', `${data.loginLockMinutes ?? ''}`, '账号锁定后自动恢复的分钟数'),
-          switchItem('强制 HTTPS', flagToBool(data.forceHttps), '启用后强制使用 HTTPS 访问'),
+          switchItem('登录失败锁定', flagToBool(data.loginLockEnabled), '连续失败后锁定账号', 'loginLockEnabled'),
+          numberItem('失败次数阈值', data.loginFailThreshold, 1, 20, '触发锁定的连续失败次数', 'loginFailThreshold'),
+          numberItem('锁定时长', data.loginLockMinutes, 1, 1440, '账号锁定后自动恢复的分钟数', 'loginLockMinutes'),
+          switchItem('强制 HTTPS', flagToBool(data.forceHttps), '启用后强制使用 HTTPS 访问', 'forceHttps'),
         ],
       },
       {
         title: '审计策略',
         items: [
-          inputItem('可信代理头', data.trustedProxyHeader, '用于解析真实请求协议的代理头'),
-          inputItem('活动保留天数', `${data.activityRetentionDays ?? ''}`, '安全活动记录保留时间'),
-          inputItem('当前协议', data.currentScheme, '后端检测到的当前请求协议'),
-          inputItem('安全模式', data.currentSecurityMode, '当前安全模式'),
+          inputItem('可信代理头', data.trustedProxyHeader, '用于解析真实请求协议的代理头', 'trustedProxyHeader'),
+          numberItem('活动保留天数', data.activityRetentionDays, 1, 3650, '安全活动记录保留时间', 'activityRetentionDays'),
+          inputItem('当前协议', data.currentScheme, '后端检测到的当前请求协议', 'currentScheme', true),
+          inputItem('安全模式', data.currentSecurityMode, '当前安全模式', 'currentSecurityMode', true),
         ],
       },
     ],
   }
+}
+
+export async function saveSecuritySettings(payload) {
+  const response = await request.post('/sx/book/security-setting/save', payload)
+  readResultResponse(response, '保存安全设置失败')
+  return fetchSecuritySettingsPage()
 }
 
 export async function fetchLicenseInfoPage() {
@@ -644,16 +651,20 @@ function buildTaskDetail(row) {
   }
 }
 
-function inputItem(label, value, help) {
-  return { label, value: value ?? '', help }
+function inputItem(label, value, help, key, readonly = false) {
+  return { label, value: value ?? '', help, key, readonly }
 }
 
-function selectItem(label, value, options, help) {
-  return { label, type: 'select', value: value ?? '', options, help }
+function numberItem(label, value, min, max, help, key, step = 1) {
+  return { label, type: 'number', value: Number(value ?? min), min, max, step, help, key }
 }
 
-function switchItem(label, value, help) {
-  return { label, type: 'switch', value: Boolean(value), help }
+function selectItem(label, value, options, help, key) {
+  return { label, type: 'select', value: value ?? '', options, help, key }
+}
+
+function switchItem(label, value, help, key) {
+  return { label, type: 'switch', value: Boolean(value), help, key }
 }
 
 function metric(label, value, unit, sub, color, icon) {
