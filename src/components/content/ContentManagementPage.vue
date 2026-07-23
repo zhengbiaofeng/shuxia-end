@@ -89,7 +89,7 @@
         </div>
 
         <div v-loading="loading" class="table-wrap">
-          <div v-if="config.selectable && config.batchActions?.length" class="batch-toolbar">
+          <div v-if="isSelectable" class="batch-toolbar">
             <span>已选择 {{ selectedRowKeys.length }} 项</span>
             <el-button
               v-for="action in visibleBatchActions"
@@ -110,7 +110,7 @@
           <table class="content-table">
             <thead>
               <tr>
-                <th v-if="config.selectable" class="selection-column">
+                <th v-if="isSelectable" class="selection-column">
                   <el-checkbox
                     :indeterminate="isSelectionIndeterminate"
                     :model-value="isAllCurrentPageSelected"
@@ -124,7 +124,7 @@
             </thead>
             <tbody>
               <tr v-for="row in rows" :key="row.id">
-                <td v-if="config.selectable" class="selection-column">
+                <td v-if="isSelectable" class="selection-column">
                   <el-checkbox
                     :model-value="selectedRowKeySet.has(row.id)"
                     @change="(checked) => toggleRowSelection(row, checked)"
@@ -207,7 +207,7 @@
                 </td>
               </tr>
               <tr v-if="!loading && rows.length === 0">
-                <td class="empty-cell" :colspan="config.columns.length + (config.selectable ? 1 : 0)">暂无数据</td>
+                <td class="empty-cell" :colspan="config.columns.length + (isSelectable ? 1 : 0)">暂无数据</td>
               </tr>
             </tbody>
           </table>
@@ -351,6 +351,7 @@ const profile = computed(() => {
 const hasTabs = computed(() => Boolean(props.config.tabs?.length))
 const visiblePageActions = computed(() => filterPermittedActions(props.config.actions))
 const visibleBatchActions = computed(() => filterPermittedActions(props.config.batchActions))
+const isSelectable = computed(() => Boolean(props.config.selectable && visibleBatchActions.value.length))
 const visibleMetrics = computed(() => props.metrics.length ? props.metrics : (props.config.metrics || []))
 const selectedRowKeySet = computed(() => new Set(props.selectedRowKeys))
 const selectedRows = computed(() => props.rows.filter((row) => selectedRowKeySet.value.has(row.id)))

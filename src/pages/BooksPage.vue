@@ -48,10 +48,10 @@
         </el-descriptions>
 
         <div class="detail-actions">
-          <el-button :loading="actionLoading" type="primary" @click="toggleShelfStatus(selectedBook)">
+          <el-button v-if="authStore.hasPermission('sxbook:book:shelf')" :loading="actionLoading" type="primary" @click="toggleShelfStatus(selectedBook)">
             {{ selectedBook.raw?.publishStatus === 1 ? '下架' : '上架' }}
           </el-button>
-          <el-button :loading="actionLoading" type="danger" plain @click="handleDeleteBook(selectedBook)">删除</el-button>
+          <el-button v-if="authStore.hasPermission('sxbook:book:delete')" :loading="actionLoading" type="danger" plain @click="handleDeleteBook(selectedBook)">删除</el-button>
         </div>
 
         <el-tabs class="manage-tabs" model-value="history">
@@ -384,6 +384,7 @@ import {
 import ContentManagementPage from '../components/content/ContentManagementPage.vue'
 import StorageMigrationDialog from '../components/content/StorageMigrationDialog.vue'
 import { fetchEligibleStorageLocations } from '../api/resourceManagement'
+import { useAuthStore } from '../stores/auth'
 import {
   batchChangeBookShelfStatus,
   batchDeleteBooks,
@@ -650,10 +651,12 @@ const baseColumns = [
 ]
 
 const defaultRowActions = [
-  { code: 'detail', label: '查看', icon: VideoPlay },
-  { code: 'shelf', label: '上下架', icon: RefreshRight },
-  { code: 'delete', label: '删除', icon: Delete, danger: true },
+  { code: 'detail', label: '查看', icon: VideoPlay, permission: 'sxbook:book:detail' },
+  { code: 'shelf', label: '上下架', icon: RefreshRight, permission: 'sxbook:book:shelf' },
+  { code: 'delete', label: '删除', icon: Delete, danger: true, permission: 'sxbook:book:delete' },
 ]
+
+const authStore = useAuthStore()
 
 const searchKeyword = ref('')
 const filters = reactive(createFilterState(baseFilters))
@@ -728,9 +731,9 @@ const pageConfig = computed(() => ({
   pageSizeOptions: [10, 20, 50],
   actions: [
     { label: '刷新', icon: RefreshRight },
-    { label: '导入书籍', icon: Upload },
-    { label: '批量导入', icon: FolderOpened },
-    { label: '添加书籍', icon: FolderOpened, tone: 'primary' },
+    { label: '导入书籍', icon: Upload, permission: 'sxbook:book:upload' },
+    { label: '批量导入', icon: FolderOpened, permission: 'sxbook:book:add' },
+    { label: '添加书籍', icon: FolderOpened, tone: 'primary', permission: 'sxbook:book:add' },
   ],
   metrics: buildMetrics(pageSummary.value),
   filters: buildFilters(),
@@ -738,10 +741,10 @@ const pageConfig = computed(() => ({
   rowActions: buildRowActions(actionMetas.value),
   selectable: true,
   batchActions: [
-    { code: 'batch-online', label: '批量上架', tone: 'primary', loading: batchLoading.value },
-    { code: 'batch-offline', label: '批量下架', loading: batchLoading.value },
-    { code: 'batch-migrate-storage', label: '迁移存储', loading: batchLoading.value },
-    { code: 'batch-delete', label: '批量删除', tone: 'danger', loading: batchLoading.value },
+    { code: 'batch-online', label: '批量上架', tone: 'primary', loading: batchLoading.value, permission: 'sxbook:book:batch:shelf' },
+    { code: 'batch-offline', label: '批量下架', loading: batchLoading.value, permission: 'sxbook:book:batch:shelf' },
+    { code: 'batch-migrate-storage', label: '迁移存储', loading: batchLoading.value, permission: 'sxbook:storage:migration:submit' },
+    { code: 'batch-delete', label: '批量删除', tone: 'danger', loading: batchLoading.value, permission: 'sxbook:book:batch:delete' },
   ],
 }))
 
@@ -2243,12 +2246,24 @@ function buildRowActions(actions = []) {
   const visibleActions = actions
     .filter((action) => !action.batchSupported && supportedCodes.has(normalizeActionCode(action)))
     .slice(0, 4)
-    .map((action, index) => ({
-      ...action,
-      icon: actionIcon(normalizeActionCode(action), index),
-    }))
+    .map((action, index) => {
+      const code = normalizeActionCode(action)
+      return {
+        ...action,
+        icon: actionIcon(code, index),
+        permission: bookActionPermission(code),
+      }
+    })
 
   return visibleActions.length ? visibleActions : defaultRowActions
+}
+
+function bookActionPermission(code) {
+  if (code === 'detail' || code === 'view') return 'sxbook:book:detail'
+  if (code === 'edit') return 'sxbook:book:edit'
+  if (code === 'delete' || code === 'remove') return 'sxbook:book:delete'
+  if (code === 'shelf' || code === 'publish' || code === 'offline' || code === 'online') return 'sxbook:book:shelf'
+  return ''
 }
 
 function actionIcon(code, index) {

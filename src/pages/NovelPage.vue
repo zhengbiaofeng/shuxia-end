@@ -221,8 +221,8 @@
           @keyup.enter="loadChapters(1)"
         />
         <el-button :loading="chapterLoading" @click="loadChapters(1)">查询</el-button>
-        <el-button :loading="chapterSorting" @click="refreshChapterOrder">同步排序</el-button>
-        <el-button type="primary" @click="openChapterForm()">新增章节</el-button>
+        <el-button v-if="authStore.hasPermission('sxbook:book:edit')" :loading="chapterSorting" @click="refreshChapterOrder">同步排序</el-button>
+        <el-button v-if="authStore.hasPermission('sxbook:book:add')" type="primary" @click="openChapterForm()">新增章节</el-button>
       </div>
 
       <el-table v-loading="chapterLoading" :data="chapterRows" class="chapter-table" size="small">
@@ -234,7 +234,7 @@
         <el-table-column label="切片状态" prop="sliceStatus" width="100" />
         <el-table-column label="版本" prop="parseVersion" width="72" />
         <el-table-column label="更新时间" prop="updateTime" width="138" />
-        <el-table-column label="操作" width="188" fixed="right">
+        <el-table-column v-if="canManageChapters" label="操作" width="188" fixed="right">
           <template #default="{ row, $index }">
             <el-button link :disabled="chapterSorting" @click="moveChapter(row, -1)">上移</el-button>
             <el-button link :disabled="chapterSorting || isLastChapterRow($index)" @click="moveChapter(row, 1)">下移</el-button>
@@ -308,6 +308,7 @@ import {
 import ContentManagementPage from '../components/content/ContentManagementPage.vue'
 import StorageMigrationDialog from '../components/content/StorageMigrationDialog.vue'
 import { fetchEligibleStorageLocations } from '../api/resourceManagement'
+import { useAuthStore } from '../stores/auth'
 import {
   batchChangeBookShelfStatus,
   batchDeleteBooks,
@@ -370,11 +371,18 @@ const columns = [
 ]
 
 const rowActions = [
-  { code: 'chapters', label: '章节', icon: Collection },
-  { code: 'shelf', label: '上下架', icon: RefreshRight },
-  { code: 'edit', label: '编辑', icon: EditPen },
-  { code: 'delete', label: '删除', icon: Delete, danger: true },
+  { code: 'chapters', label: '章节', icon: Collection, permission: 'sxbook:book:chapter:list' },
+  { code: 'shelf', label: '上下架', icon: RefreshRight, permission: 'sxbook:book:shelf' },
+  { code: 'edit', label: '编辑', icon: EditPen, permission: 'sxbook:book:edit' },
+  { code: 'delete', label: '删除', icon: Delete, danger: true, permission: 'sxbook:book:delete' },
 ]
+
+const authStore = useAuthStore()
+const canManageChapters = computed(() => authStore.hasAnyPermission([
+  'sxbook:book:add',
+  'sxbook:book:edit',
+  'sxbook:book:delete',
+]))
 
 const searchKeyword = ref('')
 const filters = reactive(createFilterState(baseFilters))
@@ -479,8 +487,8 @@ const pageConfig = computed(() => ({
   tabs: buildTabs(),
   actions: [
     { label: '刷新', icon: RefreshRight },
-    { label: '批量导入', icon: FolderOpened },
-    { label: '添加小说', icon: Plus, tone: 'primary' },
+    { label: '批量导入', icon: FolderOpened, permission: 'sxbook:book:add' },
+    { label: '添加小说', icon: Plus, tone: 'primary', permission: 'sxbook:book:add' },
   ],
   metrics: buildMetrics(),
   filters: buildFilters(),
@@ -488,10 +496,10 @@ const pageConfig = computed(() => ({
   rowActions,
   selectable: true,
   batchActions: [
-    { code: 'batch-online', label: '批量上架', tone: 'primary', loading: batchLoading.value },
-    { code: 'batch-offline', label: '批量下架', loading: batchLoading.value },
-    { code: 'batch-migrate-storage', label: '迁移存储', loading: batchLoading.value },
-    { code: 'batch-delete', label: '批量删除', tone: 'danger', loading: batchLoading.value },
+    { code: 'batch-online', label: '批量上架', tone: 'primary', loading: batchLoading.value, permission: 'sxbook:book:batch:shelf' },
+    { code: 'batch-offline', label: '批量下架', loading: batchLoading.value, permission: 'sxbook:book:batch:shelf' },
+    { code: 'batch-migrate-storage', label: '迁移存储', loading: batchLoading.value, permission: 'sxbook:storage:migration:submit' },
+    { code: 'batch-delete', label: '批量删除', tone: 'danger', loading: batchLoading.value, permission: 'sxbook:book:batch:delete' },
   ],
 }))
 
