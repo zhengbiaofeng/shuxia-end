@@ -1881,6 +1881,15 @@ onMounted(async () => {
   white-space: nowrap;
 }
 
+.local-import-storage {
+  max-width: 560px;
+  margin: 16px 0;
+}
+
+.local-import-storage :deep(.el-select) {
+  width: 100%;
+}
+
 .local-import-summary {
   display: grid;
   gap: 12px;
