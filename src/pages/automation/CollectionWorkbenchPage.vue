@@ -759,7 +759,6 @@ onMounted(async () => {
   white-space: nowrap;
 }
 
-.source-detection.is-metadata,
 .source-detection.is-novel {
   border-color: #b9e4d0;
   background: #f0fbf5;
@@ -786,6 +785,25 @@ onMounted(async () => {
 .source-input-row :deep(.el-button) {
   min-width: 128px;
   min-height: 46px;
+}
+
+.storage-destination {
+  display: grid;
+  grid-template-columns: 88px minmax(260px, 520px) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.storage-destination > span {
+  color: #415678;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.storage-destination small {
+  color: #9a6700;
+  font-size: 12px;
 }
 
 .source-panel__footer {
@@ -1076,6 +1094,10 @@ onMounted(async () => {
   .result-facts,
   .metadata-preview,
   .source-input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .storage-destination {
     grid-template-columns: 1fr;
   }
 
