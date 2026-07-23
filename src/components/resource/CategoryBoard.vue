@@ -6,17 +6,17 @@
           <span :class="`tone-${group.color}`"><el-icon><FolderOpened /></el-icon></span>
           <strong>{{ group.title }} <small>({{ group.count }})</small></strong>
         </div>
-        <div class="category-actions">
-          <button class="tooltip-button" type="button" aria-label="添加子分类" @click="$emit('add-child', group)">
+        <div v-if="canManageCategories" class="category-actions">
+          <button v-if="authStore.hasPermission('sxbook:category:add')" class="tooltip-button" type="button" aria-label="添加子分类" @click="$emit('add-child', group)">
             <el-icon><Plus /></el-icon>
             <span class="icon-tooltip">添加子分类</span>
           </button>
-          <button class="tooltip-button" type="button" aria-label="编辑分类" @click="$emit('edit', group)">
+          <button v-if="authStore.hasPermission('sxbook:category:edit')" class="tooltip-button" type="button" aria-label="编辑分类" @click="$emit('edit', group)">
             <el-icon><EditPen /></el-icon>
             <span class="icon-tooltip">编辑分类</span>
           </button>
           <button
-            v-if="canDeleteCategory(group)"
+            v-if="authStore.hasPermission('sxbook:category:delete') && canDeleteCategory(group)"
             class="tooltip-button delete-action"
             type="button"
             aria-label="删除分类"
@@ -26,6 +26,7 @@
             <span class="icon-tooltip">删除分类</span>
           </button>
           <button
+            v-if="authStore.hasPermission('sxbook:category:status')"
             class="tooltip-button"
             type="button"
             :class="['status-action', group.status === 0 ? 'is-enable' : 'is-disable']"
@@ -46,13 +47,13 @@
           <span class="tree-branch" />
           <el-icon><Folder /></el-icon>
           <span>{{ childLabel(child) }}</span>
-          <div class="tree-actions">
-            <button class="tree-action tooltip-button" type="button" aria-label="编辑分类" @click="$emit('edit', child)">
+          <div v-if="canManageCategories" class="tree-actions">
+            <button v-if="authStore.hasPermission('sxbook:category:edit')" class="tree-action tooltip-button" type="button" aria-label="编辑分类" @click="$emit('edit', child)">
               <el-icon><EditPen /></el-icon>
               <span class="icon-tooltip">编辑分类</span>
             </button>
             <button
-              v-if="canDeleteCategory(child)"
+              v-if="authStore.hasPermission('sxbook:category:delete') && canDeleteCategory(child)"
               class="tree-action tooltip-button delete-action"
               type="button"
               aria-label="删除分类"
@@ -73,42 +74,34 @@
     <span>当前页签下还没有子分类</span>
   </section>
 
-  <section class="category-hint">
-    <div>
-      <h2><el-icon><InfoFilled /></el-icon>使用提示</h2>
-      <div class="hint-grid">
-        <p>支持拖拽排序：拖拽分类可调整显示顺序</p>
-        <p>批量操作：点击右上角 “...” 可批量导入、导出或重置分类</p>
-        <p>右键菜单：右键分类可快速添加子分类、重命名或删除分类</p>
-        <p>智能分类：系统会根据刮削结果自动推荐合适的分类</p>
-      </div>
-    </div>
-    <div class="hint-actions">
-      <el-button :icon="Upload">批量导入分类</el-button>
-      <el-button :icon="Download">导出所有分类</el-button>
-    </div>
-  </section>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import {
   CircleCheck,
   CircleClose,
   Delete,
-  Download,
   EditPen,
   Folder,
   FolderOpened,
-  InfoFilled,
   Plus,
-  Upload,
 } from '@element-plus/icons-vue'
+import { useAuthStore } from '../../stores/auth'
 
 defineProps({
   groups: { type: Array, default: () => [] },
 })
 
 defineEmits(['add-child', 'delete', 'edit', 'toggle-status'])
+
+const authStore = useAuthStore()
+const canManageCategories = computed(() => authStore.hasAnyPermission([
+  'sxbook:category:add',
+  'sxbook:category:edit',
+  'sxbook:category:delete',
+  'sxbook:category:status',
+]))
 
 function childKey(child) {
   return typeof child === 'string' ? child : child.id || child.label
@@ -132,8 +125,7 @@ function canDeleteCategory(category) {
 }
 
 .category-card,
-.category-empty,
-.category-hint {
+.category-empty {
   border: 1px solid #e7ecf7;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.96);
@@ -146,8 +138,7 @@ function canDeleteCategory(category) {
 }
 
 .category-card header,
-.category-empty,
-.category-hint {
+.category-empty {
   display: flex;
   align-items: center;
   justify-content: space-between;

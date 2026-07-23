@@ -34,12 +34,12 @@
             <th>使用次数</th>
             <th>关联内容</th>
             <th>创建时间</th>
-            <th>操作</th>
+            <th v-if="canManageTags">操作</th>
           </tr>
         </thead>
         <tbody v-if="rows.length">
           <tr v-for="row in rows" :key="row.id || row.name">
-            <td>
+            <td v-if="canManageTags">
               <span class="tag-chip" :style="tagStyle(row)" :title="row.name">{{ row.name }}</span>
             </td>
             <td>{{ row.type }}</td>
@@ -54,6 +54,7 @@
             <td>
               <div class="table-actions">
                 <button
+                  v-if="authStore.hasPermission('sxbook:tag:edit')"
                   type="button"
                   title="编辑"
                   @click="$emit('edit', row)"
@@ -61,6 +62,7 @@
                   <el-icon><EditPen /></el-icon>
                 </button>
                 <button
+                  v-if="authStore.hasPermission('sxbook:tag:status')"
                   type="button"
                   :title="row.status === 0 ? '启用' : '禁用'"
                   @click="$emit('toggle-status', row)"
@@ -68,6 +70,7 @@
                   <el-icon><component :is="row.status === 0 ? CircleCheck : CircleClose" /></el-icon>
                 </button>
                 <button
+                  v-if="authStore.hasPermission('sxbook:tag:delete')"
                   type="button"
                   title="删除"
                   class="danger"
@@ -103,6 +106,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import {
   CircleCheck,
   CircleClose,
@@ -111,6 +115,14 @@ import {
   RefreshRight,
   Search,
 } from '@element-plus/icons-vue'
+import { useAuthStore } from '../../stores/auth'
+
+const authStore = useAuthStore()
+const canManageTags = computed(() => authStore.hasAnyPermission([
+  'sxbook:tag:edit',
+  'sxbook:tag:status',
+  'sxbook:tag:delete',
+]))
 
 defineProps({
   bizType: { type: String, default: '' },

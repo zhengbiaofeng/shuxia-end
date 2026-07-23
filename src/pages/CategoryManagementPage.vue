@@ -58,7 +58,7 @@ const parentCategory = ref(null)
 const activeTab = ref(0)
 const roots = ref([])
 
-const pageActions = [{ label: '添加分类', icon: Plus, type: 'primary' }]
+const pageActions = [{ label: '添加分类', icon: Plus, type: 'primary', permission: 'sxbook:category:add' }]
 const tabs = computed(() => roots.value.map((root) => `${root.title}分类`))
 const activeRoot = computed(() => roots.value[activeTab.value] || null)
 const groups = computed(() => activeRoot.value?.children || [])

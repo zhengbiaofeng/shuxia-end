@@ -13,12 +13,12 @@
             <th>状态</th>
             <th>最后扫描</th>
             <th>文件数</th>
-            <th>操作</th>
+            <th v-if="canManageStorage">操作</th>
           </tr>
         </thead>
         <tbody v-if="rows.length">
           <tr v-for="row in rows" :key="row.id || row.name">
-            <td>
+            <td v-if="canManageStorage">
               <div class="storage-name">
                 <span class="storage-name__icon" :class="`tone-${row.color}`">
                   <el-icon><FolderOpened /></el-icon>
@@ -59,7 +59,7 @@
             <td>{{ row.files }}</td>
             <td>
               <div class="table-actions">
-                <el-tooltip content="扫描目录" placement="top">
+                <el-tooltip v-if="authStore.hasPermission('sxbook:book:add')" content="扫描目录" placement="top">
                   <button
                     type="button"
                     :disabled="!row.scannable || scanningId === row.id"
@@ -68,10 +68,10 @@
                     <el-icon><Loading v-if="scanningId === row.id" /><VideoPlay v-else /></el-icon>
                   </button>
                 </el-tooltip>
-                <el-tooltip content="编辑" placement="top">
+                <el-tooltip v-if="authStore.hasPermission('sxbook:storage:source:edit')" content="编辑" placement="top">
                   <button type="button" @click="$emit('edit', row)"><el-icon><EditPen /></el-icon></button>
                 </el-tooltip>
-                <el-tooltip content="删除" placement="top">
+                <el-tooltip v-if="authStore.hasPermission('sxbook:storage:source:delete')" content="删除" placement="top">
                   <button type="button" class="danger" @click="$emit('delete', row)"><el-icon><Delete /></el-icon></button>
                 </el-tooltip>
               </div>
@@ -90,8 +90,17 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { Delete, EditPen, FolderOpened, Loading, VideoPlay } from '@element-plus/icons-vue'
 import ResourcePagination from './ResourcePagination.vue'
+import { useAuthStore } from '../../stores/auth'
+
+const authStore = useAuthStore()
+const canManageStorage = computed(() => authStore.hasAnyPermission([
+  'sxbook:book:add',
+  'sxbook:storage:source:edit',
+  'sxbook:storage:source:delete',
+]))
 
 defineProps({
   rows: { type: Array, default: () => [] },

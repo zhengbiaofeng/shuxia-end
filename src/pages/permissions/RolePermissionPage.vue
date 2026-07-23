@@ -58,13 +58,13 @@
               v-if="page.permissionTree.length"
               ref="treeRef"
               class="permission-tree"
+              :class="{ 'is-readonly': !canSave }"
               :data="page.permissionTree"
               node-key="key"
               show-checkbox
               default-expand-all
               :check-strictly="false"
               :props="treeProps"
-              :disabled="!canSave"
             />
             <el-empty v-else description="暂无书匣权限节点" />
           </div>
@@ -288,6 +288,11 @@ onMounted(async () => {
 .permission-tree {
   padding-top: 16px;
   background: transparent;
+}
+
+.permission-tree.is-readonly {
+  opacity: 0.78;
+  pointer-events: none;
 }
 
 .permission-tree :deep(.el-tree-node__content) {
