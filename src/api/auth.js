@@ -8,6 +8,10 @@ export async function fetchCurrentUser() {
   return request.get('/sx/book/user/ext/me');
 }
 
+export async function fetchCurrentUserPermissions() {
+  return request.get('/sys/permission/getUserPermissionByToken');
+}
+
 export async function logoutRequest() {
   return request.get('/sys/logout');
 }
