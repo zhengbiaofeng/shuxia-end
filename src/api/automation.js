@@ -362,6 +362,7 @@ export async function quickSyncNovelByUrl(payload = {}) {
   const response = await request.post('/sx/book/scrape/quickSync', cleanParams({
     detailUrl: trimText(payload.detailUrl),
     bookId: payload.bookId,
+    storageLocationId: payload.storageLocationId,
     syncChapters: payload.syncChapters !== false,
     requestDelayMs: payload.requestDelayMs,
     cronExpr: trimText(payload.cronExpr),
