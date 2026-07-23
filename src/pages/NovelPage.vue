@@ -1270,6 +1270,33 @@ function resetLocalImportForm() {
   localImportSourceFileCount.value = 0
   localImportSelectedRows.value = []
   localImportResult.value = null
+  localImportStorageLocationId.value = preferredNovelStorageLocation()?.id || ''
+}
+
+function formatNovelStorageLocation(location = {}) {
+  const path = location.path || location.raw?.localBasePath || location.raw?.bucketName || ''
+  return path ? `${location.name} · ${path}` : location.name
+}
+
+function preferredNovelStorageLocation() {
+  return novelStorageLocations.value.find((item) => Number(item.raw?.defaultNovel || 0) === 1)
+    || novelStorageLocations.value[0]
+    || null
+}
+
+async function loadNovelStorageLocations() {
+  novelStorageLocationsLoading.value = true
+  try {
+    novelStorageLocations.value = await fetchEligibleStorageLocations({ bizType: 'novel', writableOnly: true })
+    if (!localImportStorageLocationId.value) {
+      localImportStorageLocationId.value = preferredNovelStorageLocation()?.id || ''
+    }
+  } catch (error) {
+    novelStorageLocations.value = []
+    ElMessage.error(error.message || '获取小说存储位置失败')
+  } finally {
+    novelStorageLocationsLoading.value = false
+  }
 }
 
 function resetListViewAfterUpload() {
@@ -1733,7 +1760,7 @@ function coverStyle(cover) {
 }
 
 onMounted(async () => {
-  await loadFilterData()
+  await Promise.allSettled([loadFilterData(), loadNovelStorageLocations()])
   await loadNovels(1)
 })
 </script>
