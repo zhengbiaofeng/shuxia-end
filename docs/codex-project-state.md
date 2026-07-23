@@ -529,7 +529,7 @@ npm run build
 - Referenced storage cannot be deleted or have its physical connection/path changed before migration. Administrators may still disable it or make it read-only to stop new writes.
 - Migration identifies local/NAS sources by `storage_source_id` and retains legacy `local-path` compatibility.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\admin-scope-storage-contract-20260723.md`.
-- Verification completed so far: frontend production build and backend `:sx-book` compile passed on 2026-07-23. Running container deployment and real storage migration smoke tests remain pending.
+- Verification completed so far: frontend production build, backend `:sx-book` compile, full `:jeecg-system-start` package, and desktop/390px browser layout checks passed on 2026-07-23. Running container deployment and real storage migration smoke tests remain pending.
 
 ## Integration Priority
 
