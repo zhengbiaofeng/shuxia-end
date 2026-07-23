@@ -235,6 +235,22 @@
                 <el-option label="云端 + 本地/NAS" value="both" />
               </el-select>
             </el-form-item>
+            <el-form-item label="章节存储位置">
+              <el-select
+                v-model="form.storageLocationId"
+                clearable
+                filterable
+                :loading="storageLocationsLoading"
+                placeholder="未选择时使用小说默认位置"
+              >
+                <el-option
+                  v-for="location in storageLocations"
+                  :key="location.id"
+                  :label="formatStorageLocationLabel(location)"
+                  :value="location.id"
+                />
+              </el-select>
+            </el-form-item>
             <el-form-item label="状态">
               <el-switch v-model="formEnabled" active-text="启用" inactive-text="停用" />
             </el-form-item>
@@ -384,6 +400,7 @@ import { AdminActionIcons, AdminFilterBar, AdminStatusBadge, AdminTableCard } fr
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
 import { fetchBookList } from '../../api/books'
+import { fetchEligibleStorageLocations } from '../../api/resourceManagement'
 import {
   batchChangeNovelSyncStatus,
   batchDeleteNovelSyncSubscriptions,
@@ -424,6 +441,8 @@ const novelOptions = ref([])
 const channelOptions = ref([])
 const novelsLoading = ref(false)
 const channelsLoading = ref(false)
+const storageLocations = ref([])
+const storageLocationsLoading = ref(false)
 const cronPreset = ref('custom')
 let pollTimer = null
 const query = reactive({
@@ -450,7 +469,7 @@ const columns = [
 const cronPresets = [
   { label: '每 6 小时', value: '0 */6 * * *' },
   { label: '每 12 小时', value: '0 */12 * * *' },
-  { label: '每天凌晨 3 点', value: '0 3 * * *' },
+  { label: '每天 0 点', value: '0 0 * * *' },
   { label: '自定义', value: 'custom' },
 ]
 const rules = {
@@ -486,6 +505,7 @@ function defaultForm() {
     sourceId: '',
     detailUrl: '',
     targetType: 'cloud',
+    storageLocationId: '',
     cronExpr: '0 */6 * * *',
     status: 1,
     remark: '',
@@ -644,6 +664,7 @@ async function openEdit(row) {
       sourceId: detail.sourceId,
       detailUrl: detail.detailUrl === '--' ? '' : detail.detailUrl,
       targetType: detail.targetType || 'cloud',
+      storageLocationId: detail.storageLocationId || '',
       cronExpr: detail.cron === '--' ? '0 */6 * * *' : detail.cron,
       status: detail.statusValue,
       remark: detail.remark || '',
@@ -674,6 +695,23 @@ function resetForm() {
 function applyCronPreset(value) {
   if (value !== 'custom') {
     form.cronExpr = value
+  }
+}
+
+function formatStorageLocationLabel(location) {
+  const prefix = location.objectPrefix ? ` / ${location.objectPrefix}` : ''
+  const type = location.type || location.raw?.sourceType || '--'
+  return `${location.name} (${type}${prefix})`
+}
+
+async function loadStorageLocations() {
+  storageLocationsLoading.value = true
+  try {
+    storageLocations.value = await fetchEligibleStorageLocations({ bizType: 'novel', writableOnly: true })
+  } catch (error) {
+    ElMessage.error(error.message || '获取小说存储位置失败')
+  } finally {
+    storageLocationsLoading.value = false
   }
 }
 
@@ -980,7 +1018,7 @@ function stopPolling() {
 }
 
 onMounted(async () => {
-  await Promise.all([searchNovels(), loadChannelOptions(), loadSubscriptions()])
+  await Promise.all([searchNovels(), loadChannelOptions(), loadStorageLocations(), loadSubscriptions()])
   startPolling()
 })
 
