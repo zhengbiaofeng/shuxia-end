@@ -28,7 +28,7 @@
               </el-select>
             </el-form-item>
             <el-form-item label="站点名称" prop="siteName">
-              <el-input v-model="form.siteName" placeholder="例如：豆瓣读书" />
+              <el-input v-model="form.siteName" placeholder="例如：七猫小说" />
             </el-form-item>
             <el-form-item label="连接模板">
               <el-select v-model="form.channelCode" placeholder="可选，复用已配置连接模板" filterable clearable allow-create>

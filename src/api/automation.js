@@ -391,11 +391,6 @@ export function normalizeBizType(value) {
   return map[String(value || '').toLowerCase()] || value || '--'
 }
 
-export function bizTypeValue(label) {
-  const option = BIZ_TYPE_OPTIONS.find((item) => item.label === label || item.value === label)
-  return option?.value || ''
-}
-
 export function statusValue(label) {
   if (label === '启用') return 1
   if (label === '禁用') return 0

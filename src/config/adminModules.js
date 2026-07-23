@@ -70,7 +70,6 @@ export const automationPages = {
     filters: {
       search: { placeholder: '搜索站点适配名称、站点或渠道' },
       filters: [
-        { label: '全部类型', value: '全部类型', options: ['全部类型', '书籍', '小说', '漫画', '有声'] },
         { label: '全部状态', value: '全部状态', options: ['全部状态', '启用', '禁用'] },
       ],
     },
@@ -89,7 +88,7 @@ export const automationPages = {
     ],
     filters: {
       search: { placeholder: '搜索模板名称、站点或接口地址' },
-      filters: [{ label: '全部类型', value: '全部类型', options: ['全部类型', '书籍', '小说', '漫画', '有声'] }],
+      filters: [{ label: '全部状态', value: '全部状态', options: ['全部状态', '启用', '禁用'] }],
     },
   },
   tasks: {

@@ -105,7 +105,7 @@
             </el-select>
           </el-form-item>
           <el-form-item label="站点名称">
-            <el-input v-model="form.siteName" placeholder="例如：豆瓣读书" />
+            <el-input v-model="form.siteName" placeholder="例如：七猫小说" />
           </el-form-item>
           <el-form-item label="站点根地址">
             <el-input v-model="form.baseUrl" placeholder="https://example.com" />
