@@ -1847,6 +1847,7 @@ async function uploadLocalImportRow(row) {
       fileType: 'content',
       bookType: row.bookType,
       categoryId: row.categoryId || undefined,
+      storageLocationId: localImportStorageLocationId.value,
     })
     row.bookId = uploaded.bookId || ''
     row.contentFileId = uploaded.id || ''
