@@ -539,6 +539,24 @@ npm run build
   - Added `sx-book-storage-reference-backfill-20260723.sql` for the explicitly confirmed local mapping: active files physically in `sx-book` bind to `minio:sx-book`, and active subscriptions without a destination bind to `minio:novel`. The script does not move content or touch deleted rows.
   - All synthetic upload, scrape, migration, rule, source, subscription, task, log, file, and object data used for verification was removed.
 
+## 2026-07-23 P1 Permission And Settings Closure
+
+- Frontend authorization is now driven by the permission codes returned for the logged-in user:
+  - navigation entries declare required permissions and are filtered centrally;
+  - route metadata uses the same permissions and unauthorized direct navigation renders the 403 page;
+  - page and row actions are hidden or disabled using the same permission codes;
+  - the backend remains the final authorization boundary through Shiro annotations.
+- Dedicated role baselines are available:
+  - `admin` manages the whole administration system;
+  - `sx_content_manager` manages content, novel collection, subscriptions and task actions, while storage infrastructure and system settings remain outside its scope;
+  - `sx_readonly_auditor` can inspect content, storage summaries, tasks, logs and settings without write operations.
+- Storage, subscription, scrape execution and migration endpoints now use specific operation permissions rather than one broad write permission.
+- Role Permission uses the real backend permission tree and save endpoint. User Management no longer exposes decorative row actions that have no backend contract.
+- Reader defaults now use `/sx/book/reader-setting/detail` and `/save`; security and notification settings also use real save flows. The reader frontend remains a separate existing project and is integration-only.
+- Dashboard welcome text uses the current user. Quick actions are shown only when their destination/action is implemented and the user owns its permission.
+- Local runtime verification covered all three roles, direct-route 403 handling, storage operations, subscription actions and read-only settings controls.
+- SQL migration order and backend handoff are documented in `docs/p1-permission-settings-handoff-20260723.md` under the canonical E-drive backend repository.
+
 ## Integration Priority
 
 Current user priority:
