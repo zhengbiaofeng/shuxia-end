@@ -17,17 +17,11 @@
       @edit="openStorageForm"
       @scan="handleScanStorage"
     />
-    <AddStorageModal
-      v-model="addModalVisible"
-      :submitting="submitting"
-      @confirm="handleCreateStorage"
-    />
-    <ResourceFormDialog
+    <StorageSourceDialog
       v-model="formVisible"
-      :fields="storageFields"
       :initial-values="formInitialValues"
       :submitting="submitting"
-      :title="editingStorage ? '编辑存储源' : '新增存储源'"
+      :title="editingStorage ? '编辑存储源' : '添加存储源'"
       @submit="handleSubmitStorage"
     />
   </ResourceShell>
@@ -36,10 +30,9 @@
 <script setup>
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, ref, shallowRef } from 'vue'
-import AddStorageModal from '../components/resource/AddStorageModal.vue'
-import ResourceFormDialog from '../components/resource/ResourceFormDialog.vue'
 import ResourceMetricGrid from '../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../components/resource/ResourceShell.vue'
+import StorageSourceDialog from '../components/resource/StorageSourceDialog.vue'
 import StorageTable from '../components/resource/StorageTable.vue'
 import {
   cleanupOrphanStorageFiles,
@@ -55,7 +48,6 @@ const loading = ref(false)
 const submitting = ref(false)
 const cleanupLoading = ref(false)
 const scanningStorageId = ref('')
-const addModalVisible = ref(false)
 const formVisible = ref(false)
 const editingStorage = ref(null)
 const metrics = shallowRef([])
@@ -68,79 +60,6 @@ const pageActions = computed(() =>
     disabled: action.key === 'cleanupOrphans' ? loading.value || cleanupLoading.value : action.disabled,
   })),
 )
-
-const storageFields = [
-  {
-    key: 'sourceType',
-    label: '存储类型',
-    type: 'select',
-    required: true,
-    defaultValue: 'local',
-    options: [
-      { label: '本地目录', value: 'local' },
-      { label: 'MinIO', value: 'minio' },
-    ],
-  },
-  { key: 'sourceName', label: '存储名称', required: true, placeholder: '请输入存储名称' },
-  { key: 'sourceKey', label: '存储键', placeholder: '为空时后端自动生成' },
-  { key: 'localBasePath', label: '本地根路径', placeholder: 'local 类型必填，例如 /volume1/books' },
-  { key: 'endpoint', label: '端点', placeholder: 'minio 类型填写访问端点' },
-  { key: 'bucketName', label: '桶名称', placeholder: 'minio 类型必填' },
-  {
-    key: 'bizScope',
-    label: '内容范围',
-    type: 'select',
-    defaultValue: 'both',
-    options: [
-      { label: '书籍', value: 'ebook' },
-      { label: '小说', value: 'novel' },
-      { label: '书籍 + 小说', value: 'both' },
-    ],
-  },
-  { key: 'objectPrefix', label: '存储前缀', placeholder: '桶内或根目录下的相对路径，例如 library' },
-  {
-    key: 'writable',
-    label: '写入权限',
-    type: 'select',
-    defaultValue: 1,
-    options: [
-      { label: '允许写入', value: 1 },
-      { label: '只读', value: 0 },
-    ],
-  },
-  {
-    key: 'defaultEbook',
-    label: '书籍默认目标',
-    type: 'select',
-    defaultValue: 0,
-    options: [
-      { label: '否', value: 0 },
-      { label: '是', value: 1 },
-    ],
-  },
-  {
-    key: 'defaultNovel',
-    label: '小说默认目标',
-    type: 'select',
-    defaultValue: 0,
-    options: [
-      { label: '否', value: 0 },
-      { label: '是', value: 1 },
-    ],
-  },
-  {
-    key: 'status',
-    label: '状态',
-    type: 'select',
-    defaultValue: 1,
-    options: [
-      { label: '启用', value: 1 },
-      { label: '禁用', value: 0 },
-    ],
-  },
-  { key: 'sortNo', label: '排序', type: 'number', defaultValue: 0 },
-  { key: 'remark', label: '备注', type: 'textarea', placeholder: '请输入备注' },
-]
 
 const formInitialValues = computed(() => {
   const raw = editingStorage.value?.raw || {}
@@ -161,6 +80,17 @@ const formInitialValues = computed(() => {
     status: Number(raw.status ?? 1),
     sortNo: Number(raw.sortNo || 0),
     remark: raw.remark || '',
+    pathStatus: raw.pathStatus,
+    pathMessage: raw.pathMessage,
+    pathReadable: raw.pathReadable,
+    pathWritable: raw.pathWritable,
+    capacityKnown: raw.capacityKnown,
+    totalBytes: raw.totalBytes,
+    usedBytes: raw.usedBytes,
+    availableBytes: raw.availableBytes,
+    volumeName: raw.volumeName,
+    fileSystemType: raw.fileSystemType,
+    containerized: raw.containerized,
   }
 })
 
@@ -170,8 +100,7 @@ function handleAction(action) {
     return
   }
   if (action.key === 'addStorage' || action.label === '添加存储') {
-    editingStorage.value = null
-    addModalVisible.value = true
+    openStorageForm()
   }
 }
 
@@ -195,20 +124,6 @@ async function handleSubmitStorage(values) {
     await loadStoragePage()
   } catch (error) {
     ElMessage.error(error?.message || '保存存储源失败')
-  } finally {
-    submitting.value = false
-  }
-}
-
-async function handleCreateStorage(values) {
-  submitting.value = true
-  try {
-    await createStorageSource(normalizeStoragePayload(values))
-    ElMessage.success('存储源已新增')
-    addModalVisible.value = false
-    await loadStoragePage()
-  } catch (error) {
-    ElMessage.error(error?.message || '新增存储源失败')
   } finally {
     submitting.value = false
   }
