@@ -172,6 +172,22 @@
           <el-option v-for="option in bookTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
         </el-select>
       </el-form-item>
+      <el-form-item label="存储位置">
+        <el-select
+          v-model="uploadForm.storageLocationId"
+          clearable
+          filterable
+          :loading="ebookStorageLocationsLoading"
+          placeholder="未选择时使用书籍默认位置"
+        >
+          <el-option
+            v-for="location in ebookStorageLocations"
+            :key="location.id"
+            :label="formatEbookStorageLocation(location)"
+            :value="location.id"
+          />
+        </el-select>
+      </el-form-item>
       <el-upload
         :auto-upload="false"
         :limit="1"
@@ -343,6 +359,7 @@ import {
   VideoPlay,
 } from '@element-plus/icons-vue'
 import ContentManagementPage from '../components/content/ContentManagementPage.vue'
+import { fetchEligibleStorageLocations } from '../api/resourceManagement'
 import {
   batchChangeBookShelfStatus,
   batchDeleteBooks,
@@ -653,7 +670,10 @@ const uploadedFile = ref(null)
 const uploadForm = reactive({
   fileType: '',
   bookType: '',
+  storageLocationId: '',
 })
+const ebookStorageLocations = ref([])
+const ebookStorageLocationsLoading = ref(false)
 const localImportVisible = ref(false)
 const localImportScanning = ref(false)
 const localImportCommitting = ref(false)
@@ -1270,6 +1290,7 @@ async function submitUpload() {
       file: uploadRawFile.value,
       fileType: uploadForm.fileType || undefined,
       bookType: uploadForm.bookType || undefined,
+      storageLocationId: uploadForm.storageLocationId || undefined,
     })
 
     if (uploadedFileAutoImported.value) {
@@ -1533,6 +1554,24 @@ function resetUploadForm() {
   uploadedFile.value = null
   uploadForm.fileType = ''
   uploadForm.bookType = ''
+  uploadForm.storageLocationId = ''
+}
+
+function formatEbookStorageLocation(location) {
+  const prefix = location.objectPrefix ? ` / ${location.objectPrefix}` : ''
+  const type = location.type || location.raw?.sourceType || '--'
+  return `${location.name} (${type}${prefix})`
+}
+
+async function loadEbookStorageLocations() {
+  ebookStorageLocationsLoading.value = true
+  try {
+    ebookStorageLocations.value = await fetchEligibleStorageLocations({ bizType: 'ebook', writableOnly: true })
+  } catch (error) {
+    ElMessage.error(error.message || '获取书籍存储位置失败')
+  } finally {
+    ebookStorageLocationsLoading.value = false
+  }
 }
 
 function resetLocalImportForm() {
@@ -2204,7 +2243,7 @@ function coverStyle(cover) {
 }
 
 onMounted(async () => {
-  await Promise.allSettled([loadFilterData(), loadSummary()])
+  await Promise.allSettled([loadFilterData(), loadSummary(), loadEbookStorageLocations()])
   await loadBooks(1)
 })
 </script>

@@ -98,7 +98,7 @@ export async function fetchBookDetail(id) {
   return normalizeBookRecord(response.result);
 }
 
-export async function uploadBookFile({ file, fileType, bookType, categoryId } = {}) {
+export async function uploadBookFile({ file, fileType, bookType, categoryId, storageLocationId } = {}) {
   if (!file) {
     throw new Error('请选择要上传的文件');
   }
@@ -112,6 +112,7 @@ export async function uploadBookFile({ file, fileType, bookType, categoryId } = 
   if (fileType) formData.append('fileType', fileType);
   if (bookType) formData.append('bookType', bookType);
   if (categoryId) formData.append('categoryId', categoryId);
+  if (storageLocationId) formData.append('storageLocationId', storageLocationId);
 
   const response = await request.post('/sx/book/upload/single', formData, {
     headers: {
