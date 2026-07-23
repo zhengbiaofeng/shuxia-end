@@ -428,9 +428,14 @@ function formatBytes(value) {
 :global(.storage-source-dialog) {
   display: flex;
   flex-direction: column;
+  width: min(760px, calc(100vw - 24px)) !important;
   max-height: 92vh;
   margin-top: 4vh !important;
   overflow: hidden;
+}
+
+:global(.storage-path-dialog) {
+  width: min(620px, calc(100vw - 24px)) !important;
 }
 
 :global(.storage-source-dialog .el-dialog__header),
