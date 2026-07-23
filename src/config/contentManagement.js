@@ -18,12 +18,14 @@ export function createFilterState(filters = []) {
   }, {})
 }
 
-export const commonRowActions = [
-  { label: '查看', icon: Collection },
-  { label: '编辑', icon: EditPen },
-  { label: '删除', icon: Delete, danger: true },
+export function createContentRowActions(prefix) {
+  return [
+  { label: '查看', icon: Collection, permission: `sxbook:${prefix}:detail` },
+  { label: '编辑', icon: EditPen, permission: `sxbook:${prefix}:edit` },
+  { label: '删除', icon: Delete, danger: true, permission: `sxbook:${prefix}:delete` },
   { label: '更多', icon: MoreFilled },
-]
+  ]
+}
 
 export const comicPageConfig = {
   activeMenu: '漫画',
@@ -38,9 +40,9 @@ export const comicPageConfig = {
     { key: 'paused', label: '已暂停' },
   ],
   actions: [
-    { label: '刷新扫描', icon: RefreshRight },
-    { label: '导入漫画', icon: Upload },
-    { label: '添加漫画', icon: Plus, tone: 'primary' },
+    { label: '刷新扫描', icon: RefreshRight, permission: 'sxbook:comic:import' },
+    { label: '导入漫画', icon: Upload, permission: 'sxbook:comic:import' },
+    { label: '添加漫画', icon: Plus, tone: 'primary', permission: 'sxbook:comic:add' },
   ],
   filters: [
     { key: 'categoryId', label: '分类', options: [{ label: '全部分类', value: '' }] },
@@ -68,7 +70,7 @@ export const comicPageConfig = {
     { key: 'updatedAt', label: '更新时间' },
     { key: 'actions', label: '操作', type: 'actions' },
   ],
-  rowActions: commonRowActions,
+  rowActions: createContentRowActions('comic'),
 }
 
 export const audioPageConfig = {
@@ -84,9 +86,9 @@ export const audioPageConfig = {
     { key: 'paused', label: '已暂停' },
   ],
   actions: [
-    { label: '导入有声', icon: Upload },
-    { label: '扫描更新', icon: RefreshRight },
-    { label: '添加有声', icon: Plus, tone: 'primary' },
+    { label: '导入有声', icon: Upload, permission: 'sxbook:audio:import' },
+    { label: '扫描更新', icon: RefreshRight, permission: 'sxbook:audio:import' },
+    { label: '添加有声', icon: Plus, tone: 'primary', permission: 'sxbook:audio:add' },
   ],
   filters: [
     { key: 'categoryId', label: '分类', options: [{ label: '全部分类', value: '' }] },
@@ -113,7 +115,7 @@ export const audioPageConfig = {
     { key: 'updatedAt', label: '最近更新' },
     { key: 'actions', label: '操作', type: 'actions' },
   ],
-  rowActions: commonRowActions,
+  rowActions: createContentRowActions('audio'),
   icon: Headset,
 }
 

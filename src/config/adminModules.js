@@ -64,8 +64,8 @@ export const automationPages = {
     subtitle: '维护站点适配、访问方式和字段解析规则；普通采集请从采集工作台开始',
     activeMenu: '采集工作台',
     actions: [
-      { label: '连接模板', icon: Setting },
-      { label: '添加站点适配', icon: Plus, type: 'primary' },
+      { label: '连接模板', icon: Setting, permission: 'sxbook:scrapeChannel:list' },
+      { label: '添加站点适配', icon: Plus, type: 'primary', permission: 'sxbook:scrapeRule:add' },
     ],
     filters: {
       search: { placeholder: '搜索站点适配名称、站点或渠道' },
@@ -83,8 +83,8 @@ export const automationPages = {
     subtitle: '维护可复用的站点访问模板，普通站点适配可直接在编辑页内配置请求信息',
     activeMenu: '采集工作台',
     actions: [
-      { label: '返回采集设置', icon: RefreshRight },
-      { label: '新增连接模板', icon: Plus, type: 'primary' },
+      { label: '返回采集设置', icon: RefreshRight, permission: 'sxbook:scrapeRule:list' },
+      { label: '新增连接模板', icon: Plus, type: 'primary', permission: 'sxbook:scrapeChannel:add' },
     ],
     filters: {
       search: { placeholder: '搜索模板名称、站点或接口地址' },
@@ -96,9 +96,9 @@ export const automationPages = {
     subtitle: '管理和监控所有自动化任务，查看任务状态、进度和执行日志',
     activeMenu: '任务中心',
     actions: [
-      { label: '清空已完成', icon: Delete },
-      { label: '导出任务日志', icon: Download },
-      { label: '新建任务', icon: Plus, type: 'primary' },
+      { label: '清空已完成', icon: Delete, permission: 'sxbook:task:action' },
+      { label: '导出任务日志', icon: Download, permission: 'sxbook:taskLog:list' },
+      { label: '新建任务', icon: Plus, type: 'primary', permission: 'sxbook:task:action' },
     ],
     tabs: ['全部', '处理中', '待处理', '成功', '失败'],
     filters: {
@@ -113,7 +113,7 @@ export const automationPages = {
     title: '更新订阅',
     subtitle: '查看书架订阅内容的更新快照',
     activeMenu: '更新订阅',
-    actions: [{ label: '刷新订阅快照', icon: RefreshRight, type: 'primary' }],
+    actions: [{ label: '刷新订阅快照', icon: RefreshRight, type: 'primary', permission: 'sxbook:book:list' }],
     filters: {
       search: { placeholder: '搜索订阅书名或内容类型' },
     },
@@ -125,7 +125,7 @@ export const permissionPages = {
     title: '用户管理',
     subtitle: '管理系统用户账号，查看用户状态和内容使用情况',
     activeMenu: '用户管理',
-    actions: [{ label: '添加用户', icon: Plus, type: 'primary' }],
+    actions: [],
     filters: {
       search: { placeholder: '搜索用户名、邮箱、昵称' },
       filters: [
@@ -139,7 +139,7 @@ export const permissionPages = {
     title: '角色权限',
     subtitle: '管理系统角色和书匣权限树，控制不同角色的功能访问范围',
     activeMenu: '角色权限',
-    actions: [{ label: '添加角色', icon: Plus, type: 'primary' }],
+    actions: [],
     filters: {
       search: { placeholder: '搜索角色名称或编码' },
       filters: [{ label: '全部角色', value: '全部角色', options: ['全部角色'] }],
@@ -153,35 +153,35 @@ export const settingPages = {
     subtitle: '配置和管理站点基本信息、默认客户端和默认内容展示策略',
     activeMenu: '站点设置',
     tabs: ['基本设置', '默认策略', '备案信息'],
-    actions: [{ label: '保存设置', type: 'primary' }],
+    actions: [{ label: '保存设置', type: 'primary', permission: 'sxbook:siteSetting:save' }],
   },
   reader: {
     title: '阅读设置',
     subtitle: '配置电子书、小说、漫画和有声内容的默认阅读体验',
     activeMenu: '阅读设置',
     tabs: ['基础阅读', '翻页与缓存'],
-    actions: [{ label: '保存设置', type: 'primary' }],
+    actions: [{ label: '保存设置', type: 'primary', permission: 'sxbook:readerSetting:save' }],
   },
   notify: {
     title: '通知设置',
     subtitle: '管理系统通知渠道、通知规则和发送策略',
     activeMenu: '通知设置',
     tabs: ['通知渠道'],
-    actions: [{ label: '保存设置', type: 'primary' }],
+    actions: [{ label: '保存设置', type: 'primary', permission: 'sxbook:notifySetting:channel:save' }],
   },
   security: {
     title: '安全设置',
     subtitle: '配置登录验证、访问控制和系统安全策略',
     activeMenu: '安全设置',
     tabs: ['登录安全', '访问控制', '审计策略'],
-    actions: [{ label: '保存设置', type: 'primary' }],
+    actions: [{ label: '保存设置', type: 'primary', permission: 'sxbook:securitySetting:save' }],
   },
   license: {
     title: '授权信息',
     subtitle: '查看当前授权状态、授权范围和系统版本信息',
     activeMenu: '授权信息',
     tabs: ['授权状态', '版本信息'],
-    actions: [{ label: '更新授权', icon: Upload, type: 'primary' }],
+    actions: [],
   },
 }
 
@@ -191,7 +191,7 @@ export const logPages = {
     subtitle: '记录系统中所有用户的操作行为，便于审计和追踪',
     activeMenu: '操作日志',
     tabs: ['操作日志', '导出日志'],
-    actions: [{ label: '导出日志', icon: Download }],
+    actions: [{ label: '导出日志', icon: Download, permission: 'sxbook:operateLog:export' }],
     filters: {
       dateRange: { value: [] },
       search: { placeholder: '搜索书名、操作内容或操作人' },
