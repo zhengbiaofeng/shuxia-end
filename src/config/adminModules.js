@@ -217,7 +217,7 @@ export const logPages = {
     },
   },
   stats: {
-    title: '任务日志',
+    title: '任务统计',
     subtitle: '统计系统任务执行情况，便于分析和优化',
     activeMenu: '任务日志',
     tabs: ['任务日志', '任务统计'],
