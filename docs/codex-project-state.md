@@ -75,26 +75,11 @@ This document is the handoff snapshot for new Codex threads. Read it before star
   - Books page type selectors are restricted to `txt/pdf/epub/mobi/azw3/graphic`; `novel`, `comic`, and `audio` are not valid books-page types.
   - Local verification: `ebook` scoped records `22`, `novel` scoped records `10`, `ebook_dirty_count=0`.
   - Historical handoff doc was recorded under old D盘 backend; use E盘 backend as the current source before relying on that path.
-- Smart scrape一期 is now implemented for Douban Book detail URLs:
-  - Frontend page: `/automation/smart-scrape`.
-  - Backend APIs:
-    - `POST /sx/book/auto-scrape/analyze`
-    - `POST /sx/book/auto-scrape/import`
-    - `POST /sx/book/auto-scrape/content/analyze`
-    - `POST /sx/book/auto-scrape/content/start`
-  - Backend adapter layer starts with `DoubanBookAdapter` and supports `https://book.douban.com/subject/{id}/`.
-  - Douban is treated as metadata completion only, not chapter/content scraping.
-  - Douban cover URLs are now downloaded server-side and bound through the existing cover file/proxy path; existing manually maintained covers are not overwritten.
-  - Smart-scrape preview covers use `GET /sx/book/auto-scrape/cover-preview?url=...` instead of browser hotlinking Douban images directly; the endpoint is whitelisted for image tags and restricted to Douban image hosts.
-  - The smart-scrape frontend no longer exposes a local txt/pdf/epub upload panel; local file upload, auto-create, and parsing remain centralized in the Books page upload flow.
-  - The smart-scrape frontend also has a web content scrape panel after metadata import. Users can paste a public chapter-list or chapter-detail URL, preview matched rule/chapter samples, and confirm ingestion into `sx_book_chapter`.
-  - Web content scrape uses enabled advanced scan rules for `chapterSelector`/`chapterTitleSelector`/`chapterUrlSelector`/`contentSelector`; Douban remains metadata-only.
-  - Web content ingestion stores chapter text through the existing chapter content storage service, marks chapters `sliceStatus=SUCCESS`, refreshes `chapterCount/lastReadableChapterId`, and records `WEB_SCRAPE` task logs.
-  - `WEB_SCRAPE` is now supported in task log validation, task center list/detail/summary, and task statistics.
-  - For books with `sourceSite`, content parsing preserves the user-confirmed metadata/source fields after chapter parsing, so EPUB/PDF embedded metadata does not overwrite the Douban preview data.
-  - Import conflict matching uses ISBN first, then `bookName + authorName + publisher`.
-  - New `sx_book` metadata/source fields are added by SQL: `sx-book-auto-scrape.sql`.
-  - Historical handoff doc was recorded under old D盘 backend; use E盘 backend as the current source before relying on that path.
+- The historical Douban/book web-scrape direction is retired and must not be restored:
+  - Books are created only from user upload or local/NAS directory import.
+  - The current E盘 backend does not expose `/sx/book/auto-scrape/*` endpoints.
+  - `/automation/smart-scrape` is kept only as a compatibility redirect to the novel Collection Workbench.
+  - Network collection rules, source templates, quick sync, batch discovery and subscriptions are novel-only.
 - Backend tag names are now separated from category names:
   - `SxContentTagService` rejects tag names that match active `sx_book_category.category_name` or content-type aliases such as `书籍`, `NOVEL`, `book`, `ebook`, `comic`, and `audio`.
   - `sx-book-taxonomy-baseline.sql` removes category-name tags/relations, removes content-type alias tags, and seeds descriptive tag names instead.
@@ -157,12 +142,12 @@ This document is the handoff snapshot for new Codex threads. Read it before star
   - Verification: frontend build, `:sx-book` compile, and full `:jeecg-system-start` package all passed.
 - Consolidated the novel collection workflow into a user-oriented automation information architecture:
   - `/automation/collection` is the new Collection Workbench with `单本采集` and `批量采集` views.
-  - Single collection auto-detects Douban metadata pages, novel detail/catalog pages, and list/rank pages; list-like URLs can switch to batch collection with the URL preserved.
+  - Single collection accepts novel detail/catalog pages; list-like URLs can switch to batch collection with the URL preserved.
   - Batch collection reuses enabled novel scrape rules as `站点适配`, supports single-page or paginated discovery, candidate selection, and existing batch-sync task submission.
   - `/automation/following` is now the dedicated Follow Management page. The duplicate quick-URL form was removed; bulk enable/disable, selected delete, and delete-all remain available.
   - Primary automation navigation is reduced to `采集工作台`, `追更管理`, and `任务中心`. Rule/channel maintenance remains available as the advanced `采集设置` entry.
   - Legacy `/automation/smart-scrape` and `/automation/subscriptions` routes redirect to the new entry points.
-  - This phase is frontend-only and continues to reuse the existing auto-scrape, quick-sync, discovery, batch-sync, subscription, and task APIs.
+  - It reuses the novel analyze, quick-sync, discovery, batch-sync, subscription, and task APIs only.
   - Verification: `npm run build` passed; browser checks passed on the default desktop viewport and a 390x844 mobile viewport with no document-level horizontal overflow.
 - Switched frontend login to `POST /sys/mLogin` and removed the login-page image captcha requirement.
 - Logout in the sidebar is now an explicit `退出登录` button and routes back to `/login` after clearing auth state.
@@ -207,10 +192,7 @@ This document is the handoff snapshot for new Codex threads. Read it before star
   - The page is now editable and saves through `/sx/book/site-setting/save`.
   - Saving refreshes the frontend global site settings store so sidebar Logo/name, title, and footer update without page reload.
   - A public backend endpoint `/sx/book/site-setting/public` was added for unauthenticated/global branding reads.
-- Added the two-layer automation entrance:
-  - Common user flow: `/automation/smart-scrape` for URL -> parse -> preview -> import.
-  - Advanced flow remains `/automation/rules` and `/automation/channels` for scan-rule debugging and fallback configuration.
-  - The sidebar automation group now lists Smart Scrape before Scan Rules.
+- Automation has one product-facing entry: `/automation/collection` for novel URL analysis and collection. `/automation/rules` and `/automation/channels` remain advanced novel-site configuration pages.
 - Novel Sync now treats full-book website sync as a background SCRAPE task:
   - One-click URL sync and row-level sync submit a task instead of waiting for the whole book in the browser request.
   - The page shows a running-task panel, row progress bars, elapsed time, processed/total chapter counts, and a stop action.
