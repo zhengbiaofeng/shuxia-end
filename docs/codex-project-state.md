@@ -520,6 +520,19 @@ npm run build
 
 ## Integration Priority
 
+## 2026-07-23 Admin Scope And Storage Contract Note
+
+- The management frontend scope is documented in `docs/admin-system-development-plan.md`; the user-facing reader is a separate existing project and is integration-only here.
+- Books are local/user-upload only. The old book/Douban web acquisition UI and frontend API helpers are removed; the compatibility route redirects to the novel Collection Workbench.
+- Managed scrape rules and connection templates now accept only `bizType=novel` for create/edit. Historical rows remain queryable for cleanup.
+- Storage Management is the single source of storage choices for Books upload/directory import, Novel local import, single/batch novel collection, subscriptions and migrations.
+- Local/NAS scan commit now sends and validates `storageLocationId`; uploaded content uses ebook/novel scope according to the detected type.
+- Parsed book covers and downloaded novel covers follow the selected content storage. Novel chapters continue to use the subscription's selected storage.
+- Referenced storage cannot be deleted or have its physical connection/path changed before migration. Administrators may still disable it or make it read-only to stop new writes.
+- Migration identifies local/NAS sources by `storage_source_id` and retains legacy `local-path` compatibility.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\admin-scope-storage-contract-20260723.md`.
+- Verification completed so far: frontend production build and backend `:sx-book` compile passed on 2026-07-23. Running container deployment and real storage migration smoke tests remain pending.
+
 Current user priority:
 
 1. Build a reliable book and novel management chain first.
