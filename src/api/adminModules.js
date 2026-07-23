@@ -379,6 +379,12 @@ export async function fetchTaskLogPage(params = {}) {
   }
 }
 
+export async function fetchTaskLogDetail(id) {
+  if (!id) throw new Error('任务日志 ID 不能为空')
+  const response = await request.get(`/sx/book/task-log/detail/${encodeURIComponent(id)}`)
+  return normalizeTaskLog(readResultResponse(response, '获取任务日志详情失败') || {})
+}
+
 export async function fetchTaskStatsPage(params = {}) {
   const [summaryResponse, trendResponse] = await Promise.all([
     request.get('/sx/book/task-stats/summary', { params: { days: 7, ...params } }),

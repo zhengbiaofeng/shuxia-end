@@ -206,12 +206,12 @@ export const logPages = {
     subtitle: '记录系统中所有任务的执行情况和失败原因',
     activeMenu: '任务日志',
     tabs: ['任务日志', '任务统计'],
-    actions: [{ label: '导出日志', icon: Download }],
+    actions: [],
     filters: {
       dateRange: { value: [] },
       search: { placeholder: '搜索任务名称、任务 ID 或日志内容' },
       filters: [
-        { label: '全部任务类型', value: '全部任务类型', options: ['全部任务类型', '解析', '转码', '切片', '本地扫描'] },
+        { label: '全部任务类型', value: '全部任务类型', options: ['全部任务类型', '解析', '转码', '切片', '小说采集', '本地扫描', '存储迁移'] },
         { label: '全部状态', value: '全部状态', options: ['全部状态', '待处理', '处理中', '成功', '失败'] },
       ],
     },
@@ -221,7 +221,7 @@ export const logPages = {
     subtitle: '统计系统任务执行情况，便于分析和优化',
     activeMenu: '任务日志',
     tabs: ['任务日志', '任务统计'],
-    actions: [{ label: '导出统计', icon: Download }],
+    actions: [],
   },
 }
 
