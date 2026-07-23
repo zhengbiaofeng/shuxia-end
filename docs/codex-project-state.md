@@ -534,7 +534,7 @@ npm run build
 - Docker boundary remains explicit: the page can select only paths already mounted into the running backend container. A new host/NAS path still requires a Compose volume mapping and container recreation before it becomes selectable.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\storage-path-configuration-capacity-20260723.md`.
 - No SQL migration is required.
-- Verification completed: frontend production build, backend `:sx-book` compile, desktop 1280x720 and narrow 390x844 browser checks. New backend APIs still require packaging/restart before live container smoke testing.
+- Verification completed: frontend production build, backend `:sx-book` compile and full `:jeecg-system-start` package, desktop 1280x720 and narrow 390x844 browser checks. New backend APIs still require container restart before live container smoke testing.
 
 ## Integration Priority
 
