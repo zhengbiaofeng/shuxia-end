@@ -106,6 +106,7 @@ This document is the handoff snapshot for new Codex threads. Read it before star
   - Read-only URL analysis still parsed the Qimao sample at 911 chapters and the BQG sample at 688 chapters without changing task or storage-file counts.
   - Task statistics now include `MIGRATE`, exclude archive-only files from PARSE work, and deduplicate recent completion logs by task. Task Log filters, pagination and detail now use real backend contracts.
   - Task Statistics charts and tables are data-driven; desktop 1280x720 and mobile 390x844 browser checks had no page-level horizontal overflow and no console errors.
+  - Subscription schedule reconstruction now waits until the delayed Quartz startup is complete, avoiding the former `QRTZ_LOCKS` startup race. Login activity recording no longer invokes JWT decoding when the login request has no access-token header.
   - Verification passed: frontend build, five targeted backend tests, full backend package, Docker rebuild/startup, live APIs and browser workflows.
   - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\p2-format-task-reliability-20260724.md`.
 
