@@ -10,7 +10,7 @@
 
       <AdminFilterBar :filters="page.filters.filters" :search="page.filters.search" />
 
-      <AdminTableCard :columns="columns" :rows="page.rows" min-width="1120px" selectable :total="page.total">
+      <AdminTableCard :columns="columns" :rows="page.rows" min-width="1040px" :total="page.total">
         <template #username="{ row }">
           <div class="user-cell">
             <span class="user-avatar">{{ row.avatar }}</span>
@@ -23,9 +23,6 @@
         <template #status="{ row }">
           <AdminStatusBadge :label="row.status" :tone="row.tone" dot />
         </template>
-        <template #actions>
-          <AdminActionIcons :actions="commonActions.row" />
-        </template>
       </AdminTableCard>
 
       <AdminInfoBox title="权限说明" :icon="InfoFilled" :items="page.notes" />
@@ -37,11 +34,11 @@
 import { onMounted, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { InfoFilled } from '@element-plus/icons-vue'
-import { AdminActionIcons, AdminFilterBar, AdminInfoBox, AdminStatusBadge, AdminTableCard } from '../../components/admin'
+import { AdminFilterBar, AdminInfoBox, AdminStatusBadge, AdminTableCard } from '../../components/admin'
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
 import { fetchUsersPage } from '../../api/adminModules'
-import { commonActions, permissionPages } from '../../config/adminModules'
+import { permissionPages } from '../../config/adminModules'
 
 const page = reactive({
   ...permissionPages.users,
@@ -57,7 +54,6 @@ const columns = [
   { key: 'status', label: '状态' },
   { key: 'lastLogin', label: '最后登录' },
   { key: 'createdAt', label: '注册时间' },
-  { key: 'actions', label: '操作' },
 ]
 
 async function loadUsers() {

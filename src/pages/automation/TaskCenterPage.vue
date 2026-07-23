@@ -30,7 +30,7 @@
           min-width="1080px"
           row-key="id"
           row-clickable
-          selectable
+          :selectable="canActOnTasks"
           :row-selectable="isTaskSelectable"
           :total="page.total"
           @page-change="loadTasks"
@@ -38,7 +38,7 @@
           @row-click="selectTask"
           @selection-change="handleSelectionChange"
         >
-          <template #header>
+          <template v-if="canActOnTasks" #header>
             <div class="task-batch-toolbar">
               <div aria-live="polite" class="task-batch-selection">
                 <span>&#24050;&#36873;</span>
@@ -145,7 +145,7 @@
             </ol>
             <el-empty v-else description="暂无执行日志" :image-size="58" />
           </section>
-          <div class="task-detail__actions">
+          <div v-if="canActOnTasks" class="task-detail__actions">
             <el-button
               :disabled="!selectedTask?.canPause"
               :icon="VideoPause"
@@ -187,6 +187,7 @@ import { AdminActionIcons, AdminFilterBar, AdminStatusBadge, AdminTableCard } fr
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
 import { automationPages } from '../../config/adminModules'
+import { useAuthStore } from '../../stores/auth'
 import {
   buildTaskDetail,
   batchDeleteTasks,
@@ -215,6 +216,8 @@ const page = reactive({
   total: 0,
   detail: emptyDetail,
 })
+const authStore = useAuthStore()
+const canActOnTasks = computed(() => authStore.hasPermission('sxbook:task:action'))
 const columns = [
   { key: 'name', label: '任务名称' },
   { key: 'kind', label: '类型' },
@@ -280,9 +283,9 @@ const filters = computed(() => [
 function actionsFor(row) {
   return [
     { label: '查看', icon: View, boxed: true },
-    { label: '暂停', icon: VideoPause, disabled: !row.canPause, action: 'pause' },
-    { label: '终止', icon: CloseBold, danger: true, disabled: !row.canTerminate, action: 'terminate' },
-    { label: '重试', icon: RefreshRight, disabled: !row.canRetry, action: 'retry' },
+    { label: '暂停', icon: VideoPause, disabled: !row.canPause, action: 'pause', permission: 'sxbook:task:action' },
+    { label: '终止', icon: CloseBold, danger: true, disabled: !row.canTerminate, action: 'terminate', permission: 'sxbook:task:action' },
+    { label: '重试', icon: RefreshRight, disabled: !row.canRetry, action: 'retry', permission: 'sxbook:task:action' },
   ]
 }
 

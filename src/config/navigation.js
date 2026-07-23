@@ -45,8 +45,8 @@ const baseSideMenus = [
   {
     title: '自动化',
     items: [
-      { label: '采集工作台', icon: DataAnalysis, path: '/automation/collection', permission: 'sxbook:scrapeRule:list' },
-      { label: '追更管理', icon: SwitchButton, path: '/automation/following', permission: 'sxbook:book:list' },
+      { label: '采集工作台', icon: DataAnalysis, path: '/automation/collection', permission: 'sxbook:scrapeRule:debug' },
+      { label: '追更管理', icon: SwitchButton, path: '/automation/following', permission: 'sxbook:subscription:list' },
       { label: '任务中心', icon: Briefcase, path: '/automation/tasks', permission: 'sxbook:task:list' },
     ],
   },

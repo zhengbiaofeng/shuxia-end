@@ -30,13 +30,13 @@ const TaskStatsPage = () => import('../pages/logs/TaskStatsPage.vue')
 const ForbiddenPage = () => import('../pages/ForbiddenPage.vue')
 
 const adminModuleRoutes = [
-  { path: '/automation/collection', name: 'automation-collection', component: CollectionWorkbenchPage, meta: { title: '采集工作台', requiresAuth: true, permission: 'sxbook:scrapeRule:list' } },
+  { path: '/automation/collection', name: 'automation-collection', component: CollectionWorkbenchPage, meta: { title: '采集工作台', requiresAuth: true, permission: 'sxbook:scrapeRule:debug' } },
   { path: '/automation/smart-scrape', name: 'automation-smart-scrape', redirect: '/automation/collection' },
   { path: '/automation/rules', name: 'automation-rules', component: ScrapeRulesPage, meta: { title: '采集设置', requiresAuth: true, permission: 'sxbook:scrapeRule:list' } },
   { path: '/automation/channels', name: 'automation-channels', component: ScrapeChannelsPage, meta: { title: '连接模板', requiresAuth: true, permission: 'sxbook:scrapeChannel:list' } },
   { path: '/automation/rules/new', name: 'automation-rules-new', component: AddScrapeRulePage, meta: { title: '添加站点适配', requiresAuth: true, permission: 'sxbook:scrapeRule:add' } },
   { path: '/automation/tasks', name: 'automation-tasks', component: TaskCenterPage, meta: { title: '任务中心', requiresAuth: true, permission: 'sxbook:task:list' } },
-  { path: '/automation/following', name: 'automation-following', component: SubscriptionsPage, meta: { title: '追更管理', requiresAuth: true, permission: 'sxbook:book:list' } },
+  { path: '/automation/following', name: 'automation-following', component: SubscriptionsPage, meta: { title: '追更管理', requiresAuth: true, permission: 'sxbook:subscription:list' } },
   { path: '/automation/subscriptions', name: 'automation-subscriptions', redirect: '/automation/following' },
   { path: '/permissions/users', name: 'permissions-users', component: UserManagementPage, meta: { title: '用户管理', requiresAuth: true, permission: 'sxbook:userManage:list' } },
   { path: '/permissions/roles', name: 'permissions-roles', component: RolePermissionPage, meta: { title: '角色权限', requiresAuth: true, permission: 'system:role:list' } },
