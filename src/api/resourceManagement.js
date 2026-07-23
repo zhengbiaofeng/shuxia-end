@@ -60,6 +60,14 @@ export async function deleteStorageSource(id) {
   return readMutationResult(response, '删除存储源失败')
 }
 
+export async function fetchEligibleStorageLocations({ bizType = 'both', writableOnly = true } = {}) {
+  const response = await request.get('/sx/book/storage/source/config/eligible', {
+    params: { bizType, writableOnly },
+  })
+  assertSuccess(response, '获取可用存储位置失败')
+  return Array.isArray(response.result) ? response.result.map(normalizeStorageRow) : []
+}
+
 export async function cleanupOrphanStorageFiles(payload = {}) {
   const response = await request.post('/sx/book/storage/orphan/cleanup', payload)
   return readMutationResult(response, '清理孤儿/临时文件失败')
@@ -192,6 +200,11 @@ function normalizeStorageRow(item = {}) {
     desc: item.remark || item.bucketName || item.sourceKey || '--',
     type: normalizeSourceType(item.sourceType),
     path: item.localBasePath || item.endpoint || item.bucketName || '--',
+    bizScope: item.bizScope || 'both',
+    objectPrefix: item.objectPrefix || '',
+    writable: Number(item.writable ?? 1) === 1,
+    defaultEbook: Number(item.defaultEbook ?? 0) === 1,
+    defaultNovel: Number(item.defaultNovel ?? 0) === 1,
     total: formatBytes(total),
     used: formatBytes(used),
     percent: Math.min(Math.max(percent, 0), 100),
