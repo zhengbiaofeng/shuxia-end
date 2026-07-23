@@ -535,12 +535,11 @@ npm run build
 
 Current user priority:
 
-1. Build a reliable book and novel management chain first.
-2. Continue the web-novel sync roadmap: create/configure a practice source rule, run Phase 1 end-to-end against one existing local novel, then defer Phase 2 source discovery and auto-create until Phase 1 is stable.
-3. Defer comic and audio work unless explicitly requested.
-4. Keep backend taxonomy, upload/import, cover preview, list/detail display, and batch book actions coherent.
-5. Keep UI resilient to real backend data: long names, missing fields, empty states, and unexpected counts must not break layout.
-6. Keep tag taxonomy distinct from category taxonomy; do not reintroduce category names as default tags.
+1. Deploy and live-test P0 storage closure: execute the storage migration SQL, restart the packaged backend, and verify local/NAS plus MinIO import, collection, subscription, and migration paths.
+2. Start P1 only after P0 passes: close menu, button, backend permission, data-scope, and system-setting consumer loops.
+3. Then execute P2 book-format and novel-source reliability regression; keep duplicate handling, task logs, storage statistics, and content details consistent.
+4. Defer comic and audio work until their source and processing boundaries are explicitly confirmed.
+5. Keep UI resilient to real backend data and keep tag taxonomy distinct from category taxonomy.
 
 ## New Thread Startup Checklist
 
