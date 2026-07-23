@@ -3,6 +3,7 @@ import request from '../utils/request';
 
 const BATCH_DELETE_CHUNK_SIZE = 3;
 const BATCH_DELETE_TIMEOUT = 60000;
+const ARCHIVE_ONLY_BOOK_TYPES = new Set(['mobi', 'azw3']);
 
 export async function fetchBookCategories(params = {}) {
   const response = await request.get('/sx/book/category/options', {
@@ -572,9 +573,9 @@ function normalizeBookRecord(item = {}) {
     path: item.storagePath || item.contentUrl || item.fileUrl || item.outputUrl || coverUrl || '--',
     format: normalizeFormat(item, bookType),
     size: formatFileSize(item.fileSize),
-    scrapeStatus: normalizeParseStatus(item.parseStatus),
+    scrapeStatus: normalizeParseStatus(item.parseStatus, bookType),
     publishStatus: normalizePublishStatus(item.publishStatus),
-    transcodeStatus: normalizeTranscodeStatus(item.transcodeStatus),
+    transcodeStatus: normalizeTranscodeStatus(item.transcodeStatus, bookType),
     addedAt: formatDateTime(item.createTime),
     updatedAt: formatDateTime(item.updateTime || item.lastUpdateTime || item.createTime),
     latest: item.latestChapterTitle || item.latestEpisodeTitle || item.latestTitle || '--',
@@ -582,7 +583,7 @@ function normalizeBookRecord(item = {}) {
     words: formatCount(item.wordCount || item.totalWords, '字'),
     source: item.sourceName || item.storageSourceName || item.storageName || item.bucketName || '书匣书库',
     status: normalizePublishStatus(item.publishStatus),
-    statusSub: item.parseStatus !== undefined ? normalizeParseStatus(item.parseStatus) : '',
+    statusSub: item.parseStatus !== undefined ? normalizeParseStatus(item.parseStatus, bookType) : '',
     cover: coverUrl ? `url("${coverUrl}") center/cover` : coverGradient(title),
     coverUrl,
     availableActions: Array.isArray(item.availableActions) ? item.availableActions : [],
@@ -622,7 +623,7 @@ function normalizeBookFile(item = {}) {
     storageStatus: item.storageStatus,
     storageStatusText: normalizeFileStorageStatus(item.storageStatus),
     parseStatus: item.parseStatus,
-    parseStatusText: item.parseStatus !== undefined ? normalizeParseStatus(item.parseStatus) : '',
+    parseStatusText: item.parseStatus !== undefined ? normalizeParseStatus(item.parseStatus, item.bookType) : '',
     coverFileId: item.coverFileId || '',
     contentFileId: item.contentFileId || '',
     bucketName: item.bucketName || '',
@@ -809,7 +810,7 @@ function buildTags(item, bookType) {
   if (typeLabel && typeLabel !== '全部分类') tags.push(typeLabel);
   if (Array.isArray(item.tagNames)) tags.push(...item.tagNames.filter(Boolean));
   if (item.publishStatus !== undefined) tags.push(normalizePublishStatus(item.publishStatus));
-  if (item.transcodeStatus !== undefined) tags.push(normalizeTranscodeStatus(item.transcodeStatus));
+  if (item.transcodeStatus !== undefined) tags.push(normalizeTranscodeStatus(item.transcodeStatus, bookType));
   return [...new Set(tags)].slice(0, 3);
 }
 
@@ -836,7 +837,10 @@ function normalizeFormat(item, bookType) {
   return String(value).toUpperCase();
 }
 
-function normalizeParseStatus(value) {
+function normalizeParseStatus(value, bookType) {
+  if (ARCHIVE_ONLY_BOOK_TYPES.has(String(bookType || '').toLowerCase()) && Number(value || 0) === 0) {
+    return '原文件归档';
+  }
   const map = {
     0: '未解析',
     1: '解析中',
@@ -855,7 +859,10 @@ function normalizePublishStatus(value) {
   return map[value] || '未上架';
 }
 
-function normalizeTranscodeStatus(value) {
+function normalizeTranscodeStatus(value, bookType) {
+  if (ARCHIVE_ONLY_BOOK_TYPES.has(String(bookType || '').toLowerCase()) && Number(value || 0) === 0) {
+    return '不适用';
+  }
   const map = {
     0: '待转码',
     1: '转码中',

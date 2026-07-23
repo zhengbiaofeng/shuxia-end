@@ -560,7 +560,8 @@ function normalizeTaskLog(item = {}) {
 
   return {
     raw: item,
-    id: item.taskId || item.id,
+    id: item.id,
+    taskId: item.taskId || '--',
     name: item.bookName || item.taskId || '--',
     module: item.taskTypeName || normalizeTaskType(item.taskType),
     type: normalizeTaskType(item.taskType),
@@ -580,7 +581,12 @@ function normalizeTaskTypeStats(item = {}) {
   const failed = Number(item.failCount || 0)
 
   return {
+    key: item.taskType || '',
     type: item.taskTypeName || normalizeTaskType(item.taskType),
+    totalValue: total,
+    successValue: success,
+    failedValue: failed,
+    recentCompletedValue: Number(item.recentCompletedCount || 0),
     total: formatNumber(total),
     success: formatNumber(success),
     failed: formatNumber(failed),
@@ -592,7 +598,12 @@ function normalizeTaskTypeStats(item = {}) {
 function normalizeTrendPoint(item = {}) {
   return {
     range: item.dateLabel || '--',
+    completedValue: Number(item.completedCount || 0),
+    successValue: Number(item.successCount || 0),
+    failedValue: Number(item.failCount || 0),
     count: formatNumber(item.completedCount),
+    success: formatNumber(item.successCount),
+    failed: formatNumber(item.failCount),
     ratio: formatPercent(item.successRate),
   }
 }
@@ -719,7 +730,9 @@ function normalizeTaskType(value) {
     PARSE: '解析',
     TRANSCODE: '转码',
     SLICE: '切片',
+    SCRAPE: '小说采集',
     LOCAL_SCAN: '本地扫描',
+    MIGRATE: '存储迁移',
   }
 
   return map[String(value || '').toUpperCase()] || value || '--'
