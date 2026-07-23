@@ -408,7 +408,6 @@ function detectUrlKind(value) {
   try {
     const parsed = new URL(text)
     if (!['http:', 'https:'].includes(parsed.protocol)) return 'invalid'
-    if (parsed.hostname === 'book.douban.com') return 'metadata'
     if (/(?:list|rank|category|sort|top|排行|分类)/i.test(`${parsed.pathname}${parsed.hash}`)) return 'batch'
     return 'novel'
   } catch {
@@ -433,15 +432,6 @@ async function analyzeSingle() {
   resetSingleResults()
   singleAnalyzing.value = true
   try {
-    if (singleKind.value === 'metadata') {
-      const result = await analyzeSmartScrapeUrl(singleUrl.value)
-      metadataPreview.value = { ...result.preview }
-      coverLoadFailed.value = false
-      singlePhase.value = 'preview'
-      ElMessage.success('元数据解析完成，请确认字段')
-      return
-    }
-
     novelAnalysis.value = await analyzeNovelByUrl({
       detailUrl: singleUrl.value,
     })
@@ -455,12 +445,17 @@ async function analyzeSingle() {
 }
 
 async function executeNovelCollection() {
+  if (!singleOptions.storageLocationId) {
+    ElMessage.warning('请选择存储管理中的小说存储位置')
+    return
+  }
   novelExecuting.value = true
   try {
     novelResult.value = await quickSyncNovelByUrl({
       detailUrl: singleUrl.value,
       requestDelayMs: singleOptions.requestDelayMs,
       syncChapters: singleOptions.syncChapters,
+      storageLocationId: singleOptions.storageLocationId,
     })
     singlePhase.value = 'result'
     ElMessage.success(singleOptions.syncChapters ? '采集任务已提交' : '追更记录已建立')
