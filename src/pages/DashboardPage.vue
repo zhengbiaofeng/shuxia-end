@@ -291,7 +291,7 @@ const quickActionPermissions = {
 const visibleDashboardQuickActions = computed(() => dashboardQuickActions.value.filter((entry) => {
   if (entry.enabled === false) return false
   const permission = quickActionPermissions[entry.label]
-  return !permission || authStore.hasPermission(permission)
+  return Boolean(permission) && authStore.hasPermission(permission)
 }))
 const statRouteByTitle = {
   书籍: '/books',
