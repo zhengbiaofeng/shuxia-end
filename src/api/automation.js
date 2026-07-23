@@ -15,10 +15,7 @@ import request from '../utils/request'
 import { API_BASE_URL } from '../config/app'
 
 export const BIZ_TYPE_OPTIONS = [
-  { label: '书籍', value: 'ebook' },
   { label: '小说', value: 'novel' },
-  { label: '漫画', value: 'comic' },
-  { label: '有声', value: 'audio' },
 ]
 
 export const STATUS_OPTIONS = [

@@ -185,7 +185,6 @@ import { automationPages } from '../../config/adminModules'
 import {
   BIZ_TYPE_OPTIONS,
   REQUEST_METHOD_OPTIONS,
-  bizTypeValue,
   changeScrapeChannelStatus,
   createScrapeChannel,
   deleteScrapeChannel,
@@ -241,7 +240,7 @@ const query = reactive({
   pageNo: 1,
   pageSize: 10,
   keyword: '',
-  bizType: '',
+  bizType: 'novel',
   status: undefined,
 })
 const form = reactive(defaultForm())
@@ -257,11 +256,6 @@ const searchConfig = computed(() => ({
   value: query.keyword,
 }))
 const filters = computed(() => [
-  {
-    label: '全部类型',
-    value: BIZ_TYPE_OPTIONS.find((item) => item.value === query.bizType)?.label || '全部类型',
-    options: ['全部类型', ...BIZ_TYPE_OPTIONS.map((item) => item.label)],
-  },
   {
     label: '全部状态',
     value: query.status === 1 ? '启用' : query.status === 0 ? '禁用' : '全部状态',
@@ -284,7 +278,7 @@ function defaultForm() {
     id: '',
     channelCode: '',
     channelName: '',
-    bizType: 'ebook',
+    bizType: 'novel',
     siteName: '',
     baseUrl: '',
     testUrl: '',
@@ -336,9 +330,6 @@ function handleSearchInput(value) {
 }
 
 function handleFilterChange(filter) {
-  if (filter.label === '全部类型') {
-    query.bizType = filter.value === '全部类型' ? '' : bizTypeValue(filter.value)
-  }
   if (filter.label === '全部状态') {
     query.status = filter.value === '全部状态' ? undefined : statusValue(filter.value)
   }
@@ -347,7 +338,7 @@ function handleFilterChange(filter) {
 
 function resetFilters() {
   query.keyword = ''
-  query.bizType = ''
+  query.bizType = 'novel'
   query.status = undefined
   loadChannels(1)
 }

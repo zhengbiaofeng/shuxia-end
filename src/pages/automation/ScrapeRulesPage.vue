@@ -265,10 +265,8 @@ import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue
 import ResourceShell from '../../components/resource/ResourceShell.vue'
 import { automationPages } from '../../config/adminModules'
 import {
-  BIZ_TYPE_OPTIONS,
   STATUS_OPTIONS,
   batchSyncScrapeRuleNovels,
-  bizTypeValue,
   changeScrapeRuleStatus,
   debugScrapeRule,
   deleteScrapeRule,
@@ -334,7 +332,7 @@ const query = reactive({
   pageNo: 1,
   pageSize: 10,
   ruleName: '',
-  bizType: '',
+  bizType: 'novel',
   status: undefined,
 })
 const batchScopeOptions = [
@@ -347,11 +345,6 @@ const searchConfig = computed(() => ({
   value: query.ruleName,
 }))
 const filters = computed(() => [
-  {
-    label: '全部类型',
-    value: BIZ_TYPE_OPTIONS.find((item) => item.value === query.bizType)?.label || '全部类型',
-    options: ['全部类型', ...BIZ_TYPE_OPTIONS.map((item) => item.label)],
-  },
   {
     label: '全部状态',
     value: STATUS_OPTIONS.find((item) => item.value === query.status)?.label || '全部状态',
@@ -427,9 +420,6 @@ function handleSearchInput(value) {
 }
 
 function handleFilterChange(filter) {
-  if (filter.label === '全部类型') {
-    query.bizType = filter.value === '全部类型' ? '' : bizTypeValue(filter.value)
-  }
   if (filter.label === '全部状态') {
     query.status = filter.value === '全部状态' ? undefined : statusValue(filter.value)
   }
@@ -438,7 +428,7 @@ function handleFilterChange(filter) {
 
 function resetFilters() {
   query.ruleName = ''
-  query.bizType = ''
+  query.bizType = 'novel'
   query.status = undefined
   loadRules(1)
 }

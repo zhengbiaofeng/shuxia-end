@@ -23,7 +23,7 @@
               <el-input v-model="form.ruleName" placeholder="请输入站点适配名称" />
             </el-form-item>
             <el-form-item label="内容类型" prop="bizType">
-              <el-select v-model="form.bizType" placeholder="请选择内容类型" filterable @change="loadChannelOptions">
+              <el-select v-model="form.bizType" disabled>
                 <el-option v-for="option in bizOptions" :key="option.value" :label="option.label" :value="option.value" />
               </el-select>
             </el-form-item>
@@ -202,7 +202,7 @@ const rules = {
   requestHeadersJson: [{ validator: validateJson, trigger: 'blur' }],
 }
 const tips = [
-  '业务类型会按后端规则保存为 ebook、novel、comic、audio',
+  '管理端采集仅用于网络小说，业务类型固定为 novel',
   '请求配置和字段选择器都在基础信息页内维护，避免重复配置',
   '连接模板是可选复用项；没有独立模板时，也可以直接在本页填写站点请求配置',
   '请求头 JSON 留空时后端会使用默认 User-Agent',
@@ -213,7 +213,7 @@ function defaultForm() {
   return {
     id: '',
     ruleName: '',
-    bizType: 'ebook',
+    bizType: 'novel',
     siteName: '',
     channelCode: '',
     baseUrl: '',
