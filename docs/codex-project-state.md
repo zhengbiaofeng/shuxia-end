@@ -529,15 +529,23 @@ npm run build
 - Referenced storage cannot be deleted or have its physical connection/path changed before migration. Administrators may still disable it or make it read-only to stop new writes.
 - Migration identifies local/NAS sources by `storage_source_id` and retains legacy `local-path` compatibility.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\admin-scope-storage-contract-20260723.md`.
-- Verification completed so far: frontend production build, backend `:sx-book` compile, full `:jeecg-system-start` package, and desktop/390px browser layout checks passed on 2026-07-23. Running container deployment and real storage migration smoke tests remain pending.
+- P0 runtime verification completed on 2026-07-23:
+  - Executed `sx-book-storage-location-and-migration-20260723.sql`, rebuilt the Docker image, and recreated `jeecg-system-start`.
+  - Registered `minio:sx-book` as the ebook default and `minio:novel` as the novel default. Invalid Windows paths that are not mounted into the container are excluded from eligible destination APIs.
+  - Verified synthetic MinIO->local and local->MinIO migrations, including database reference switching, byte-size checks, source cleanup, and test-data cleanup.
+  - Verified a real book upload wrote content to `sx-book`; verified one-click novel sync bound its subscription to `minio:novel`, wrote one chapter plus cover to the `novel` bucket, and produced a successful scrape task.
+  - Quick Sync now validates five-part Cron input before creating books, channels, rules, covers, subscriptions, or tasks. A rejected six-part Cron left zero database rows and zero MinIO objects.
+  - Deleting a book now logically deletes its chapter rows after removing chapter content, preventing active orphan chapter records.
+  - Added `sx-book-storage-reference-backfill-20260723.sql` for the explicitly confirmed local mapping: active files physically in `sx-book` bind to `minio:sx-book`, and active subscriptions without a destination bind to `minio:novel`. The script does not move content or touch deleted rows.
+  - All synthetic upload, scrape, migration, rule, source, subscription, task, log, file, and object data used for verification was removed.
 
 ## Integration Priority
 
 Current user priority:
 
-1. Deploy and live-test P0 storage closure: execute the storage migration SQL, restart the packaged backend, and verify local/NAS plus MinIO import, collection, subscription, and migration paths.
-2. Start P1 only after P0 passes: close menu, button, backend permission, data-scope, and system-setting consumer loops.
-3. Then execute P2 book-format and novel-source reliability regression; keep duplicate handling, task logs, storage statistics, and content details consistent.
+1. Execute P1: close menu, button, backend permission, data-scope, and system-setting consumer loops with administrator, content-manager, and read-only audit roles.
+2. Then execute P2 book-format and novel-source reliability regression; keep duplicate handling, task logs, storage statistics, and content details consistent.
+3. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
 4. Defer comic and audio work until their source and processing boundaries are explicitly confirmed.
 5. Keep UI resilient to real backend data and keep tag taxonomy distinct from category taxonomy.
 
