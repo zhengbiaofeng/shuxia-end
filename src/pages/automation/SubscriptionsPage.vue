@@ -32,7 +32,7 @@
             </div>
             <p :title="row.runningSummary">{{ row.runningSummary }}</p>
             <el-button
-              v-if="row.canTerminate"
+              v-if="row.canTerminate && authStore.hasPermission('sxbook:task:action')"
               :icon="CircleClose"
               :loading="actionTaskLoadingId === row.taskId"
               type="danger"
@@ -56,8 +56,9 @@
         @search="loadSubscriptions(1)"
         @search-input="handleSearchInput"
       >
-        <template #actions>
+        <template v-if="canSelectSubscriptions" #actions>
           <el-dropdown
+            v-if="authStore.hasPermission('sxbook:subscription:status')"
             :disabled="bulkActionLoading || !total"
             trigger="click"
             @command="handleAllStatusCommand"
@@ -78,6 +79,7 @@
             </template>
           </el-dropdown>
           <el-button
+            v-if="authStore.hasPermission('sxbook:subscription:delete')"
             :disabled="bulkActionLoading || !total"
             :icon="Delete"
             :loading="bulkDeleteLoading"
@@ -99,14 +101,14 @@
         :rows="rows"
         min-width="1280px"
         row-clickable
-        selectable
+        :selectable="canSelectSubscriptions"
         :total="total"
         @page-change="loadSubscriptions"
         @page-size-change="handlePageSizeChange"
         @row-click="openDetail"
         @selection-change="handleSelectionChange"
       >
-        <template #header>
+        <template v-if="canSelectSubscriptions" #header>
           <div class="subscription-batch-toolbar">
             <div class="subscription-selection-summary">
               <strong>批量操作</strong>
@@ -114,6 +116,7 @@
             </div>
             <div class="subscription-batch-actions">
               <el-button
+                v-if="authStore.hasPermission('sxbook:subscription:status')"
                 :disabled="bulkActionLoading || !selectedRows.length"
                 :icon="VideoPlay"
                 :loading="bulkStatusLoading"
@@ -124,6 +127,7 @@
                 批量启用
               </el-button>
               <el-button
+                v-if="authStore.hasPermission('sxbook:subscription:status')"
                 :disabled="bulkActionLoading || !selectedRows.length"
                 :icon="VideoPause"
                 :loading="bulkStatusLoading"
@@ -132,6 +136,7 @@
                 批量停用
               </el-button>
               <el-button
+                v-if="authStore.hasPermission('sxbook:subscription:delete')"
                 :disabled="bulkActionLoading || !selectedRows.length"
                 :icon="Delete"
                 :loading="bulkDeleteLoading"
@@ -175,7 +180,7 @@
           <span @click.stop>
             <el-switch
               :loading="statusLoadingId === row.id"
-              :disabled="bulkActionLoading"
+              :disabled="bulkActionLoading || !authStore.hasPermission('sxbook:subscription:status')"
               :model-value="row.statusValue === 1"
               @change="(value) => toggleStatus(row, value)"
             />
@@ -327,10 +332,10 @@
             </el-descriptions-item>
           </el-descriptions>
           <section class="detail-actions">
-            <el-button :icon="View" @click="previewSubscription(selectedDetail)">预览解析</el-button>
-            <el-button type="primary" :icon="VideoPlay" :disabled="selectedDetail.isRunning" @click="runSubscription(selectedDetail)">立即同步</el-button>
+            <el-button v-if="authStore.hasPermission('sxbook:subscription:execute')" :icon="View" @click="previewSubscription(selectedDetail)">预览解析</el-button>
+            <el-button v-if="authStore.hasPermission('sxbook:subscription:execute')" type="primary" :icon="VideoPlay" :disabled="selectedDetail.isRunning" @click="runSubscription(selectedDetail)">立即同步</el-button>
             <el-button
-              v-if="selectedDetail.canTerminate"
+              v-if="selectedDetail.canTerminate && authStore.hasPermission('sxbook:task:action')"
               :icon="CircleClose"
               type="danger"
               plain
@@ -338,7 +343,7 @@
             >
               停止任务
             </el-button>
-            <el-button :icon="EditPen" @click="openEdit(selectedDetail)">编辑</el-button>
+            <el-button v-if="authStore.hasPermission('sxbook:subscription:edit')" :icon="EditPen" @click="openEdit(selectedDetail)">编辑</el-button>
           </section>
         </template>
         <el-empty v-else description="暂无订阅详情" />
@@ -401,6 +406,7 @@ import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue
 import ResourceShell from '../../components/resource/ResourceShell.vue'
 import { fetchBookList } from '../../api/books'
 import { fetchEligibleStorageLocations } from '../../api/resourceManagement'
+import { useAuthStore } from '../../stores/auth'
 import {
   batchChangeNovelSyncStatus,
   batchDeleteNovelSyncSubscriptions,
@@ -416,6 +422,7 @@ import {
 } from '../../api/automation'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const loading = ref(false)
 const detailLoading = ref(false)
 const detailVisible = ref(false)
@@ -454,7 +461,7 @@ const query = reactive({
 const form = reactive(defaultForm())
 const pageActions = [
   { label: '刷新', icon: RefreshRight },
-  { label: '新增追更', icon: Plus, type: 'primary' },
+  { label: '新增追更', icon: Plus, type: 'primary', permission: 'sxbook:subscription:add' },
 ]
 const columns = [
   { key: 'novel', label: '小说' },
@@ -496,6 +503,10 @@ const formEnabled = computed({
   },
 })
 const bulkActionLoading = computed(() => bulkStatusLoading.value || bulkDeleteLoading.value)
+const canSelectSubscriptions = computed(() => authStore.hasAnyPermission([
+  'sxbook:subscription:status',
+  'sxbook:subscription:delete',
+]))
 const runningRows = computed(() => rows.value.filter((row) => row.isRunning))
 
 function defaultForm() {
@@ -522,14 +533,14 @@ function defaultForm() {
 
 function rowActions(row) {
   const actions = [
-    { label: '预览', icon: View },
-    { label: '同步', icon: VideoPlay, disabled: row.isRunning },
-    { label: '任务', icon: Tickets },
-    { label: '编辑', icon: EditPen },
-    { label: '删除', icon: Delete, danger: true },
+    { label: '预览', icon: View, permission: 'sxbook:subscription:execute' },
+    { label: '同步', icon: VideoPlay, disabled: row.isRunning, permission: 'sxbook:subscription:execute' },
+    { label: '任务', icon: Tickets, permission: 'sxbook:task:list' },
+    { label: '编辑', icon: EditPen, permission: 'sxbook:subscription:edit' },
+    { label: '删除', icon: Delete, danger: true, permission: 'sxbook:subscription:delete' },
   ]
   if (row.canTerminate) {
-    actions.splice(2, 0, { label: '停止', icon: CircleClose, danger: true })
+    actions.splice(2, 0, { label: '停止', icon: CircleClose, danger: true, permission: 'sxbook:task:action' })
   }
   return actions.map((action) => ({
     ...action,
