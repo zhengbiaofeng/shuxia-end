@@ -100,7 +100,7 @@
             <el-input v-model="form.channelName" placeholder="请输入模板名称" />
           </el-form-item>
           <el-form-item label="内容类型" prop="bizType">
-            <el-select v-model="form.bizType" placeholder="请选择内容类型" filterable>
+            <el-select v-model="form.bizType" disabled placeholder="管理端仅支持小说采集">
               <el-option v-for="option in bizOptions" :key="option.value" :label="option.label" :value="option.value" />
             </el-select>
           </el-form-item>
