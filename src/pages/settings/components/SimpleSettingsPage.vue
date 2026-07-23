@@ -1,17 +1,19 @@
 <template>
   <ResourceShell
-    :actions="page.actions"
+    :actions="actions"
     :active-menu="page.activeMenu"
     :tabs="page.tabs"
     :title="page.title"
     :subtitle="page.subtitle"
+    @action="$emit('action', $event)"
   >
-    <section class="simple-settings">
+    <section v-loading="loading" class="simple-settings">
       <AdminSettingSection
         v-for="section in page.sections"
         :key="section.title"
         :title="section.title"
         :items="section.items"
+        :readonly="readonly"
       />
     </section>
   </ResourceShell>
@@ -23,7 +25,12 @@ import ResourceShell from '../../../components/resource/ResourceShell.vue'
 
 defineProps({
   page: { type: Object, required: true },
+  actions: { type: Array, default: () => [] },
+  loading: { type: Boolean, default: false },
+  readonly: { type: Boolean, default: false },
 })
+
+defineEmits(['action'])
 </script>
 
 <style scoped>

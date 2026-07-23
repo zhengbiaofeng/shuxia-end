@@ -9,6 +9,7 @@
           v-bind="propsFor(item)"
           :id="item.label"
           class="setting-row__control"
+          @update:model-value="updateValue(item, $event)"
         >
           <template v-if="item.type === 'select'">
             <el-option
@@ -27,20 +28,41 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   title: { type: String, required: true },
   items: { type: Array, default: () => [] },
+  readonly: { type: Boolean, default: false },
 })
+
+const emit = defineEmits(['change'])
 
 function componentFor(item) {
   if (item.type === 'select') return 'el-select'
   if (item.type === 'switch') return 'el-switch'
+  if (item.type === 'number') return 'el-input-number'
   return 'el-input'
 }
 
 function propsFor(item) {
-  if (item.type === 'switch') return { modelValue: item.value }
-  return { modelValue: item.value, placeholder: item.placeholder || item.label }
+  const disabled = props.readonly || item.readonly
+  if (item.type === 'switch') return { modelValue: item.value, disabled }
+  if (item.type === 'number') {
+    return {
+      modelValue: item.value,
+      min: item.min,
+      max: item.max,
+      step: item.step || 1,
+      disabled,
+      controlsPosition: 'right',
+    }
+  }
+  return { modelValue: item.value, placeholder: item.placeholder || item.label, disabled }
+}
+
+function updateValue(item, value) {
+  if (props.readonly || item.readonly) return
+  item.value = value
+  emit('change', item, value)
 }
 </script>
 
@@ -87,10 +109,15 @@ function propsFor(item) {
 }
 
 .setting-row__control :deep(.el-input__wrapper),
-.setting-row__control :deep(.el-select__wrapper) {
+.setting-row__control :deep(.el-select__wrapper),
+.setting-row__control :deep(.el-input-number) {
   min-height: var(--admin-input-height);
   border-radius: var(--admin-radius-control);
   box-shadow: 0 0 0 1px var(--admin-border) inset;
+}
+
+.setting-row__control.el-input-number {
+  width: 100%;
 }
 
 @media (max-width: 900px) {
