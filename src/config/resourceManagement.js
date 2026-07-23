@@ -5,7 +5,7 @@ import {
 
 export const storagePageConfig = {
   title: '存储管理',
-  subtitle: '管理和配置所有存储位置，支持本地目录、网络共享、WebDAV 和网盘挂载',
+  subtitle: '管理书籍与小说的本地目录和 MinIO 存储位置，查看路径状态与磁盘容量',
   activeMenu: '存储管理',
   tabs: ['全部', '本地目录', 'MinIO', '已禁用'],
   actions: [

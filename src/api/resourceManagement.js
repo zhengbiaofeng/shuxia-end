@@ -43,7 +43,7 @@ export async function fetchStoragePageData(params = {}) {
 
   return {
     metrics: [
-      { label: '总存储源', value: formatNumber(summary.sourceCount ?? rows.length), unit: '个', sub: `已启用 ${enabledCount} 个`, color: 'blue', icon: FolderOpened },
+      { label: '总存储源', value: formatNumber(page.total ?? rows.length), unit: '个', sub: `已启用 ${enabledCount} 个`, color: 'blue', icon: FolderOpened },
       { label: '正常运行', value: formatNumber(healthyCount), unit: '个', sub: rows.length ? `${Math.round((healthyCount / rows.length) * 100)}%` : '0%', color: 'green', icon: Check },
       { label: '总容量', value: totalCapacity.value, unit: totalCapacity.unit, sub: totalCapacity.known ? `已用 ${formatBytes(summary.usedStorageBytes)}` : '仅统计后端可见的本地盘', color: 'blue', icon: Collection },
       { label: '可用容量', value: availableCapacity.value, unit: availableCapacity.unit, sub: availableCapacity.known ? usageText(summary.usedStorageBytes, summary.totalStorageBytes) : '对象存储容量不计入', color: 'purple', icon: Clock },
