@@ -115,6 +115,15 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Recently Completed Work
 
+- Implemented the first private-NAS storage-location and migration workflow:
+  - Storage configuration now defines content scope (`ebook` / `novel` / `both`), a path prefix, write permission, and optional default destination for each domain.
+  - The Books upload flow can target a configured local/NAS or MinIO location. It remains a user-owned local/NAS ebook workflow and does not introduce ebook crawling.
+  - Novel subscriptions can target a configured storage location. The daily preset is `00:00`; the existing Quartz scheduler remains responsible for execution. New followed chapters are written to the selected location.
+  - Books and novels expose a batch `迁移存储` action. The backend copies, verifies, switches the database reference, then cleans the source best-effort. Novel migrations include chapter bodies and update future subscription destinations.
+  - Task Center now recognizes `MIGRATE` as `存储迁移`, including progress, detail labels, terminate/retry, and completed-task deletion.
+  - The migration SQL and backend handoff are `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\jeecg-boot-module\sx-book\src\main\resources\sql\sx-book-storage-location-and-migration-20260723.sql` and `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\storage-location-follow-migration-20260723.md`.
+  - Verification: frontend `npm run build` and backend `mvn -pl :jeecg-system-start -am -DskipTests package` passed on 2026-07-23. The running Docker service still requires the user-side restart command before API/browser smoke testing.
+
 - Restored real covers in Task Center without changing content acquisition behavior:
   - Unified task list/detail responses now expose `coverUrl` from the task's associated `sx_book.cover_file_id` through the existing `/sx/book/preview` proxy.
   - Task Center list rows and the detail panel render the real cover first, with the existing title-initial placeholder only for unbound tasks, missing covers, or failed image loads.
