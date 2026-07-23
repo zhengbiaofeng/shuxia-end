@@ -1237,6 +1237,10 @@ function handleLocalImportSelectionChange(rows = []) {
 }
 
 async function commitLocalImport() {
+  if (!localImportStorageLocationId.value) {
+    ElMessage.warning('请选择存储管理中的书籍存储位置')
+    return
+  }
   const pendingRows = localImportSelectedRows.value.filter(isImportableLocalRow)
   if (!pendingRows.length) {
     ElMessage.warning('请先选择要导入的书籍')
