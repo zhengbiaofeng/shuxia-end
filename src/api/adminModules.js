@@ -133,6 +133,14 @@ export async function fetchRolePermissionView(roleId) {
   return readResultResponse(response, '获取角色权限失败')
 }
 
+export async function saveRolePermission(roleId, permissionIds = []) {
+  const response = await request.post('/sx/book/rbac/role-permission/save', {
+    roleId,
+    permissionIds,
+  })
+  return readResultResponse(response, '保存角色权限失败')
+}
+
 export function buildRolesPage(roles = [], permissionView = null) {
   const selectedRoleId = permissionView?.roleId || roles[0]?.id || ''
   const checked = new Set(permissionView?.checkedIds || [])
@@ -214,35 +222,42 @@ export async function fetchSiteSettingsPage() {
 }
 
 export async function fetchReaderSettingsPage() {
-  const response = await request.get('/sx/book/front/reader/setting')
+  const response = await request.get('/sx/book/reader-setting/detail')
   const data = readResultResponse(response, '获取阅读设置失败') || {}
 
   return {
+    raw: data,
     sections: [
       {
         title: '基础阅读偏好',
         items: [
-          inputItem('默认字体', data.fontFamily, '阅读器正文默认字体'),
-          inputItem('默认字号', `${data.fontSize ?? ''}`, '阅读器正文默认字号'),
-          inputItem('行间距', `${data.lineHeight ?? ''}`, '长文本阅读的行高比例'),
-          selectItem('默认主题', data.theme, ['light', 'dark', 'eye'], '新用户进入阅读器时使用的主题'),
-          switchItem('记住阅读位置', flagToBool(data.rememberReadState), '跨设备同步最后阅读位置'),
+          inputItem('默认字体', data.fontFamily, '阅读端在用户没有个人偏好时使用的字体', 'fontFamily'),
+          numberItem('默认字号', data.fontSize, 12, 36, '阅读端在用户没有个人偏好时使用的字号', 'fontSize'),
+          numberItem('行间距', data.lineHeight, 1, 3, '长文本阅读的行高比例', 'lineHeight', 0.1),
+          selectItem('默认主题', data.theme, ['light', 'dark', 'eye'], '新用户进入阅读器时使用的主题', 'theme'),
+          switchItem('记住阅读位置', flagToBool(data.rememberReadState), '是否默认记录最后阅读位置', 'rememberReadState'),
         ],
       },
       {
         title: '翻页与显示',
         items: [
-          selectItem('翻页方式', data.turnMode, ['scroll', 'page'], '电子书和小说阅读器的翻页行为'),
-          selectItem('页面模式', data.pageSizeMode, ['scroll', 'page'], '阅读页面排版方式'),
-          inputItem('段落间距', `${data.paragraphSpacing ?? ''}`, '正文段落间距比例'),
-          switchItem('显示页码', flagToBool(data.showPageNumber), '阅读器是否显示页码'),
-          switchItem('显示章节标题', flagToBool(data.showChapterTitle), '阅读器是否显示当前章节标题'),
-          switchItem('显示进度条', flagToBool(data.showProgressBar), '阅读器是否显示阅读进度'),
-          inputItem('自动保存间隔', `${data.autoSaveInterval ?? ''}`, '阅读进度自动保存间隔，单位秒'),
+          selectItem('翻页方式', data.turnMode, ['scroll', 'page'], '电子书和小说阅读器的默认翻页行为', 'turnMode'),
+          selectItem('页面模式', data.pageSizeMode, ['scroll', 'page'], '阅读页面默认排版方式', 'pageSizeMode'),
+          numberItem('段落间距', data.paragraphSpacing, 0, 3, '正文段落间距比例', 'paragraphSpacing', 0.1),
+          switchItem('显示页码', flagToBool(data.showPageNumber), '阅读器是否默认显示页码', 'showPageNumber'),
+          switchItem('显示章节标题', flagToBool(data.showChapterTitle), '阅读器是否默认显示当前章节标题', 'showChapterTitle'),
+          switchItem('显示进度条', flagToBool(data.showProgressBar), '阅读器是否默认显示阅读进度', 'showProgressBar'),
+          numberItem('自动保存间隔', data.autoSaveInterval, 5, 600, '阅读进度自动保存间隔，单位秒', 'autoSaveInterval'),
         ],
       },
     ],
   }
+}
+
+export async function saveReaderSettings(payload) {
+  const response = await request.post('/sx/book/reader-setting/save', payload)
+  readResultResponse(response, '保存阅读设置失败')
+  return fetchReaderSettingsPage()
 }
 
 export async function fetchNotifySettingsPage(params = {}) {
@@ -254,6 +269,24 @@ export async function fetchNotifySettingsPage(params = {}) {
   return {
     channels: page.records.map(normalizeNotifyChannel),
   }
+}
+
+export async function saveNotifyChannel(channel, enabled) {
+  const raw = channel?.raw || channel || {}
+  const response = await request.post('/sx/book/notify-setting/channel/save', {
+    id: raw.id,
+    channelCode: raw.channelCode,
+    channelName: raw.channelName,
+    channelType: raw.channelType,
+    providerName: raw.providerName,
+    endpointUrl: raw.endpointUrl,
+    authConfigJson: raw.authConfigJson,
+    testReceiver: raw.testReceiver,
+    status: enabled ? 1 : 0,
+    sortNo: raw.sortNo,
+    remark: raw.remark,
+  })
+  return readResultResponse(response, '保存通知渠道失败')
 }
 
 export async function fetchSecuritySettingsPage() {
