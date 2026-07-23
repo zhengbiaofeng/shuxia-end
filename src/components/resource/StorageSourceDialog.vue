@@ -425,6 +425,25 @@ function formatBytes(value) {
 </script>
 
 <style scoped>
+:global(.storage-source-dialog) {
+  display: flex;
+  flex-direction: column;
+  max-height: 92vh;
+  margin-top: 4vh !important;
+  overflow: hidden;
+}
+
+:global(.storage-source-dialog .el-dialog__header),
+:global(.storage-source-dialog .el-dialog__footer) {
+  flex: 0 0 auto;
+}
+
+:global(.storage-source-dialog .el-dialog__body) {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .storage-source-form {
   display: grid;
   gap: 18px;
