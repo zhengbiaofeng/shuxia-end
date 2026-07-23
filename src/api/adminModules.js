@@ -162,6 +162,8 @@ export function buildRolesPage(roles = [], permissionView = null) {
       active: role.id === selectedRoleId || (!selectedRoleId && index === 0),
     })),
     selectedRole: roles.find((role) => role.id === selectedRoleId) || roles[0] || null,
+    permissionTree: permissionView?.treeList || [],
+    checkedIds: [...checked],
     permissions,
     metrics: [
       metric('角色总数', roles.length, '个', '系统角色', 'blue', UserFilled),

@@ -1,14 +1,12 @@
 <template>
   <ResourceShell
-    :actions="page.actions"
+    :actions="[]"
     :active-menu="page.activeMenu"
     :title="page.title"
     :subtitle="page.subtitle"
   >
     <div class="role-page">
       <ResourceMetricGrid :items="page.metrics" />
-      <AdminFilterBar :filters="[{ label: '全部类型', value: '全部类型', options: ['全部类型', '内置', '自定义'] }]" :search="{ placeholder: '搜索角色名称或描述' }" />
-
       <section class="role-layout">
         <aside class="role-list">
           <header>角色列表</header>
@@ -29,7 +27,6 @@
             </span>
             <b>用户数：{{ role.users }}</b>
           </button>
-          <el-button class="role-list__add" :icon="Plus">添加角色</el-button>
         </aside>
 
         <section class="permission-panel">
@@ -38,24 +35,39 @@
               <h2>当前角色：{{ page.selectedRole?.name || '暂无角色' }} <AdminStatusBadge :label="page.selectedRole?.type || '--'" tone="green" /></h2>
               <p>{{ page.selectedRole?.desc || '当前没有可展示的角色权限数据' }}</p>
             </div>
-            <el-button>批量操作</el-button>
+            <el-button
+              v-if="canSave"
+              type="primary"
+              :loading="saving"
+              :disabled="!page.selectedRole"
+              @click="savePermissions"
+            >
+              保存授权
+            </el-button>
           </header>
 
-          <nav class="permission-tabs">
-            <button class="active" type="button">权限配置</button>
-            <button type="button">角色用户（{{ page.selectedRole?.users || 0 }}）</button>
-            <button type="button">权限继承</button>
-            <button type="button">操作日志</button>
-          </nav>
-
-          <AdminTableCard :columns="columns" :rows="page.permissions" min-width="920px" :pagination="false">
-            <template #view="{ row }"><el-checkbox :model-value="row.view" /></template>
-            <template #create="{ row }"><el-checkbox :model-value="row.create" /></template>
-            <template #edit="{ row }"><el-checkbox :model-value="row.edit" /></template>
-            <template #delete="{ row }"><el-checkbox :model-value="row.delete" /></template>
-            <template #export="{ row }"><el-checkbox :model-value="row.export" /></template>
-            <template #all="{ row }"><el-checkbox :model-value="row.all" /></template>
-          </AdminTableCard>
+          <div v-loading="permissionLoading" class="permission-tree-wrap">
+            <el-alert
+              v-if="!canSave"
+              title="当前账号仅可查看角色授权"
+              type="info"
+              :closable="false"
+              show-icon
+            />
+            <el-tree
+              v-if="page.permissionTree.length"
+              ref="treeRef"
+              class="permission-tree"
+              :data="page.permissionTree"
+              node-key="key"
+              show-checkbox
+              default-expand-all
+              :check-strictly="false"
+              :props="treeProps"
+              :disabled="!canSave"
+            />
+            <el-empty v-else description="暂无书匣权限节点" />
+          </div>
         </section>
       </section>
     </div>
@@ -63,32 +75,31 @@
 </template>
 
 <script setup>
-import { onMounted, reactive } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus, UserFilled } from '@element-plus/icons-vue'
-import { AdminFilterBar, AdminStatusBadge, AdminTableCard } from '../../components/admin'
+import { UserFilled } from '@element-plus/icons-vue'
+import { AdminStatusBadge } from '../../components/admin'
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
-import { buildRolesPage, fetchRolePermissionView, fetchRolesPage } from '../../api/adminModules'
+import { buildRolesPage, fetchRolePermissionView, fetchRolesPage, saveRolePermission } from '../../api/adminModules'
 import { permissionPages } from '../../config/adminModules'
+import { useAuthStore } from '../../stores/auth'
 
 const page = reactive({
   ...permissionPages.roles,
   metrics: [],
   roles: [],
   selectedRole: null,
+  permissionTree: [],
+  checkedIds: [],
   permissions: [],
 })
-const columns = [
-  { key: 'module', label: '权限模块' },
-  { key: 'desc', label: '权限描述' },
-  { key: 'view', label: '查看' },
-  { key: 'create', label: '创建' },
-  { key: 'edit', label: '编辑' },
-  { key: 'delete', label: '删除' },
-  { key: 'export', label: '导出' },
-  { key: 'all', label: '全部' },
-]
+const authStore = useAuthStore()
+const treeRef = ref()
+const permissionLoading = ref(false)
+const saving = ref(false)
+const treeProps = { children: 'children', label: 'title' }
+const canSave = computed(() => authStore.hasPermission('system:permission:saveRole'))
 
 async function loadRoles() {
   try {
@@ -97,21 +108,56 @@ async function loadRoles() {
     page.metrics = []
     page.roles = []
     page.selectedRole = null
+    page.permissionTree = []
+    page.checkedIds = []
     page.permissions = []
     ElMessage.error(error.message || '获取角色权限失败')
   }
 }
 
 async function selectRole(role) {
+  if (!role?.id || permissionLoading.value) return
   try {
+    permissionLoading.value = true
     const permissionView = await fetchRolePermissionView(role.id)
     Object.assign(page, buildRolesPage(page.roles, permissionView))
+    await syncTreeChecks()
   } catch (error) {
     ElMessage.error(error.message || '获取角色权限失败')
+  } finally {
+    permissionLoading.value = false
   }
 }
 
-onMounted(loadRoles)
+async function syncTreeChecks() {
+  await nextTick()
+  treeRef.value?.setCheckedKeys(page.checkedIds || [], false)
+}
+
+async function savePermissions() {
+  if (!page.selectedRole?.id || !treeRef.value || saving.value) return
+  try {
+    saving.value = true
+    const permissionIds = [
+      ...treeRef.value.getCheckedKeys(false),
+      ...treeRef.value.getHalfCheckedKeys(),
+    ]
+    const permissionView = await saveRolePermission(page.selectedRole.id, [...new Set(permissionIds)])
+    Object.assign(page, buildRolesPage(page.roles, permissionView))
+    await syncTreeChecks()
+    await authStore.refreshPermissions()
+    ElMessage.success('角色授权已保存')
+  } catch (error) {
+    ElMessage.error(error.message || '保存角色权限失败')
+  } finally {
+    saving.value = false
+  }
+}
+
+onMounted(async () => {
+  await loadRoles()
+  await syncTreeChecks()
+})
 </script>
 
 <style scoped>
@@ -202,13 +248,6 @@ onMounted(loadRoles)
   font-weight: 700;
 }
 
-.role-list__add {
-  width: calc(100% - 32px);
-  margin: 12px 16px 14px;
-  height: 38px;
-  border-radius: var(--admin-radius-control);
-}
-
 .permission-panel {
   overflow: hidden;
 }
@@ -236,35 +275,29 @@ onMounted(loadRoles)
   font-size: 13px;
 }
 
-.permission-tabs {
-  display: flex;
-  gap: 32px;
-  padding: 0 20px;
-  border-bottom: 1px solid var(--admin-row-border);
+.permission-tree-wrap {
+  min-height: 420px;
+  padding: 0 20px 22px;
+  border-top: 1px solid var(--admin-row-border);
 }
 
-.permission-tabs button {
-  position: relative;
-  height: 42px;
-  border: 0;
+.permission-tree-wrap :deep(.el-alert) {
+  margin: 18px 0 12px;
+}
+
+.permission-tree {
+  padding-top: 16px;
   background: transparent;
-  color: #334a80;
-  cursor: pointer;
-  font-weight: 700;
 }
 
-.permission-tabs button.active {
-  color: var(--admin-primary);
+.permission-tree :deep(.el-tree-node__content) {
+  min-height: 34px;
+  border-radius: 5px;
+  color: #243b70;
 }
 
-.permission-tabs button.active::after {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 2px;
-  background: var(--admin-primary);
-  content: '';
+.permission-tree :deep(.el-tree-node__content:hover) {
+  background: #f2f7ff;
 }
 
 .tone-blue { background: #eff6ff; color: #1476ff; }
