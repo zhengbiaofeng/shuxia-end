@@ -518,8 +518,6 @@ npm run build
 - No SQL migration is required.
 - Verification completed: frontend production build, backend `:sx-book` compile and full `:jeecg-system-start` package, desktop 1280x720 and narrow 390x844 browser checks. New backend APIs still require container restart before live container smoke testing.
 
-## Integration Priority
-
 ## 2026-07-23 Admin Scope And Storage Contract Note
 
 - The management frontend scope is documented in `docs/admin-system-development-plan.md`; the user-facing reader is a separate existing project and is integration-only here.
@@ -532,6 +530,8 @@ npm run build
 - Migration identifies local/NAS sources by `storage_source_id` and retains legacy `local-path` compatibility.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\admin-scope-storage-contract-20260723.md`.
 - Verification completed so far: frontend production build and backend `:sx-book` compile passed on 2026-07-23. Running container deployment and real storage migration smoke tests remain pending.
+
+## Integration Priority
 
 Current user priority:
 
