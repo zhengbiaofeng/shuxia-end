@@ -1185,6 +1185,7 @@ function buildTaskMetrics(summary = {}) {
     metric('失败', summary.failCount, '个', '失败任务', 'orange', Warning),
     metric('本地扫描', summary.localScanTaskCount, '个', '扫描任务', 'cyan', Refresh),
     metric('网页抓取', summary.webScrapeTaskCount, '个', '正文入库', 'green', VideoPlay),
+    metric('存储迁移', summary.migrationTaskCount, '个', '文件与章节迁移', 'purple', Refresh),
   ]
 }
 
@@ -1214,6 +1215,10 @@ export function buildTaskDetail(row, logs = []) {
   }
 
   const source = row.raw || row
+  const isMigration = String(row.taskType || source.taskType || '').toUpperCase() === 'MIGRATE'
+  const targetLabel = isMigration ? '迁移目标' : '目标格式'
+  const itemLabel = isMigration ? '迁移项目' : '章节数量'
+  const itemCount = isMigration ? source.chapterCount ?? source.totalItemCount ?? '--' : source.chapterCount ?? '--'
   return {
     title: row.name,
     subtitle: row.desc,
@@ -1226,8 +1231,8 @@ export function buildTaskDetail(row, logs = []) {
       ['任务类型', row.kind || '--'],
       ['开始时间', row.start || formatDateTime(source.createTime)],
       ['完成时间', formatDateTime(source.finishedTime)],
-      ['目标格式', source.targetFormat || '--'],
-      ['章节数量', source.chapterCount ?? '--'],
+      [targetLabel, source.targetFormat || '--'],
+      [itemLabel, itemCount],
     ],
     logs: logs.length ? logs.map((item) => `${item.time} ${item.action}：${item.message}`) : [row.desc].filter((item) => item && item !== '--'),
     progress: row.progress,
@@ -1295,6 +1300,7 @@ function normalizeTaskType(value) {
     SLICE: '切片',
     LOCAL_SCAN: '本地扫描',
     WEB_SCRAPE: '网页抓取',
+    MIGRATE: '存储迁移',
   }
 
   return map[String(value || '').toUpperCase()] || value || '--'

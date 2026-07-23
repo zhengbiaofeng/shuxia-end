@@ -232,6 +232,7 @@ const taskTypeOptions = [
   { label: '转码任务', value: 'TRANSCODE' },
   { label: '切片任务', value: 'SLICE' },
   { label: '本地扫描', value: 'LOCAL_SCAN' },
+  { label: '存储迁移', value: 'MIGRATE' },
 ]
 const statusOptions = [
   { label: '\u5168\u90e8\u72b6\u6001', value: undefined },
