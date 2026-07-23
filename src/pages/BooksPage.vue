@@ -1595,7 +1595,7 @@ function resetUploadForm() {
   uploadedFile.value = null
   uploadForm.fileType = ''
   uploadForm.bookType = ''
-  uploadForm.storageLocationId = ''
+  uploadForm.storageLocationId = preferredEbookStorageLocation()?.id || ''
 }
 
 function formatEbookStorageLocation(location) {
@@ -1608,6 +1608,11 @@ async function loadEbookStorageLocations() {
   ebookStorageLocationsLoading.value = true
   try {
     ebookStorageLocations.value = await fetchEligibleStorageLocations({ bizType: 'ebook', writableOnly: true })
+    const preferred = preferredEbookStorageLocation()
+    if (preferred) {
+      if (!uploadForm.storageLocationId) uploadForm.storageLocationId = preferred.id
+      if (!localImportStorageLocationId.value) localImportStorageLocationId.value = preferred.id
+    }
   } catch (error) {
     ElMessage.error(error.message || '获取书籍存储位置失败')
   } finally {
@@ -1625,6 +1630,13 @@ function resetLocalImportForm() {
   localImportSourceFileCount.value = 0
   localImportSelectedRows.value = []
   localImportResult.value = null
+  localImportStorageLocationId.value = preferredEbookStorageLocation()?.id || ''
+}
+
+function preferredEbookStorageLocation() {
+  return ebookStorageLocations.value.find((item) => Number(item.raw?.defaultEbook || 0) === 1)
+    || ebookStorageLocations.value[0]
+    || null
 }
 
 function resetListViewAfterUpload() {
