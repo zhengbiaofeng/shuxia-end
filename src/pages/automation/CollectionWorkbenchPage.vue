@@ -98,59 +98,6 @@
           type="warning"
         />
 
-        <section v-if="metadataPreview" class="preview-shell">
-          <header class="preview-header">
-            <div>
-              <span class="section-kicker">解析预览</span>
-              <h2>{{ metadataPreview.bookName || '未识别书名' }}</h2>
-              <p>{{ metadataPreview.authorName || '作者未知' }} · {{ metadataPreview.publisher || '出版社未知' }}</p>
-            </div>
-            <AdminStatusBadge
-              :label="metadataPreview.conflict ? '检测到重复书籍' : '可以入库'"
-              :tone="metadataPreview.conflict ? 'orange' : 'green'"
-              dot
-            />
-          </header>
-
-          <div class="metadata-preview">
-            <aside class="book-cover">
-              <img
-                v-if="metadataCoverSrc"
-                :src="metadataCoverSrc"
-                :alt="`${metadataPreview.bookName || '书籍'}封面`"
-                @error="coverLoadFailed = true"
-              />
-              <span v-else>{{ (metadataPreview.bookName || '书').slice(0, 1) }}</span>
-              <a v-if="metadataPreview.sourceUrl" :href="metadataPreview.sourceUrl" rel="noreferrer" target="_blank">查看来源页</a>
-            </aside>
-
-            <el-form class="metadata-form" label-position="top">
-              <div class="field-grid">
-                <el-form-item label="书名"><el-input v-model="metadataPreview.bookName" /></el-form-item>
-                <el-form-item label="作者"><el-input v-model="metadataPreview.authorName" /></el-form-item>
-                <el-form-item label="出版社"><el-input v-model="metadataPreview.publisher" /></el-form-item>
-                <el-form-item label="出版年"><el-input v-model="metadataPreview.publishYear" /></el-form-item>
-                <el-form-item label="ISBN"><el-input v-model="metadataPreview.isbn" /></el-form-item>
-                <el-form-item label="评分"><el-input :model-value="metadataRatingText" disabled /></el-form-item>
-              </div>
-              <el-form-item label="内容简介">
-                <el-input v-model="metadataPreview.introduction" :autosize="{ minRows: 3, maxRows: 7 }" type="textarea" />
-              </el-form-item>
-            </el-form>
-          </div>
-
-          <div v-if="metadataWarnings.length" class="inline-notes">
-            <span v-for="item in metadataWarnings" :key="item">{{ item }}</span>
-          </div>
-
-          <footer class="preview-actions">
-            <el-button @click="resetSingle">重新输入</el-button>
-            <el-button :icon="Download" :loading="metadataImporting" type="primary" @click="confirmMetadataImport">
-              导入书籍库
-            </el-button>
-          </footer>
-        </section>
-
         <section v-if="novelAnalysis" class="preview-shell novel-preview">
           <header class="preview-header">
             <div>
@@ -197,45 +144,6 @@
           </footer>
         </section>
 
-        <section v-if="importedBookId" class="continuation-panel">
-          <header>
-            <div>
-              <span class="section-kicker">可选下一步</span>
-              <h2>为已入库书籍补充网页正文</h2>
-              <p>豆瓣只提供元数据。如需正文，请再粘贴公开目录页或章节页。</p>
-            </div>
-            <AdminStatusBadge label="元数据已入库" tone="green" dot />
-          </header>
-
-          <div class="source-input-row">
-            <el-input
-              v-model="contentUrl"
-              clearable
-              placeholder="公开目录页或章节页 URL"
-              size="large"
-              @keyup.enter="analyzeContent"
-            />
-            <el-button :icon="Search" :loading="contentAnalyzing" size="large" @click="analyzeContent">解析正文</el-button>
-          </div>
-
-          <div v-if="contentAnalyzeResult" class="content-result">
-            <div class="result-facts">
-              <div><span>站点</span><strong>{{ contentAnalyzeResult.siteName || contentAnalyzeResult.siteType || '--' }}</strong></div>
-              <div><span>页面类型</span><strong>{{ contentPageTypeText }}</strong></div>
-              <div><span>使用规则</span><strong>{{ contentAnalyzeResult.ruleName || '--' }}</strong></div>
-              <div><span>识别章节</span><strong>{{ contentAnalyzeResult.chapterCount || 0 }}</strong></div>
-            </div>
-            <div class="content-options">
-              <el-checkbox v-model="contentOverwrite">覆盖相同序号章节</el-checkbox>
-              <label>
-                <span>最多章节</span>
-                <el-input-number v-model="contentMaxChapters" :max="300" :min="1" />
-              </label>
-              <el-button :loading="contentImporting" type="primary" @click="startContentCollection">确认抓取入库</el-button>
-            </div>
-          </div>
-        </section>
-
         <section v-if="singlePhase === 'result' && novelResult?.submittedAsync" class="task-result-panel">
           <div>
             <el-icon><CircleCheck /></el-icon>
@@ -245,7 +153,7 @@
         </section>
 
         <el-empty
-          v-if="!metadataPreview && !novelAnalysis && !importedBookId"
+          v-if="!novelAnalysis"
           description="输入网址后，解析预览会显示在这里"
         />
       </section>
@@ -383,20 +291,6 @@
       </section>
     </div>
 
-    <el-dialog v-model="conflictDialogVisible" title="选择重复书籍处理方式" width="520px">
-      <div class="conflict-dialog">
-        <p>系统检测到 ISBN 或书名、作者、出版社疑似已存在。</p>
-        <el-radio-group v-model="conflictStrategy">
-          <el-radio value="update_existing">更新已有书籍</el-radio>
-          <el-radio value="create_new_version">创建新版本</el-radio>
-          <el-radio value="cancel">取消导入</el-radio>
-        </el-radio-group>
-      </div>
-      <template #footer>
-        <el-button @click="conflictDialogVisible = false">取消</el-button>
-        <el-button :loading="metadataImporting" type="primary" @click="importMetadata">确认</el-button>
-      </template>
-    </el-dialog>
   </ResourceShell>
 </template>
 
