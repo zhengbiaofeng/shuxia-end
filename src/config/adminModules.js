@@ -59,17 +59,6 @@ export const commonActions = {
 }
 
 export const automationPages = {
-  smartScrape: {
-    title: '智能抓取',
-    subtitle: '粘贴公开图书页面 URL，自动识别、解析、预览并确认入库',
-    activeMenu: '智能抓取',
-    actions: [{ label: '高级规则', icon: Setting }],
-    notes: [
-      '一期仅支持豆瓣读书详情页：https://book.douban.com/subject/{id}/',
-      '豆瓣仅作为图书元数据来源，不抓取章节正文',
-      '所有导入都会先预览确认，检测到冲突时需要选择处理策略',
-    ],
-  },
   rules: {
     title: '采集设置',
     subtitle: '维护站点适配、访问方式和字段解析规则；普通采集请从采集工作台开始',
