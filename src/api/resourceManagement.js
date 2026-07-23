@@ -68,6 +68,14 @@ export async function fetchEligibleStorageLocations({ bizType = 'both', writable
   return Array.isArray(response.result) ? response.result.map(normalizeStorageRow) : []
 }
 
+export async function submitStorageMigration({ bookIds, targetLocationId } = {}) {
+  const response = await request.post('/sx/book/storage/migration/submit', {
+    bookIds: Array.isArray(bookIds) ? bookIds.filter(Boolean) : [],
+    targetLocationId,
+  })
+  return readMutationResult(response, '创建存储迁移任务失败')
+}
+
 export async function cleanupOrphanStorageFiles(payload = {}) {
   const response = await request.post('/sx/book/storage/orphan/cleanup', payload)
   return readMutationResult(response, '清理孤儿/临时文件失败')
