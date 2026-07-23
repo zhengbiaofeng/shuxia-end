@@ -100,6 +100,15 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Recently Completed Work
 
+- Completed the first P2 book-format, novel-source and task-observability reliability pass:
+  - MOBI/AZW3 now pass both the Jeecg global upload whitelist and strict PalmDB/Kindle magic validation. They are archive-only formats: upload creates and stores the ebook, but no parser task or `parse` action is exposed.
+  - A live MOBI regression verified first upload, duplicate upload and delete cleanup. Counts moved from 10/79 books/files to 11/80, stayed unchanged on duplicate, then returned to 10/79 after cleanup.
+  - Read-only URL analysis still parsed the Qimao sample at 911 chapters and the BQG sample at 688 chapters without changing task or storage-file counts.
+  - Task statistics now include `MIGRATE`, exclude archive-only files from PARSE work, and deduplicate recent completion logs by task. Task Log filters, pagination and detail now use real backend contracts.
+  - Task Statistics charts and tables are data-driven; desktop 1280x720 and mobile 390x844 browser checks had no page-level horizontal overflow and no console errors.
+  - Verification passed: frontend build, five targeted backend tests, full backend package, Docker rebuild/startup, live APIs and browser workflows.
+  - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\p2-format-task-reliability-20260724.md`.
+
 - Implemented the first private-NAS storage-location and migration workflow:
   - Storage configuration now defines content scope (`ebook` / `novel` / `both`), a path prefix, write permission, and optional default destination for each domain.
   - The Books upload flow can target a configured local/NAS or MinIO location. It remains a user-owned local/NAS ebook workflow and does not introduce ebook crawling.
@@ -561,11 +570,11 @@ npm run build
 
 Current user priority:
 
-1. P1 is complete: menu, route, button and backend permission checks use the same permission codes; administrator, content-manager and read-only audit role baselines are available; reader/security/notification settings have real read/write or read-only flows.
-2. Execute P2 book-format and novel-source reliability regression; keep duplicate handling, task logs, storage statistics, and content details consistent.
-3. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
-4. Defer comic and audio work until their source and processing boundaries are explicitly confirmed.
-5. Keep UI resilient to real backend data and keep tag taxonomy distinct from category taxonomy.
+1. P0 and P1 are complete; storage contracts, permissions and settings baselines remain regression requirements.
+2. The first P2 pass is complete for ebook format validation, duplicate upload protection, read-only novel source samples, task logs and task statistics.
+3. Continue P2 with the batch collection, scheduled-follow, failure diagnosis and retry/recovery matrix before declaring the whole phase closed.
+4. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
+5. Defer comic and audio work until their source and processing boundaries are explicitly confirmed; keep tag taxonomy distinct from category taxonomy.
 
 ## New Thread Startup Checklist
 
