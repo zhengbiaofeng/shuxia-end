@@ -257,6 +257,22 @@
       </el-button>
     </section>
 
+    <el-form-item class="local-import-storage" label="导入到">
+      <el-select
+        v-model="localImportStorageLocationId"
+        :loading="ebookStorageLocationsLoading"
+        filterable
+        placeholder="请选择存储管理中的书籍存储位置"
+      >
+        <el-option
+          v-for="location in ebookStorageLocations"
+          :key="location.id"
+          :label="formatEbookStorageLocation(location)"
+          :value="location.id"
+        />
+      </el-select>
+    </el-form-item>
+
     <section v-if="localImportRows.length || localImportDuplicateRows.length || localImportUnsupportedCount" class="local-import-summary">
       <article v-for="item in localImportSummary" :key="item.label">
         <span>{{ item.label }}</span>
@@ -695,6 +711,7 @@ const localImportSourceFileCount = ref(0)
 const localImportSelectedRows = ref([])
 const localImportResult = ref(null)
 const localImportTableRef = ref()
+const localImportStorageLocationId = ref('')
 
 const bookRules = {
   bookName: [{ required: true, message: '请输入书名', trigger: 'blur' }],
@@ -762,7 +779,10 @@ const uploadedFileAutoImported = computed(() => Boolean(uploadedFile.value?.book
 const uploadedFileIsCover = computed(() => (uploadedFile.value?.fileType || uploadForm.fileType) === 'cover')
 const uploadedFileCanFillForm = computed(() => Boolean(uploadedFile.value && !uploadedFileAutoImported.value && !uploadedFile.value?.duplicate))
 const localImportSelectedImportableCount = computed(() => localImportSelectedRows.value.filter(isImportableLocalRow).length)
-const localImportCanCommit = computed(() => localImportSelectedImportableCount.value > 0 && !localImportCommitting.value && !localImportScanning.value)
+const localImportCanCommit = computed(() => localImportSelectedImportableCount.value > 0
+  && Boolean(localImportStorageLocationId.value)
+  && !localImportCommitting.value
+  && !localImportScanning.value)
 const localImportSummary = computed(() => {
   if (!localImportRows.value.length && !localImportDuplicateRows.value.length && !localImportUnsupportedCount.value) return []
   const totalFileSize = localImportRows.value.reduce((sum, row) => sum + Number(row.fileSize || 0), 0)
@@ -1153,6 +1173,7 @@ function openUploadDialog() {
 }
 
 async function openLocalImportDialog() {
+  if (!ebookStorageLocations.value.length) await loadEbookStorageLocations()
   localImportVisible.value = true
 }
 
