@@ -539,6 +539,14 @@ async function discoverCandidates() {
 }
 
 async function submitBatchCollection() {
+  if (!selectedCandidates.value.length) {
+    ElMessage.warning('请先选择要采集的小说')
+    return
+  }
+  if (!batchForm.storageLocationId) {
+    ElMessage.warning('请选择存储管理中的小说存储位置')
+    return
+  }
   batchSubmitting.value = true
   try {
     const result = await batchSyncScrapeRuleNovels({
@@ -569,6 +577,30 @@ function buildBatchPayload() {
     sameHostOnly: batchForm.sameHostOnly,
     requestDelayMs: optionalPositive(batchForm.requestDelayMs) ?? 0,
     syncChapters: batchForm.syncChapters,
+    storageLocationId: batchForm.storageLocationId,
+  }
+}
+
+function formatStorageLocationLabel(location = {}) {
+  const path = location.path || location.raw?.localBasePath || location.raw?.bucketName || ''
+  return path ? `${location.name} · ${path}` : location.name
+}
+
+async function loadNovelStorageLocations() {
+  storageLocationsLoading.value = true
+  try {
+    novelStorageLocations.value = await fetchEligibleStorageLocations({ bizType: 'novel', writableOnly: true })
+    const preferred = novelStorageLocations.value.find((item) => Number(item.raw?.defaultNovel || 0) === 1)
+      || novelStorageLocations.value[0]
+    if (preferred) {
+      if (!singleOptions.storageLocationId) singleOptions.storageLocationId = preferred.id
+      if (!batchForm.storageLocationId) batchForm.storageLocationId = preferred.id
+    }
+  } catch (error) {
+    novelStorageLocations.value = []
+    ElMessage.error(error.message || '获取小说存储位置失败')
+  } finally {
+    storageLocationsLoading.value = false
   }
 }
 
@@ -581,7 +613,9 @@ function optionalPositive(value) {
   return Number.isFinite(number) && number > 0 ? number : undefined
 }
 
-onMounted(loadRuleOptions)
+onMounted(async () => {
+  await Promise.allSettled([loadRuleOptions(), loadNovelStorageLocations()])
+})
 </script>
 
 <style scoped>
