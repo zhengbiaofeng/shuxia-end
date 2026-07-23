@@ -10,7 +10,7 @@ import {
 import request from '../utils/request'
 
 export async function fetchStoragePageData(params = {}) {
-  const [summaryResponse, sourceResponse] = await Promise.all([
+  const [summaryResponse, sourceResponse, sourceStatusResponse] = await Promise.all([
     request.get('/sx/book/storage/summary'),
     request.get('/sx/book/storage/source/config/page', {
       params: {
@@ -19,22 +19,34 @@ export async function fetchStoragePageData(params = {}) {
         ...params,
       },
     }),
+    request.get('/sx/book/storage/source/list'),
   ])
 
   assertSuccess(summaryResponse, '获取存储摘要失败')
   assertSuccess(sourceResponse, '获取存储源列表失败')
+  assertSuccess(sourceStatusResponse, '获取存储源运行状态失败')
 
   const summary = summaryResponse.result || {}
   const page = sourceResponse.result || {}
-  const rows = Array.isArray(page.records) ? page.records.map(normalizeStorageRow) : []
+  const sourceStatusMap = new Map(
+    (Array.isArray(sourceStatusResponse.result) ? sourceStatusResponse.result : [])
+      .filter((item) => item?.sourceKey)
+      .map((item) => [item.sourceKey, item]),
+  )
+  const rows = Array.isArray(page.records)
+    ? page.records.map((item) => normalizeStorageRow(mergeStorageSourceData(item, sourceStatusMap.get(item.sourceKey))))
+    : []
   const enabledCount = rows.filter((row) => row.raw?.status === 1).length
+  const healthyCount = rows.filter((row) => row.status === '正常').length
+  const totalCapacity = formatNullableBytesValue(summary.totalStorageBytes)
+  const availableCapacity = formatNullableBytesValue(summary.availableStorageBytes)
 
   return {
     metrics: [
       { label: '总存储源', value: formatNumber(summary.sourceCount ?? rows.length), unit: '个', sub: `已启用 ${enabledCount} 个`, color: 'blue', icon: FolderOpened },
-      { label: '正常运行', value: formatNumber(enabledCount), unit: '个', sub: rows.length ? `${Math.round((enabledCount / rows.length) * 100)}%` : '0%', color: 'green', icon: Check },
-      { label: '总容量', value: formatBytesValue(summary.totalStorageBytes).value, unit: formatBytesValue(summary.totalStorageBytes).unit, sub: `已用 ${formatBytes(summary.usedStorageBytes)}`, color: 'blue', icon: Collection },
-      { label: '可用容量', value: formatBytesValue(summary.availableStorageBytes).value, unit: formatBytesValue(summary.availableStorageBytes).unit, sub: usageText(summary.usedStorageBytes, summary.totalStorageBytes), color: 'purple', icon: Clock },
+      { label: '正常运行', value: formatNumber(healthyCount), unit: '个', sub: rows.length ? `${Math.round((healthyCount / rows.length) * 100)}%` : '0%', color: 'green', icon: Check },
+      { label: '总容量', value: totalCapacity.value, unit: totalCapacity.unit, sub: totalCapacity.known ? `已用 ${formatBytes(summary.usedStorageBytes)}` : '仅统计后端可见的本地盘', color: 'blue', icon: Collection },
+      { label: '可用容量', value: availableCapacity.value, unit: availableCapacity.unit, sub: availableCapacity.known ? usageText(summary.usedStorageBytes, summary.totalStorageBytes) : '对象存储容量不计入', color: 'purple', icon: Clock },
       { label: '总文件数', value: formatNumber(summary.totalFileCount), unit: '个', sub: `已绑定 ${formatNumber(summary.boundFileCount)}`, color: 'orange', icon: Folder },
       { label: '可清理文件', value: formatNumber(summary.orphanFileCount), unit: '个', sub: `临时文件 ${formatNumber(summary.tempFileCount)}`, color: 'cyan', icon: Clock },
     ],
@@ -58,6 +70,26 @@ export async function deleteStorageSource(id) {
     params: { id },
   })
   return readMutationResult(response, '删除存储源失败')
+}
+
+export async function fetchStoragePathRoots() {
+  const response = await request.get('/sx/book/storage/path/root/list')
+  assertSuccess(response, '获取可见存储目录失败')
+  return Array.isArray(response.result) ? response.result : []
+}
+
+export async function fetchStorageDirectories(parentPath) {
+  const response = await request.get('/sx/book/storage/path/directory/list', {
+    params: { parentPath },
+  })
+  assertSuccess(response, '读取目录失败')
+  return Array.isArray(response.result) ? response.result : []
+}
+
+export async function probeStoragePath({ path, writeTest = true } = {}) {
+  const response = await request.post('/sx/book/storage/path/probe', { path, writeTest })
+  assertSuccess(response, '检测目录失败')
+  return response.result || {}
 }
 
 export async function fetchEligibleStorageLocations({ bizType = 'both', writableOnly = true } = {}) {
@@ -196,10 +228,15 @@ function readMutationResult(response, fallbackMessage) {
 }
 
 function normalizeStorageRow(item = {}) {
-  const total = Number(item.totalBytes || item.totalStorageBytes || 0)
-  const used = Number(item.usedBytes || item.usedStorageBytes || 0)
-  const percent = total ? Math.round((used / total) * 100) : Number(item.usagePercent || 0)
+  const hasCapacity = item.capacityKnown === true
+    || (item.totalBytes != null && Number(item.totalBytes) > 0)
+  const total = hasCapacity ? Number(item.totalBytes ?? item.totalStorageBytes ?? 0) : 0
+  const used = hasCapacity ? Number(item.usedBytes ?? item.usedStorageBytes ?? 0) : 0
+  const percent = hasCapacity && total
+    ? Math.round((used / total) * 100)
+    : Number(item.usagePercent || 0)
   const sourceType = String(item.sourceType || '').toLowerCase()
+  const status = normalizeStorageStatus(item, sourceType)
 
   return {
     raw: item,
@@ -213,17 +250,47 @@ function normalizeStorageRow(item = {}) {
     writable: Number(item.writable ?? 1) === 1,
     defaultEbook: Number(item.defaultEbook ?? 0) === 1,
     defaultNovel: Number(item.defaultNovel ?? 0) === 1,
-    total: formatBytes(total),
-    used: formatBytes(used),
+    total: hasCapacity ? formatBytes(total) : '--',
+    used: hasCapacity ? formatBytes(used) : '--',
     percent: Math.min(Math.max(percent, 0), 100),
-    free: formatBytes(item.availableBytes || Math.max(total - used, 0)),
-    status: item.status === 0 ? '禁用' : '正常',
-    scan: formatDateTime(item.updateTime || item.createTime),
+    free: hasCapacity ? formatBytes(item.availableBytes ?? Math.max(total - used, 0)) : '--',
+    capacityKnown: hasCapacity,
+    capacityNote: item.pathMessage || item.healthMessage || '',
+    volume: [item.volumeName, item.fileSystemType].filter(Boolean).join(' · '),
+    status,
+    statusTone: status === '正常' ? 'success' : status === '禁用' ? 'muted' : 'warning',
+    scan: formatDateTime(item.lastScanTime || item.updateTime || item.createTime),
     files: formatNumber(item.fileCount),
     color: sourceType === 'minio' ? 'purple' : 'blue',
     scannable: sourceType === 'local' && item.status !== 0 && Boolean(item.localBasePath),
     scanPath: item.localBasePath || '',
   }
+}
+
+function mergeStorageSourceData(config = {}, status = {}) {
+  return {
+    ...status,
+    ...config,
+    fileCount: status?.fileCount ?? config.fileCount,
+    totalFileSize: status?.totalFileSize ?? config.totalFileSize,
+    lastScanTime: status?.lastScanTime ?? config.lastScanTime,
+    healthy: status?.healthy ?? config.healthy,
+    healthMessage: status?.healthMessage ?? config.healthMessage,
+    totalBytes: config.totalBytes ?? status?.totalBytes,
+    usedBytes: config.usedBytes ?? status?.usedBytes,
+    availableBytes: config.availableBytes ?? status?.availableBytes,
+    usagePercent: config.usagePercent ?? status?.usagePercent,
+  }
+}
+
+function normalizeStorageStatus(item, sourceType) {
+  if (Number(item.status) === 0) return '禁用'
+  if (sourceType === 'local') {
+    if (item.pathStatus === 'UNAVAILABLE') return '不可用'
+    if (item.pathStatus === 'READ_ONLY' && Number(item.writable ?? 1) === 1) return '只读'
+  }
+  if (item.healthy === false) return '异常'
+  return '正常'
 }
 
 function normalizeCategoryGroup(item = {}, index = 0) {
@@ -316,6 +383,13 @@ function formatBytesValue(value) {
     value: number,
     unit,
   }
+}
+
+function formatNullableBytesValue(value) {
+  if (value == null || !Number.isFinite(Number(value))) {
+    return { value: '--', unit: '', known: false }
+  }
+  return { ...formatBytesValue(value), known: true }
 }
 
 function formatBytes(value) {
