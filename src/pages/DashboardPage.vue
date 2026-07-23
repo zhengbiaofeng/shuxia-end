@@ -8,7 +8,7 @@
       <header class="page-top">
         <div>
           <h1>概览</h1>
-          <p>欢迎回来，管理员！随时掌握您的书匣运行状态</p>
+          <p>欢迎回来，{{ profile?.name || '用户' }}！随时掌握您的书匣运行状态</p>
         </div>
         <div class="top-status">
           <span>NAS名称：</span>
@@ -118,7 +118,7 @@
           </div>
           <div class="quick-grid">
             <button
-              v-for="entry in dashboardQuickActions"
+              v-for="entry in visibleDashboardQuickActions"
               :key="entry.label"
               class="quick-card"
               :class="`tone-${entry.tone}`"
@@ -281,6 +281,18 @@ const storageDashOffset = computed(() => {
   const circumference = 276
   return Math.round(circumference * (1 - Number(storageOverview.value.usagePercent || 0) / 100))
 })
+const quickActionPermissions = {
+  添加存储: 'sxbook:storage:source:add',
+  立即扫描: 'sxbook:book:add',
+  一键刮削: 'sxbook:subscription:execute',
+  更新订阅: 'sxbook:subscription:list',
+  清理缓存: 'sxbook:storage:cleanup',
+}
+const visibleDashboardQuickActions = computed(() => dashboardQuickActions.value.filter((entry) => {
+  if (entry.enabled === false) return false
+  const permission = quickActionPermissions[entry.label]
+  return !permission || authStore.hasPermission(permission)
+}))
 const statRouteByTitle = {
   书籍: '/books',
   小说: '/novels',
