@@ -40,27 +40,34 @@
         >
           <template #header>
             <div class="task-batch-toolbar">
-              <span>&#24050;&#36873; {{ selectedRows.length }} &#39033;</span>
-              <el-button
-                :disabled="!selectedRows.length"
-                :icon="Delete"
-                :loading="batchDeleteLoading"
-                plain
-                type="danger"
-                @click="handleBatchDelete"
-              >
-                &#25209;&#37327;&#21024;&#38500;
-              </el-button>
-              <el-button
-                :disabled="!page.total"
-                :icon="Delete"
-                :loading="deleteAllLoading"
-                plain
-                type="danger"
-                @click="handleDeleteAll"
-              >
-                &#20840;&#37096;&#21024;&#38500;
-              </el-button>
+              <div aria-live="polite" class="task-batch-selection">
+                <span>&#24050;&#36873;</span>
+                <strong>{{ selectedRows.length }}</strong>
+                <span>&#39033;</span>
+              </div>
+              <div class="task-batch-actions">
+                <el-button
+                  :disabled="!selectedRows.length"
+                  :icon="Delete"
+                  :loading="batchDeleteLoading"
+                  plain
+                  type="danger"
+                  @click="handleBatchDelete"
+                >
+                  &#25209;&#37327;&#21024;&#38500;
+                </el-button>
+                <i aria-hidden="true" class="task-batch-divider" />
+                <el-button
+                  :disabled="!page.total"
+                  :icon="Delete"
+                  :loading="deleteAllLoading"
+                  plain
+                  type="danger"
+                  @click="handleDeleteAll"
+                >
+                  &#20840;&#37096;&#21024;&#38500;
+                </el-button>
+              </div>
             </div>
           </template>
           <template #name="{ row }">
@@ -531,6 +538,48 @@ onBeforeUnmount(() => {
   align-items: start;
 }
 
+.task-batch-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  min-height: 42px;
+}
+
+.task-batch-selection {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  color: #60719a;
+  font-size: var(--admin-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.task-batch-selection strong {
+  color: #18366f;
+  font-size: 16px;
+  font-weight: var(--admin-weight-strong);
+  line-height: 1;
+}
+
+.task-batch-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-batch-actions :deep(.el-button) {
+  min-width: 108px;
+  margin-left: 0;
+}
+
+.task-batch-divider {
+  width: 1px;
+  height: 22px;
+  margin: 0 4px;
+  background: #e2e8f5;
+}
+
 .task-name {
   display: inline-flex;
   align-items: center;
@@ -713,6 +762,22 @@ onBeforeUnmount(() => {
 @media (max-width: 1320px) {
   .task-layout {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .task-batch-toolbar {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .task-batch-actions {
+    width: 100%;
+  }
+
+  .task-batch-actions :deep(.el-button) {
+    flex: 1;
+    min-width: 0;
   }
 }
 </style>
