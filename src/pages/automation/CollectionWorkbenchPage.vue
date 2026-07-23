@@ -3,7 +3,7 @@
     :actions="pageActions"
     :active-tab="activeTab"
     active-menu="采集工作台"
-    subtitle="粘贴一个网址完成识别、预览和采集；列表页可切换到批量采集"
+    subtitle="粘贴小说网址完成识别、预览和采集；列表页可切换到批量采集"
     :tabs="['单本采集', '批量采集']"
     title="采集工作台"
     @action="handlePageAction"
@@ -22,8 +22,8 @@
           <div class="source-panel__intro">
             <div>
               <span class="section-kicker">单本采集</span>
-              <h2>输入书籍或小说网址</h2>
-              <p>系统自动区分元数据页面与小说详情页，不需要预先选择抓取方式。</p>
+              <h2>输入小说详情页或目录页网址</h2>
+              <p>系统识别小说信息和章节目录，确认后建立追更并按需同步正文。</p>
             </div>
             <span class="source-detection" :class="`is-${singleKind}`">
               <el-icon><Compass /></el-icon>
@@ -35,7 +35,7 @@
             <el-input
               v-model="singleUrl"
               clearable
-              placeholder="粘贴豆瓣图书页、小说详情页或目录页 URL"
+              placeholder="粘贴小说详情页、目录页或列表页 URL"
               size="large"
               @clear="resetSingle"
               @keyup.enter="analyzeSingle"
@@ -47,6 +47,26 @@
             <el-button :icon="Search" :loading="singleAnalyzing" size="large" type="primary" @click="analyzeSingle">
               解析预览
             </el-button>
+          </div>
+
+          <div class="storage-destination">
+            <span>目标存储</span>
+            <el-select
+              v-model="singleOptions.storageLocationId"
+              :loading="storageLocationsLoading"
+              filterable
+              placeholder="请选择存储管理中的小说存储位置"
+            >
+              <el-option
+                v-for="location in novelStorageLocations"
+                :key="location.id"
+                :label="formatStorageLocationLabel(location)"
+                :value="location.id"
+              />
+            </el-select>
+            <small v-if="!storageLocationsLoading && !novelStorageLocations.length">
+              暂无可写的小说存储位置，请先到存储管理中添加。
+            </small>
           </div>
 
           <div class="source-panel__footer">
