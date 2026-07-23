@@ -317,7 +317,6 @@ import {
   ArrowDown,
   CircleCheck,
   Compass,
-  Download,
   Link,
   Search,
   Setting,
@@ -326,17 +325,14 @@ import {
 } from '@element-plus/icons-vue'
 import { AdminStatusBadge } from '../../components/admin'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
+import { fetchEligibleStorageLocations } from '../../api/resourceManagement'
 import {
-  analyzeSmartScrapeUrl,
-  analyzeSmartScrapeWebContent,
   analyzeNovelByUrl,
   batchSyncScrapeRuleNovels,
   discoverScrapeRuleNovels,
   fetchScrapeRuleDetail,
   fetchScrapeRulesPage,
-  importSmartScrapeBook,
   quickSyncNovelByUrl,
-  startSmartScrapeWebContent,
 } from '../../api/automation'
 
 const router = useRouter()
@@ -354,20 +350,9 @@ const singlePhase = ref('input')
 const advancedVisible = ref(false)
 const novelAnalysis = ref(null)
 const novelResult = ref(null)
-const singleOptions = reactive({ requestDelayMs: 1000, syncChapters: true })
-
-const metadataPreview = ref(null)
-const metadataImporting = ref(false)
-const conflictDialogVisible = ref(false)
-const conflictStrategy = ref('update_existing')
-const importedBookId = ref('')
-const coverLoadFailed = ref(false)
-const contentUrl = ref('')
-const contentAnalyzeResult = ref(null)
-const contentAnalyzing = ref(false)
-const contentImporting = ref(false)
-const contentOverwrite = ref(false)
-const contentMaxChapters = ref(100)
+const singleOptions = reactive({ requestDelayMs: 1000, syncChapters: true, storageLocationId: '' })
+const novelStorageLocations = ref([])
+const storageLocationsLoading = ref(false)
 
 const rulesLoading = ref(false)
 const ruleOptions = ref([])
@@ -395,33 +380,17 @@ const batchForm = reactive({
   requestDelayMs: 1000,
   sameHostOnly: true,
   syncChapters: true,
+  storageLocationId: '',
 })
 
 const singleKind = computed(() => detectUrlKind(singleUrl.value))
 const singleKindLabel = computed(() => ({
   empty: '等待输入',
   invalid: '网址格式待确认',
-  metadata: '图书元数据页',
   novel: '小说详情或目录页',
   batch: '列表或排行页',
 }[singleKind.value] || '自动识别'))
 const singleStepIndex = computed(() => ({ input: 0, preview: 1, result: 2 }[singlePhase.value] ?? 0))
-const metadataWarnings = computed(() => metadataPreview.value?.warnings || [])
-const metadataCoverSrc = computed(() => {
-  if (coverLoadFailed.value) return ''
-  return metadataPreview.value?.coverPreviewUrl || metadataPreview.value?.coverUrl || ''
-})
-const metadataRatingText = computed(() => {
-  if (!metadataPreview.value) return '--'
-  const rating = metadataPreview.value.rating || '--'
-  const count = metadataPreview.value.ratingCount || 0
-  return count ? `${rating} / ${count} 人评价` : String(rating)
-})
-const contentPageTypeText = computed(() => ({
-  chapter_list: '目录页',
-  chapter_detail: '章节页',
-  unsupported: '暂不支持',
-}[contentAnalyzeResult.value?.pageType] || contentAnalyzeResult.value?.pageType || '--'))
 
 function handlePageAction(action) {
   if (action.label === '采集设置') router.push('/automation/rules')
