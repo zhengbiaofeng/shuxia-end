@@ -132,8 +132,9 @@
 
           <footer class="preview-actions">
             <el-button @click="resetSingle">重新输入</el-button>
-            <el-button @click="router.push('/automation/following')">查看追更</el-button>
+            <el-button v-if="authStore.hasPermission('sxbook:subscription:list')" @click="router.push('/automation/following')">查看追更</el-button>
             <el-button
+              v-if="authStore.hasPermission('sxbook:subscription:execute')"
               :icon="VideoPlay"
               :loading="novelExecuting"
               type="primary"
@@ -258,6 +259,7 @@
             <div>
               <el-button :loading="batchDiscovering" @click="discoverCandidates">重新发现</el-button>
               <el-button
+                v-if="authStore.hasPermission('sxbook:subscription:execute')"
                 :disabled="!selectedCandidates.length || !batchForm.storageLocationId"
                 :icon="VideoPlay"
                 :loading="batchSubmitting"
@@ -300,7 +302,7 @@
         </section>
 
         <el-empty v-else-if="!ruleOptions.length && !rulesLoading" description="还没有可用的小说站点适配">
-          <el-button type="primary" @click="router.push('/automation/rules/new')">添加站点适配</el-button>
+          <el-button v-if="authStore.hasPermission('sxbook:scrapeRule:add')" type="primary" @click="router.push('/automation/rules/new')">添加站点适配</el-button>
         </el-empty>
         <el-empty v-else description="选择站点适配并发现候选小说" />
       </section>
@@ -326,6 +328,7 @@ import {
 import { AdminStatusBadge } from '../../components/admin'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
 import { fetchEligibleStorageLocations } from '../../api/resourceManagement'
+import { useAuthStore } from '../../stores/auth'
 import {
   analyzeNovelByUrl,
   batchSyncScrapeRuleNovels,
@@ -337,10 +340,11 @@ import {
 
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 const activeTab = ref(route.query.tab === 'batch' ? 1 : 0)
 const pageActions = [
-  { label: '采集设置', icon: Setting },
-  { label: '任务中心', icon: Tickets },
+  { label: '采集设置', icon: Setting, permission: 'sxbook:scrapeRule:list' },
+  { label: '任务中心', icon: Tickets, permission: 'sxbook:task:list' },
 ]
 const singleSteps = ['输入网址', '解析预览', '确认采集']
 const singleUrl = ref('')
