@@ -58,6 +58,7 @@
           <span @click.stop>
             <el-switch
               :loading="statusLoadingId === row.id"
+              :disabled="!authStore.hasPermission('sxbook:scrapeRule:status')"
               :model-value="row.enabled"
               @change="(value) => toggleRuleStatus(row, value)"
             />
@@ -70,8 +71,8 @@
         </template>
         <template #actions="{ row }">
           <div class="rule-actions">
-            <el-button size="small" type="primary" plain :icon="DataAnalysis" @click.stop="openRuleBatchSync(row, 'single')">单页发现</el-button>
-            <el-button size="small" type="success" :icon="Refresh" @click.stop="openRuleBatchSync(row, 'site')">整站发现</el-button>
+            <el-button v-if="authStore.hasPermission('sxbook:scrapeRule:debug')" size="small" type="primary" plain :icon="DataAnalysis" @click.stop="openRuleBatchSync(row, 'single')">单页发现</el-button>
+            <el-button v-if="authStore.hasPermission('sxbook:scrapeRule:debug')" size="small" type="success" :icon="Refresh" @click.stop="openRuleBatchSync(row, 'site')">整站发现</el-button>
             <AdminActionIcons :actions="ruleActions" @action="(action) => handleRowAction(row, action)" />
           </div>
         </template>
@@ -108,10 +109,10 @@
           </section>
 
           <section class="detail-actions">
-            <el-button type="primary" :icon="DataAnalysis" @click="debugSelectedRule">调试适配</el-button>
-            <el-button :icon="DataAnalysis" @click="openRuleBatchSync(selectedRule, 'single')">单页发现</el-button>
-            <el-button type="success" :icon="Refresh" @click="openRuleBatchSync(selectedRule, 'site')">整站发现</el-button>
-            <el-button :icon="EditPen" @click="editRule(selectedRule)">编辑</el-button>
+            <el-button v-if="authStore.hasPermission('sxbook:scrapeRule:debug')" type="primary" :icon="DataAnalysis" @click="debugSelectedRule">调试适配</el-button>
+            <el-button v-if="authStore.hasPermission('sxbook:scrapeRule:debug')" :icon="DataAnalysis" @click="openRuleBatchSync(selectedRule, 'single')">单页发现</el-button>
+            <el-button v-if="authStore.hasPermission('sxbook:scrapeRule:debug')" type="success" :icon="Refresh" @click="openRuleBatchSync(selectedRule, 'site')">整站发现</el-button>
+            <el-button v-if="authStore.hasPermission('sxbook:scrapeRule:edit')" :icon="EditPen" @click="editRule(selectedRule)">编辑</el-button>
           </section>
         </template>
         <el-empty v-else description="暂无规则详情" />
@@ -264,6 +265,7 @@ import { AdminActionIcons, AdminFilterBar, AdminInfoBox, AdminStatusBadge, Admin
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
 import { automationPages } from '../../config/adminModules'
+import { useAuthStore } from '../../stores/auth'
 import {
   STATUS_OPTIONS,
   batchSyncScrapeRuleNovels,
@@ -278,6 +280,7 @@ import {
 } from '../../api/automation'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const page = {
   ...automationPages.rules,
 }
@@ -305,9 +308,9 @@ const selectorFields = [
 ]
 const ruleActions = [
   { label: '查看', icon: View, boxed: true },
-  { label: '调试', icon: DataAnalysis },
-  { label: '编辑', icon: EditPen },
-  { label: '删除', icon: Delete, danger: true },
+  { label: '调试', icon: DataAnalysis, permission: 'sxbook:scrapeRule:debug' },
+  { label: '编辑', icon: EditPen, permission: 'sxbook:scrapeRule:edit' },
+  { label: '删除', icon: Delete, danger: true, permission: 'sxbook:scrapeRule:delete' },
 ]
 
 const loading = ref(false)

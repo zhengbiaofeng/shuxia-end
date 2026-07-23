@@ -41,6 +41,7 @@
           <span @click.stop>
             <el-switch
               :loading="statusLoadingId === row.id"
+              :disabled="!authStore.hasPermission('sxbook:scrapeChannel:status')"
               :model-value="row.enabled"
               @change="(value) => toggleChannelStatus(row, value)"
             />
@@ -74,10 +75,10 @@
             <el-descriptions-item label="备注">{{ selectedChannel.remark || '--' }}</el-descriptions-item>
           </el-descriptions>
           <section class="detail-actions">
-            <el-button :loading="testLoadingId === selectedChannel.id" type="primary" :icon="Connection" @click="testSelectedChannel">
+            <el-button v-if="authStore.hasPermission('sxbook:scrapeChannel:test')" :loading="testLoadingId === selectedChannel.id" type="primary" :icon="Connection" @click="testSelectedChannel">
               连接测试
             </el-button>
-            <el-button :icon="EditPen" @click="openEditDialog(selectedChannel)">编辑</el-button>
+            <el-button v-if="authStore.hasPermission('sxbook:scrapeChannel:edit')" :icon="EditPen" @click="openEditDialog(selectedChannel)">编辑</el-button>
           </section>
         </template>
         <el-empty v-else description="暂无连接模板详情" />
@@ -182,6 +183,7 @@ import { AdminActionIcons, AdminFilterBar, AdminStatusBadge, AdminTableCard } fr
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
 import { automationPages } from '../../config/adminModules'
+import { useAuthStore } from '../../stores/auth'
 import {
   BIZ_TYPE_OPTIONS,
   REQUEST_METHOD_OPTIONS,
@@ -197,6 +199,7 @@ import {
 } from '../../api/automation'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const page = {
   ...automationPages.channels,
 }
@@ -214,9 +217,9 @@ const columns = [
 ]
 const channelActions = [
   { label: '查看', icon: View, boxed: true },
-  { label: '测试', icon: Connection },
-  { label: '编辑', icon: EditPen },
-  { label: '删除', icon: Delete, danger: true },
+  { label: '测试', icon: Connection, permission: 'sxbook:scrapeChannel:test' },
+  { label: '编辑', icon: EditPen, permission: 'sxbook:scrapeChannel:edit' },
+  { label: '删除', icon: Delete, danger: true, permission: 'sxbook:scrapeChannel:delete' },
 ]
 const bizOptions = BIZ_TYPE_OPTIONS
 const requestMethods = REQUEST_METHOD_OPTIONS
