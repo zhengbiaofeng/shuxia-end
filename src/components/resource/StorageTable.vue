@@ -18,7 +18,7 @@
         </thead>
         <tbody v-if="rows.length">
           <tr v-for="row in rows" :key="row.id || row.name">
-            <td v-if="canManageStorage">
+            <td>
               <div class="storage-name">
                 <span class="storage-name__icon" :class="`tone-${row.color}`">
                   <el-icon><FolderOpened /></el-icon>
@@ -57,7 +57,7 @@
             </td>
             <td><span class="scan-cell"><el-icon><VideoPlay /></el-icon>{{ row.scan }}</span></td>
             <td>{{ row.files }}</td>
-            <td>
+            <td v-if="canManageStorage">
               <div class="table-actions">
                 <el-tooltip v-if="authStore.hasPermission('sxbook:book:add')" content="扫描目录" placement="top">
                   <button

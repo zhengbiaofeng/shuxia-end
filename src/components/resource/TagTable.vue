@@ -39,7 +39,7 @@
         </thead>
         <tbody v-if="rows.length">
           <tr v-for="row in rows" :key="row.id || row.name">
-            <td v-if="canManageTags">
+            <td>
               <span class="tag-chip" :style="tagStyle(row)" :title="row.name">{{ row.name }}</span>
             </td>
             <td>{{ row.type }}</td>
@@ -51,7 +51,7 @@
             <td>{{ row.count }}</td>
             <td>{{ row.related }}</td>
             <td>{{ row.createdAt }}</td>
-            <td>
+            <td v-if="canManageTags">
               <div class="table-actions">
                 <button
                   v-if="authStore.hasPermission('sxbook:tag:edit')"
