@@ -237,7 +237,7 @@ import { computed, onMounted, shallowRef } from 'vue'
 const router = useRouter()
 const authStore = useAuthStore()
 const siteSettingsStore = useSiteSettingsStore()
-const menus = computed(() => createSideMenus('概览'))
+const menus = computed(() => createSideMenus('概览', authStore.hasPermission))
 const profile = computed(() => {
   const user = authStore.userInfo
 
@@ -247,7 +247,7 @@ const profile = computed(() => {
 
   return {
     name,
-    role: user.username === 'admin' ? '超级管理员' : '管理员',
+    role: authStore.displayRole,
     initial: name.slice(0, 1),
     color: 'var(--color-accent)',
   }

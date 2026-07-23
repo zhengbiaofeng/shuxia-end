@@ -35,7 +35,7 @@
 
         <div class="resource-actions">
           <el-button
-            v-for="action in actions"
+            v-for="action in visibleActions"
             :key="action.label"
             :type="action.type || 'default'"
             :icon="action.icon"
@@ -83,7 +83,10 @@ defineEmits(['action', 'tab-change'])
 const router = useRouter()
 const authStore = useAuthStore()
 const siteSettingsStore = useSiteSettingsStore()
-const menus = computed(() => createSideMenus(props.activeMenu))
+const menus = computed(() => createSideMenus(props.activeMenu, authStore.hasPermission))
+const visibleActions = computed(() => props.actions.filter((action) => (
+  !action.permission || authStore.hasPermission(action.permission)
+)))
 const profile = computed(() => {
   const user = authStore.userInfo
 
@@ -93,7 +96,7 @@ const profile = computed(() => {
 
   return {
     name,
-    role: user.username === 'admin' ? '超级管理员' : '管理员',
+    role: authStore.displayRole,
     initial: name.slice(0, 1),
     color: 'var(--color-accent)',
   }

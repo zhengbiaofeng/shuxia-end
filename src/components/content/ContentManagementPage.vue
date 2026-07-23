@@ -33,7 +33,7 @@
         </nav>
         <div class="page-actions">
           <el-button
-            v-for="action in config.actions"
+            v-for="action in visiblePageActions"
             :key="action.label"
             :type="action.tone || 'default'"
             :icon="action.icon"
@@ -92,7 +92,7 @@
           <div v-if="config.selectable && config.batchActions?.length" class="batch-toolbar">
             <span>已选择 {{ selectedRowKeys.length }} 项</span>
             <el-button
-              v-for="action in config.batchActions"
+              v-for="action in visibleBatchActions"
               :key="action.code || action.label"
               :disabled="selectedRowKeys.length === 0 || action.loading"
               :loading="action.loading"
@@ -333,7 +333,7 @@ const emit = defineEmits([
 
 const router = useRouter()
 const authStore = useAuthStore()
-const menus = computed(() => createSideMenus(props.config.activeMenu))
+const menus = computed(() => createSideMenus(props.config.activeMenu, authStore.hasPermission))
 const profile = computed(() => {
   const user = authStore.userInfo
 
@@ -343,12 +343,14 @@ const profile = computed(() => {
 
   return {
     name,
-    role: user.username === 'admin' ? '超级管理员' : '管理员',
+    role: authStore.displayRole,
     initial: name.slice(0, 1),
     color: 'var(--color-accent)',
   }
 })
 const hasTabs = computed(() => Boolean(props.config.tabs?.length))
+const visiblePageActions = computed(() => filterPermittedActions(props.config.actions))
+const visibleBatchActions = computed(() => filterPermittedActions(props.config.batchActions))
 const visibleMetrics = computed(() => props.metrics.length ? props.metrics : (props.config.metrics || []))
 const selectedRowKeySet = computed(() => new Set(props.selectedRowKeys))
 const selectedRows = computed(() => props.rows.filter((row) => selectedRowKeySet.value.has(row.id)))
@@ -403,7 +405,7 @@ function statusTone(value = '') {
 }
 
 function visibleRowActions(row = {}) {
-  const actions = Array.isArray(props.config.rowActions) ? props.config.rowActions : []
+  const actions = filterPermittedActions(props.config.rowActions)
   const availableActions = Array.isArray(row.availableActions) ? row.availableActions.map((item) => String(item).toLowerCase()) : []
 
   if (!availableActions.length) {
@@ -414,6 +416,12 @@ function visibleRowActions(row = {}) {
     const code = String(action.code || '').toLowerCase()
     return !code || availableActions.includes(code)
   })
+}
+
+function filterPermittedActions(actions = []) {
+  return (Array.isArray(actions) ? actions : []).filter((action) => (
+    !action.permission || authStore.hasPermission(action.permission)
+  ))
 }
 
 function toggleRowSelection(row, checked) {

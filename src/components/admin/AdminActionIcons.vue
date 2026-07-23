@@ -1,7 +1,7 @@
 <template>
   <div class="admin-action-icons" aria-label="操作">
     <button
-      v-for="action in actions"
+      v-for="action in visibleActions"
       :key="action.label"
       type="button"
       :title="action.label"
@@ -16,13 +16,20 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { Loading } from '@element-plus/icons-vue'
+import { useAuthStore } from '../../stores/auth'
 
-defineProps({
+const props = defineProps({
   actions: { type: Array, default: () => [] },
 })
 
 defineEmits(['action'])
+
+const authStore = useAuthStore()
+const visibleActions = computed(() => props.actions.filter((action) => (
+  !action.permission || authStore.hasPermission(action.permission)
+)))
 </script>
 
 <style scoped>
