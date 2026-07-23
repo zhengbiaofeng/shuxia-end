@@ -95,6 +95,22 @@
       </el-button>
     </section>
 
+    <el-form-item class="local-import-storage" label="导入到">
+      <el-select
+        v-model="localImportStorageLocationId"
+        :loading="novelStorageLocationsLoading"
+        filterable
+        placeholder="请选择存储管理中的小说存储位置"
+      >
+        <el-option
+          v-for="location in novelStorageLocations"
+          :key="location.id"
+          :label="formatNovelStorageLocation(location)"
+          :value="location.id"
+        />
+      </el-select>
+    </el-form-item>
+
     <section v-if="localImportRows.length || localImportDuplicateRows.length || localImportUnsupportedCount" class="local-import-summary">
       <article v-for="item in localImportSummary" :key="item.label">
         <span>{{ item.label }}</span>
@@ -291,6 +307,7 @@ import {
 } from '@element-plus/icons-vue'
 import ContentManagementPage from '../components/content/ContentManagementPage.vue'
 import StorageMigrationDialog from '../components/content/StorageMigrationDialog.vue'
+import { fetchEligibleStorageLocations } from '../api/resourceManagement'
 import {
   batchChangeBookShelfStatus,
   batchDeleteBooks,
@@ -403,6 +420,9 @@ const localImportSourceFileCount = ref(0)
 const localImportSelectedRows = ref([])
 const localImportResult = ref(null)
 const localImportTableRef = ref()
+const localImportStorageLocationId = ref('')
+const novelStorageLocations = ref([])
+const novelStorageLocationsLoading = ref(false)
 
 const novelRules = {
   bookName: [{ required: true, message: '请输入小说名称', trigger: 'blur' }],
@@ -417,7 +437,10 @@ const chapterRules = {
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
 const categorySelectOptions = computed(() => categoryOptions.value.map((item) => ({ label: item.name, value: item.id })))
 const localImportSelectedImportableCount = computed(() => localImportSelectedRows.value.filter(isImportableLocalRow).length)
-const localImportCanCommit = computed(() => localImportSelectedImportableCount.value > 0 && !localImportCommitting.value && !localImportScanning.value)
+const localImportCanCommit = computed(() => localImportSelectedImportableCount.value > 0
+  && Boolean(localImportStorageLocationId.value)
+  && !localImportCommitting.value
+  && !localImportScanning.value)
 const localImportExistingCount = computed(() => localImportRows.value.filter((row) => row.status === 'exists').length)
 const localImportSummary = computed(() => {
   if (!localImportRows.value.length && !localImportDuplicateRows.value.length && !localImportUnsupportedCount.value) return []
@@ -996,6 +1019,7 @@ async function handleDeleteChapter(row) {
 }
 
 async function openLocalImportDialog() {
+  if (!novelStorageLocations.value.length) await loadNovelStorageLocations()
   localImportVisible.value = true
 }
 
@@ -1059,6 +1083,10 @@ function handleLocalImportSelectionChange(rows = []) {
 }
 
 async function commitLocalImport() {
+  if (!localImportStorageLocationId.value) {
+    ElMessage.warning('请选择存储管理中的小说存储位置')
+    return
+  }
   const pendingRows = localImportSelectedRows.value.filter(isImportableLocalRow)
   if (!pendingRows.length) {
     ElMessage.warning('请先选择要导入的小说')
@@ -1438,6 +1466,7 @@ async function uploadLocalImportRow(row) {
       fileType: 'content',
       bookType: NOVEL_BIZ_TYPE,
       categoryId: row.categoryId || undefined,
+      storageLocationId: localImportStorageLocationId.value,
     })
     row.bookId = uploaded.bookId || ''
     row.contentFileId = uploaded.id || ''
