@@ -145,7 +145,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog v-model="batchVisible" :title="batchDialogTitle" width="920px" destroy-on-close>
+    <el-dialog v-model="batchVisible" :title="batchDialogTitle" width="min(920px, calc(100vw - 32px))" destroy-on-close>
       <div class="batch-sync">
         <section class="batch-sync__summary">
           <div>
