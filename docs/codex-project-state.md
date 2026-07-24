@@ -100,6 +100,15 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Recently Completed Work
 
+- Completed the P2 task failure-diagnosis and recovery slice:
+  - Task responses now expose structured failure category, recovery mode, labels, and an actionable Chinese suggestion instead of forcing the frontend to infer recovery from error text.
+  - Paused scrape tasks expose resume only; ordinary failed/terminated tasks expose retry; scheduled failures keep the next Quartz run and also allow immediate retry.
+  - Chapter-sync retry/resume is submitted asynchronously, so the task action HTTP request no longer blocks for the full novel scrape.
+  - `RULE_BATCH_SYNC` parents remain explicitly non-retryable and use `RESUBMIT` because candidates, destination and processing cursor are not yet persisted. The UI directs the administrator back to Collection Workbench instead of offering a misleading retry.
+  - Task Center renders diagnosis/recovery fields and the correct resume/retry action. Follow Management exposes recovery actions from the latest task capabilities while successful plans continue to use the existing sync action.
+  - Verification passed: 10 targeted backend tests, full 11-module backend package, Docker rebuild/recreate and HTTP 200 startup check, frontend production build, live read-only failed-task contract, and desktop/mobile browser checks with zero console errors and no mobile page overflow.
+  - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\p2-task-failure-recovery-20260724.md`.
+
 - Completed the first P2 book-format, novel-source and task-observability reliability pass:
   - MOBI/AZW3 now pass both the Jeecg global upload whitelist and strict PalmDB/Kindle magic validation. They are archive-only formats: upload creates and stores the ebook, but no parser task or `parse` action is exposed.
   - A live MOBI regression verified first upload, duplicate upload and delete cleanup. Counts moved from 10/79 books/files to 11/80, stayed unchanged on duplicate, then returned to 10/79 after cleanup.
@@ -573,7 +582,7 @@ Current user priority:
 
 1. P0 and P1 are complete; storage contracts, permissions and settings baselines remain regression requirements.
 2. The first P2 pass is complete for ebook format validation, duplicate upload protection, read-only novel source samples, task logs and task statistics.
-3. Continue P2 with the batch collection, scheduled-follow, failure diagnosis and retry/recovery matrix before declaring the whole phase closed.
+3. The first failure-diagnosis and retry/recovery matrix is complete. Continue P2 by persisting batch candidate context, target storage ID and execution checkpoints; only then enable true retry/resume for `RULE_BATCH_SYNC` parents.
 4. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
 5. Defer comic and audio work until their source and processing boundaries are explicitly confirmed; keep tag taxonomy distinct from category taxonomy.
 
