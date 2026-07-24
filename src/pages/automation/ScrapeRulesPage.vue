@@ -201,6 +201,21 @@
               <el-form-item label="同步章节">
                 <el-switch v-model="batchForm.syncChapters" active-text="同步" inactive-text="只建书" />
               </el-form-item>
+              <el-form-item label="小说存储位置">
+                <el-select
+                  v-model="batchForm.storageLocationId"
+                  filterable
+                  :loading="storageLocationsLoading"
+                  placeholder="从存储管理中选择"
+                >
+                  <el-option
+                    v-for="location in novelStorageLocations"
+                    :key="location.id"
+                    :label="formatStorageLocationLabel(location)"
+                    :value="location.id"
+                  />
+                </el-select>
+              </el-form-item>
             </div>
             <el-checkbox v-model="batchForm.sameHostOnly">仅保留同站详情链接</el-checkbox>
           </el-form>
@@ -217,7 +232,7 @@
               v-if="authStore.hasPermission('sxbook:subscription:execute')"
               type="primary"
               :loading="batchSubmitting"
-              :disabled="!batchCandidates.length"
+              :disabled="!batchCandidates.length || !batchForm.storageLocationId"
               :icon="Refresh"
               @click="submitBatchSync"
             >
@@ -265,6 +280,7 @@ import { DataAnalysis, Delete, EditPen, InfoFilled, Refresh, View } from '@eleme
 import { AdminActionIcons, AdminFilterBar, AdminInfoBox, AdminStatusBadge, AdminTableCard } from '../../components/admin'
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
+import { fetchEligibleStorageLocations } from '../../api/resourceManagement'
 import { automationPages } from '../../config/adminModules'
 import { useAuthStore } from '../../stores/auth'
 import {
@@ -331,6 +347,8 @@ const debugResult = ref(null)
 const batchRule = ref(null)
 const batchResult = ref(null)
 const batchCandidates = ref([])
+const novelStorageLocations = ref([])
+const storageLocationsLoading = ref(false)
 const batchForm = reactive(defaultBatchForm())
 const query = reactive({
   pageNo: 1,
@@ -401,6 +419,7 @@ function defaultBatchForm() {
     requestDelayMs: 1000,
     sameHostOnly: true,
     syncChapters: true,
+    storageLocationId: '',
   }
 }
 
@@ -539,6 +558,7 @@ async function openRuleBatchSync(row, scope = 'single') {
   Object.assign(batchForm, defaultBatchForm())
   batchForm.scope = scope === 'site' ? 'site' : 'single'
   try {
+    await loadNovelStorageLocations()
     batchRule.value = row.ruleName ? row : await fetchScrapeRuleDetail(row.id)
     batchForm.entryUrlsText = batchRuleListUrl.value
     batchForm.detailUrlSelector = batchRuleDetailSelector.value
@@ -583,6 +603,10 @@ async function discoverBatchCandidates() {
 async function submitBatchSync() {
   const ruleId = batchRule.value?.id
   if (!ruleId || !batchCandidates.value.length) return
+  if (!batchForm.storageLocationId) {
+    ElMessage.warning('请选择存储管理中的小说存储位置')
+    return
+  }
   batchSubmitting.value = true
   try {
     const result = await batchSyncScrapeRuleNovels({
@@ -613,6 +637,27 @@ function buildBatchPayload(ruleId) {
     sameHostOnly: batchForm.sameHostOnly,
     requestDelayMs: optionalPositive(batchForm.requestDelayMs) ?? 0,
     syncChapters: batchForm.syncChapters,
+    storageLocationId: batchForm.storageLocationId,
+  }
+}
+
+function formatStorageLocationLabel(location = {}) {
+  const path = location.path || location.raw?.localBasePath || location.raw?.bucketName || ''
+  return path ? `${location.name} - ${path}` : location.name
+}
+
+async function loadNovelStorageLocations() {
+  storageLocationsLoading.value = true
+  try {
+    novelStorageLocations.value = await fetchEligibleStorageLocations({ bizType: 'novel', writableOnly: true })
+    const preferred = novelStorageLocations.value.find((item) => Number(item.raw?.defaultNovel || 0) === 1)
+      || novelStorageLocations.value[0]
+    if (preferred) batchForm.storageLocationId = preferred.id
+  } catch (error) {
+    novelStorageLocations.value = []
+    ElMessage.error(error.message || '获取小说存储位置失败')
+  } finally {
+    storageLocationsLoading.value = false
   }
 }
 

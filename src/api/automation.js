@@ -127,6 +127,7 @@ export async function batchSyncScrapeRuleNovels(payload = {}) {
     syncChapters: payload.syncChapters !== false,
     requestDelayMs: payload.requestDelayMs,
     cronExpr: trimText(payload.cronExpr),
+    storageLocationId: payload.storageLocationId,
   }))
   return normalizeScrapeRuleBatchSync(readResultResponse(response, '按规则批量同步小说失败') || {})
 }
