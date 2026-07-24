@@ -666,7 +666,15 @@ function normalizeTaskRow(item = {}) {
     canPause: Boolean(item.canPause),
     canTerminate: Boolean(item.canTerminate),
     canRetry: Boolean(item.canRetry),
+    canResume: Boolean(item.canResume),
     canDelete: Boolean(item.canDelete),
+    taskResultStatus: item.taskResultStatus || '',
+    taskResultStatusLabel: item.taskResultStatusLabel || '',
+    failureCategory: item.failureCategory || '',
+    failureCategoryLabel: item.failureCategoryLabel || '',
+    recoveryMode: item.recoveryMode || '',
+    recoveryModeLabel: item.recoveryModeLabel || '',
+    recoverySuggestion: item.recoverySuggestion || '',
   }
 }
 
@@ -1057,6 +1065,17 @@ export function buildTaskDetail(row, logs = []) {
   const targetLabel = isMigration ? '迁移目标' : '目标格式'
   const itemLabel = isMigration ? '迁移项目' : '章节数量'
   const itemCount = isMigration ? source.chapterCount ?? source.totalItemCount ?? '--' : source.chapterCount ?? '--'
+  const fields = [
+    ['任务ID', row.taskId || source.taskId || '--'],
+    ['任务类型', row.kind || '--'],
+    ['开始时间', row.start || formatDateTime(source.createTime)],
+    ['完成时间', formatDateTime(source.finishedTime)],
+    [targetLabel, source.targetFormat || '--'],
+    [itemLabel, itemCount],
+  ]
+  if (source.failureCategoryLabel) fields.push(['失败诊断', source.failureCategoryLabel])
+  if (source.recoveryModeLabel) fields.push(['恢复方式', source.recoveryModeLabel])
+  if (source.recoverySuggestion) fields.push(['处理建议', source.recoverySuggestion])
   return {
     title: row.name,
     subtitle: row.desc,
@@ -1064,14 +1083,7 @@ export function buildTaskDetail(row, logs = []) {
     priority: `任务类型：${row.kind}`,
     cover: row.cover || row.name?.slice(0, 1) || '--',
     coverUrl: row.coverUrl || '',
-    fields: [
-      ['任务ID', row.taskId || source.taskId || '--'],
-      ['任务类型', row.kind || '--'],
-      ['开始时间', row.start || formatDateTime(source.createTime)],
-      ['完成时间', formatDateTime(source.finishedTime)],
-      [targetLabel, source.targetFormat || '--'],
-      [itemLabel, itemCount],
-    ],
+    fields,
     logs: logs.length ? logs.map((item) => `${item.time} ${item.action}：${item.message}`) : [row.desc].filter((item) => item && item !== '--'),
     progress: row.progress,
   }

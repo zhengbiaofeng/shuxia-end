@@ -165,6 +165,15 @@
               终止任务
             </el-button>
             <el-button
+              v-if="selectedTask?.canResume"
+              :icon="VideoPlay"
+              :loading="actionLoading === 'resume'"
+              type="primary"
+              @click="handleTaskAction(selectedTask, { label: '恢复', action: 'resume' })"
+            >
+              恢复任务
+            </el-button>
+            <el-button
               :disabled="!selectedTask?.canRetry"
               :icon="RefreshRight"
               :loading="actionLoading === 'retry'"
@@ -182,7 +191,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Close, CloseBold, Delete, RefreshRight, VideoPause, View } from '@element-plus/icons-vue'
+import { Close, CloseBold, Delete, RefreshRight, VideoPause, VideoPlay, View } from '@element-plus/icons-vue'
 import { AdminActionIcons, AdminFilterBar, AdminStatusBadge, AdminTableCard } from '../../components/admin'
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
@@ -281,12 +290,16 @@ const filters = computed(() => [
 ])
 
 function actionsFor(row) {
-  return [
+  const actions = [
     { label: '查看', icon: View, boxed: true },
     { label: '暂停', icon: VideoPause, disabled: !row.canPause, action: 'pause', permission: 'sxbook:task:action' },
     { label: '终止', icon: CloseBold, danger: true, disabled: !row.canTerminate, action: 'terminate', permission: 'sxbook:task:action' },
     { label: '重试', icon: RefreshRight, disabled: !row.canRetry, action: 'retry', permission: 'sxbook:task:action' },
   ]
+  if (row.canResume) {
+    actions.splice(3, 0, { label: '恢复', icon: VideoPlay, action: 'resume', permission: 'sxbook:task:action' })
+  }
+  return actions
 }
 
 function handleSearchInput(value) {

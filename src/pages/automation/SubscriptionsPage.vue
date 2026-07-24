@@ -343,6 +343,25 @@
             >
               停止任务
             </el-button>
+            <el-button
+              v-if="selectedDetail.canResume && authStore.hasPermission('sxbook:task:action')"
+              :icon="VideoPlay"
+              :loading="actionTaskLoadingId === selectedDetail.taskId"
+              type="primary"
+              plain
+              @click="recoverLatestTask(selectedDetail, 'resume')"
+            >
+              恢复任务
+            </el-button>
+            <el-button
+              v-if="selectedDetail.canRetry && selectedDetail.latestTaskStatus === 3 && !selectedDetail.canResume && authStore.hasPermission('sxbook:task:action')"
+              :icon="RefreshRight"
+              :loading="actionTaskLoadingId === selectedDetail.taskId"
+              plain
+              @click="recoverLatestTask(selectedDetail, 'retry')"
+            >
+              重试任务
+            </el-button>
             <el-button v-if="authStore.hasPermission('sxbook:subscription:edit')" :icon="EditPen" @click="openEdit(selectedDetail)">编辑</el-button>
           </section>
         </template>
@@ -541,12 +560,16 @@ function rowActions(row) {
   ]
   if (row.canTerminate) {
     actions.splice(2, 0, { label: '停止', icon: CircleClose, danger: true, permission: 'sxbook:task:action' })
+  } else if (row.canResume) {
+    actions.splice(2, 0, { label: '恢复', icon: VideoPlay, permission: 'sxbook:task:action' })
+  } else if (row.canRetry && row.latestTaskStatus === 3) {
+    actions.splice(2, 0, { label: '重试', icon: RefreshRight, permission: 'sxbook:task:action' })
   }
   return actions.map((action) => ({
     ...action,
     loading:
       ((action.label === '同步' || action.label === '预览') && previewLoading.value && previewResult.value?.subscriptionId === row.id)
-      || (action.label === '停止' && actionTaskLoadingId.value === row.taskId),
+      || (['停止', '恢复', '重试'].includes(action.label) && actionTaskLoadingId.value === row.taskId),
   }))
 }
 
@@ -960,6 +983,29 @@ async function stopRunningTask(row) {
   }
 }
 
+async function recoverLatestTask(row, action) {
+  if (!row?.taskId || !['resume', 'retry'].includes(action)) return
+  const actionLabel = action === 'resume' ? '恢复' : '重试'
+  actionTaskLoadingId.value = row.taskId
+  try {
+    await runTaskAction({
+      taskType: 'SCRAPE',
+      taskId: row.taskId,
+      action,
+      remark: `用户在追更管理页${actionLabel}任务`,
+    })
+    ElMessage.success(`${actionLabel}任务已提交后台执行`)
+    await loadSubscriptions(query.pageNo)
+    if (selectedDetail.value?.id === row.id) {
+      selectedDetail.value = await fetchNovelSyncDetail(row.id)
+    }
+  } catch (error) {
+    ElMessage.error(error.message || `${actionLabel}同步任务失败`)
+  } finally {
+    actionTaskLoadingId.value = ''
+  }
+}
+
 async function handleRowAction(row, action) {
   if (action.label === '预览') {
     await previewSubscription(row)
@@ -971,6 +1017,14 @@ async function handleRowAction(row, action) {
   }
   if (action.label === '停止') {
     await stopRunningTask(row)
+    return
+  }
+  if (action.label === '恢复') {
+    await recoverLatestTask(row, 'resume')
+    return
+  }
+  if (action.label === '重试') {
+    await recoverLatestTask(row, 'retry')
     return
   }
   if (action.label === '任务') {
