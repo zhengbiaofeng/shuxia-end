@@ -100,11 +100,20 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Recently Completed Work
 
+- Completed the P2 recoverable batch-scrape checkpoint slice:
+  - New `RULE_BATCH_SYNC` submissions persist the parent execution context and every ordered candidate before the asynchronous worker starts. The context includes the rule snapshot, target Storage Management ID, runtime options, attempt number, cursor and aggregate counters.
+  - Candidate checkpoints record `PENDING/RUNNING/SUCCESS/FAILED/SKIPPED`, attempt counts, result IDs and errors. Resume keeps prior success/failure results and continues pending work; retry keeps successful items and resets unresolved items on the same parent task.
+  - Pause now uses a `PAUSING -> PAUSED` acknowledgement. Task Center enables resume only after the old worker has stopped, preventing a new worker from processing the in-flight candidate concurrently. Startup reconciliation also recovers orphaned `RUNNING` and `PAUSING` checkpoints.
+  - Recovery revalidates the enabled novel rule and the configured writable novel storage location. Historical batch tasks without persisted context remain `RESUBMIT`; no historical candidates or destination are guessed.
+  - The batch API now forwards `storageLocationId`. The Scrape Rules batch dialog consumes only writable novel locations returned by Storage Management, defaults to an eligible registered location, and uses a viewport-bounded dialog width on mobile.
+  - Verification passed: 10 targeted backend tests, full 11-module backend package, Docker rebuild and normal startup, frontend production build, live `PAUSING -> PAUSED -> RUNNING -> FAIL` regression, desktop/mobile browser checks with zero console errors, and complete cleanup of test task/context/item/task-log/system-log rows.
+  - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\p2-batch-checkpoint-recovery-20260724.md`.
+
 - Completed the P2 task failure-diagnosis and recovery slice:
   - Task responses now expose structured failure category, recovery mode, labels, and an actionable Chinese suggestion instead of forcing the frontend to infer recovery from error text.
   - Paused scrape tasks expose resume only; ordinary failed/terminated tasks expose retry; scheduled failures keep the next Quartz run and also allow immediate retry.
   - Chapter-sync retry/resume is submitted asynchronously, so the task action HTTP request no longer blocks for the full novel scrape.
-  - `RULE_BATCH_SYNC` parents remain explicitly non-retryable and use `RESUBMIT` because candidates, destination and processing cursor are not yet persisted. The UI directs the administrator back to Collection Workbench instead of offering a misleading retry.
+  - Historical `RULE_BATCH_SYNC` parents without persisted context remain explicitly non-retryable and use `RESUBMIT`. New checkpoint-backed parents are covered by the later batch-checkpoint slice above.
   - Task Center renders diagnosis/recovery fields and the correct resume/retry action. Follow Management exposes recovery actions from the latest task capabilities while successful plans continue to use the existing sync action.
   - Verification passed: 10 targeted backend tests, full 11-module backend package, Docker rebuild/recreate and HTTP 200 startup check, frontend production build, live read-only failed-task contract, and desktop/mobile browser checks with zero console errors and no mobile page overflow.
   - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\p2-task-failure-recovery-20260724.md`.
@@ -582,9 +591,10 @@ Current user priority:
 
 1. P0 and P1 are complete; storage contracts, permissions and settings baselines remain regression requirements.
 2. The first P2 pass is complete for ebook format validation, duplicate upload protection, read-only novel source samples, task logs and task statistics.
-3. The first failure-diagnosis and retry/recovery matrix is complete. Continue P2 by persisting batch candidate context, target storage ID and execution checkpoints; only then enable true retry/resume for `RULE_BATCH_SYNC` parents.
-4. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
-5. Defer comic and audio work until their source and processing boundaries are explicitly confirmed; keep tag taxonomy distinct from category taxonomy.
+3. Batch candidate context, target storage references, item checkpoints and true `RULE_BATCH_SYNC` retry/resume are complete. Keep the historical no-context `RESUBMIT` boundary as a compatibility requirement.
+4. Complete P2 acceptance with controlled successful/partial-success scrape fixtures, duplicate/idempotency assertions, and cross-checks among Task Center, novel records, subscriptions and storage counters.
+5. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
+6. Defer comic and audio work until their source and processing boundaries are explicitly confirmed; keep tag taxonomy distinct from category taxonomy.
 
 ## New Thread Startup Checklist
 
