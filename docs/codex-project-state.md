@@ -589,12 +589,11 @@ npm run build
 
 Current user priority:
 
-1. P0 and P1 are complete; storage contracts, permissions and settings baselines remain regression requirements.
-2. The first P2 pass is complete for ebook format validation, duplicate upload protection, read-only novel source samples, task logs and task statistics.
-3. Batch candidate context, target storage references, item checkpoints and true `RULE_BATCH_SYNC` retry/resume are complete. Keep the historical no-context `RESUBMIT` boundary as a compatibility requirement.
-4. Complete P2 acceptance with controlled successful/partial-success scrape fixtures, duplicate/idempotency assertions, and cross-checks among Task Center, novel records, subscriptions and storage counters.
-5. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
-6. Defer comic and audio work until their source and processing boundaries are explicitly confirmed; keep tag taxonomy distinct from category taxonomy.
+1. P0, P1 and P2 are complete; storage contracts, permissions, settings and content/task reliability remain regression requirements.
+2. Keep the historical no-context `RESUBMIT` boundary as a compatibility requirement while all new rule batches use persisted candidate context and item checkpoints.
+3. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
+4. Do not start P3 comic or audio implementation until their legal source, accepted formats, directory structures, processing requirements and storage contracts are explicitly confirmed by the user.
+5. Keep tag taxonomy distinct from category taxonomy and keep the existing reader application integration-only in this repository.
 
 ## New Thread Startup Checklist
 
