@@ -614,6 +614,8 @@ npm run build
 - Browser regression exposed a dashboard failure when a long task error exceeded `sx_dashboard_notice.description`. Notification candidates are now normalized to the database column limits before comparison and persistence, using Unicode-safe truncation so the dashboard aggregation is not taken down by one long message.
 - Frontend automated testing now uses Vitest. `npm test` passed 1 file / 4 tests; `npm run build` passed with only the existing dependency annotation and chunk-size warnings.
 - Backend `:sx-book` package completed with all 9 reactor modules successful. Handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\admin-management-closure-runtime-snapshot-20260725.md`.
+- Browser checks passed for desktop user/log/notification views and their real data. A shared table-width constraint now keeps the page viewport stable on narrow screens while wide tables scroll only inside their own container.
+- The live Docker container was not rebuilt in this phase. It still serves the old dashboard notice code until the user packages the startup module and replaces/restarts the container; final online confirmation of the long-notice fix remains a deployment check, not an unresolved source-code issue.
 
 ## Integration Priority
 
