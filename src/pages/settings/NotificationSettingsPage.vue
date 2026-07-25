@@ -331,13 +331,17 @@ function buildQuery() {
   const base = { keyword: search.value.trim() || undefined, ...pagination.value }
   if (activeTab.value < 2) base.status = statusValue === '已启用' ? 1 : statusValue === '已停用' ? 0 : undefined
   if (activeTab.value === 2) base.useStatus = statusValue === '已启用' ? '1' : statusValue === '已停用' ? '0' : undefined
+  if (activeTab.value === 3) {
+    const statusMap = { 待发送: 'PENDING', 发送中: 'PROCESSING', 已发送: 'SUCCESS', 发送失败: 'FAILED', 已跳过: 'SKIPPED' }
+    base.dispatchStatus = statusMap[statusValue]
+  }
   return base
 }
 
 async function loadCurrent() {
   loading.value = true
   try {
-    const loaders = [fetchNotifyChannelsPage, fetchNotifyRulesPage, fetchNotifyTemplatesPage]
+    const loaders = [fetchNotifyChannelsPage, fetchNotifyRulesPage, fetchNotifyTemplatesPage, fetchNotifyDispatchesPage]
     const result = await loaders[activeTab.value](buildQuery())
     lists[listKey.value] = result.rows
     totals[listKey.value] = result.total
@@ -351,18 +355,23 @@ async function loadCurrent() {
 }
 
 async function loadCatalogs() {
-  const [channels, templates] = await Promise.all([
+  const [channels, templates, events] = await Promise.all([
     fetchNotifyChannelsPage({ pageNo: 1, pageSize: 100, status: 1 }),
     fetchNotifyTemplatesPage({ pageNo: 1, pageSize: 100, useStatus: '1' }),
+    fetchNotifyEventOptions(),
   ])
   channelCatalog.value = channels.rows
   templateCatalog.value = templates.rows
+  eventCatalog.value = events
 }
 
 function changeTab(index) {
   activeTab.value = index
   search.value = ''
   statusFilters[0].value = '全部状态'
+  statusFilters[0].options = index === 3
+    ? ['全部状态', '待发送', '发送中', '已发送', '发送失败', '已跳过']
+    : ['全部状态', '已启用', '已停用']
   loadCurrent()
 }
 
@@ -373,6 +382,7 @@ function changePage(pageNo) { pagination.value.pageNo = pageNo; loadCurrent() }
 function changePageSize(pageSize) { pagination.value.pageSize = pageSize; pagination.value.pageNo = 1; loadCurrent() }
 
 async function openCreateDialog() {
+  if (activeTab.value === 3) return
   editing.value = false
   editorType.value = ['channel', 'rule', 'template'][activeTab.value]
   resetEditor(editorType.value)
@@ -390,8 +400,8 @@ async function openEditDialog(row) {
 
 function resetEditor(type) {
   if (type === 'channel') Object.assign(channelForm, { id: '', channelCode: '', channelName: '', channelType: '', providerName: '', endpointUrl: '', authConfigJson: '', testReceiver: '', sortNo: 0, remark: '', enabled: true })
-  if (type === 'rule') Object.assign(ruleForm, { id: '', ruleCode: '', ruleName: '', bizEvent: '', channelCodes: [], templateCode: '', receiverScope: '', receiverUsersText: '', noticeType: '', triggerStatus: '', priority: 0, remark: '', enabled: true })
-  if (type === 'template') Object.assign(templateForm, { id: '', templateCode: '', templateName: '', templateContent: '', templateTestJson: '', templateType: '', templateCategory: '', enabled: true })
+  if (type === 'rule') Object.assign(ruleForm, { id: '', ruleCode: '', ruleName: '', bizEvent: '', channelCodes: [], templateCode: '', receiverScope: 'custom', receiverUsersText: '', noticeType: 'system', triggerStatus: 'active', priority: 0, remark: '', enabled: true })
+  if (type === 'template') Object.assign(templateForm, { id: '', templateCode: '', templateName: '', templateContent: '', templateTestJson: '', templateType: '1', templateCategory: 'notice', enabled: true })
 }
 
 function fillEditor(type, raw = {}) {
