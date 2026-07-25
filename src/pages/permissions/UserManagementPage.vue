@@ -219,7 +219,8 @@ onMounted(loadUsers)
 </script>
 
 <style scoped>
-.admin-page-stack { display: grid; gap: 22px; margin-top: 22px; }
+.admin-page-stack { display: grid; min-width: 0; gap: 22px; margin-top: 22px; }
+.admin-page-stack > * { min-width: 0; }
 .admin-page-stack :deep(.resource-metrics) { margin-top: 0; }
 .user-cell { display: inline-flex; align-items: center; gap: 10px; max-width: 180px; }
 .user-cell strong { overflow: hidden; color: #102557; font-weight: 700; text-overflow: ellipsis; }

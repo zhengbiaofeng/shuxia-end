@@ -362,7 +362,8 @@ onMounted(loadCurrent)
 </script>
 
 <style scoped>
-.notify-page-stack { display: grid; gap: 22px; margin-top: 22px; }
+.notify-page-stack { display: grid; min-width: 0; gap: 22px; margin-top: 22px; }
+.notify-page-stack > * { min-width: 0; }
 .row-actions { display: inline-flex; align-items: center; gap: 2px; }
 .content-preview { display: block; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }

@@ -156,6 +156,9 @@ defineExpose({ clearSelection })
 
 <style scoped>
 .admin-table-card {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   border: 1px solid var(--admin-panel-border);
   border-radius: var(--admin-radius-card);
@@ -169,6 +172,8 @@ defineExpose({ clearSelection })
 }
 
 .admin-table-card__wrap {
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
 }
 
