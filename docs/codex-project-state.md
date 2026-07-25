@@ -618,6 +618,17 @@ npm run build
 - The live Docker container was not rebuilt in this phase. It still serves the old dashboard notice code until the user packages the startup module and replaces/restarts the container; final online confirmation of the long-notice fix remains a deployment check, not an unresolved source-code issue.
 - The root `.gitignore` `logs` rule previously hid the source directory `src/pages/logs/`. A scoped exception now keeps runtime logs ignored while allowing the operation-log page to be versioned.
 
+## 2026-07-25 P4 Task Notification Event Dispatch
+
+- The first explicit notification producers are now limited to `task.completed` and `task.failed`. Pause, terminate, resume and retry administration actions do not emit false failure events.
+- Task log commit creates idempotent rule/channel/receiver dispatch rows. Actual delivery runs after commit on a bounded executor, and a 30-second pending scan provides restart/failure compensation without rolling notification errors into the original task.
+- Rule saving now rejects unsupported event codes, disabled templates, missing/disabled channels and missing/frozen custom receiver users. The frontend event selector consumes the backend event catalog instead of accepting guessed codes.
+- Notification Settings now includes dispatch status filtering, payload/error detail and guarded manual retry. Successful or currently processing records cannot be retried.
+- Migration `sx-book-notify-event-dispatch-20260725.sql` creates the dispatch table, two enabled task templates and dispatch permissions. It intentionally creates no notification rules, so deployment cannot start sending messages until an administrator explicitly configures a rule.
+- Backend targeted tests passed 4/4 and frontend tests passed 5/5. Frontend production build and the logged-in desktop notification-page check passed without page-level horizontal overflow.
+- The current Docker backend was not migrated or rebuilt in this phase. Its expected 404 for `/notify-setting/dispatch/list` remains until the P3 notification SQL, P4 dispatch SQL and rebuilt backend are deployed.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\p4-notification-event-dispatch-20260725.md`.
+
 ## Integration Priority
 
 Current user priority:
