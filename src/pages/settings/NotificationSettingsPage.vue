@@ -434,6 +434,7 @@ async function saveEditor() {
   } else if (editorType.value === 'rule') {
     if (!requireFields([ruleForm.ruleCode, ruleForm.ruleName, ruleForm.bizEvent, ruleForm.templateCode], '请填写规则必填项')) return
     if (!ruleForm.channelCodes.length) return ElMessage.warning('至少选择一个通知渠道')
+    if (ruleForm.receiverScope === 'custom' && !ruleForm.receiverUsersText.trim()) return ElMessage.warning('请填写指定接收用户')
     payload = { ...ruleForm, status: ruleForm.enabled ? 1 : 0, receiverUsers: ruleForm.receiverUsersText.split(/[,，]/).map((item) => item.trim()).filter(Boolean) }
     delete payload.enabled
     delete payload.receiverUsersText
@@ -458,7 +459,7 @@ async function saveEditor() {
 }
 
 function openTestDialog(row) {
-  Object.assign(testForm, { templateCode: row.code, msgType: row.raw.templateType || '', receiver: '', title: row.name, testDataJson: row.raw.templateTestJson || '', noticeType: '' })
+  Object.assign(testForm, { templateCode: row.code, msgType: 'system', receiver: '', title: row.name, testDataJson: row.raw.templateTestJson || '', noticeType: 'system' })
   testVisible.value = true
 }
 
@@ -476,6 +477,46 @@ async function sendTest() {
   }
 }
 
+async function openDispatchDetail(row) {
+  dispatchDetailVisible.value = true
+  dispatchDetailLoading.value = true
+  dispatchDetail.value = null
+  try {
+    dispatchDetail.value = await fetchNotifyDispatchDetail(row.id)
+  } catch (error) {
+    ElMessage.error(error.message || '获取通知发送详情失败')
+  } finally {
+    dispatchDetailLoading.value = false
+  }
+}
+
+async function retryDispatch(row) {
+  try {
+    await ElMessageBox.confirm(`确认重新向“${row.receiver}”发送这条通知吗？`, '重试通知', {
+      type: 'warning',
+      confirmButtonText: '确认重试',
+      cancelButtonText: '取消',
+    })
+  } catch {
+    return
+  }
+  retryingId.value = row.id
+  try {
+    const result = await retryNotifyDispatch(row.id)
+    if (result.statusCode === 'SUCCESS') {
+      ElMessage.success('通知已重新发送')
+    } else {
+      ElMessage.error(result.error === '--' ? '通知重试失败' : result.error)
+    }
+    if (dispatchDetailVisible.value && dispatchDetail.value?.id === row.id) dispatchDetail.value = result
+    await loadCurrent()
+  } catch (error) {
+    ElMessage.error(error.message || '通知重试失败')
+  } finally {
+    retryingId.value = ''
+  }
+}
+
 onMounted(loadCurrent)
 </script>
 
@@ -484,6 +525,7 @@ onMounted(loadCurrent)
 .notify-page-stack > * { min-width: 0; }
 .row-actions { display: inline-flex; align-items: center; gap: 2px; }
 .content-preview { display: block; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.payload-preview { max-height: 260px; margin: 0; overflow: auto; color: #33466f; font: 12px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; word-break: break-word; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
 .form-grid__full { grid-column: 1 / -1; }
 .form-grid :deep(.el-select), .form-grid :deep(.el-input-number) { width: 100%; }
