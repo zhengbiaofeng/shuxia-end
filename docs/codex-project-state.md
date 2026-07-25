@@ -585,6 +585,25 @@ npm run build
 - Local runtime verification covered all three roles, direct-route 403 handling, storage operations, subscription actions and read-only settings controls.
 - SQL migration order and backend handoff are documented in `docs/p1-permission-settings-handoff-20260723.md` under the canonical E-drive backend repository.
 
+## 2026-07-24 P2 Controlled Fixture And Idempotency Closure
+
+- P2 book/novel reliability is complete. Books remain local/user-upload only; the controlled web fixture exercises only the Novel Sync path.
+- Added reusable backend fixtures:
+  - `scripts/p2-novel-fixture-server.mjs` serves deterministic success and recoverable-failure novels, chapters and covers.
+  - `scripts/p2-novel-batch-acceptance.ps1` validates success, partial failure, same-parent recovery, checkpoint replay prevention, repeated submission and cleanup through real APIs.
+- The final run `p21784866238` passed with 3 novels, 5 chapters, zero duplicate books/subscriptions/chapters and zero successful-checkpoint replays.
+- The acceptance cross-checked Task Center, novels, subscriptions, chapters, storage summary and the selected `novel` storage row. A two-book success batch increased storage counts by 6 (2 covers + 4 chapter files).
+- Cleanup left zero active fixture books, subscriptions, tasks, batch items, chapters and files. The MinIO `novel` bucket returned to `0 B / 0 objects`.
+- Fixed a real idempotency defect found by the fixture: quick sync and manual channel creation now restore a logically deleted same-code channel instead of colliding with `uk_sx_scrape_channel_code`.
+- Storage deletion/change protection and storage file counts now include managed chapter paths in `sx_book_chapter.content_path`.
+- Legacy chapter paths without `storage://{locationId}/...` remain visible in global content counts but cannot be attributed to a configured source without an explicit migration/backfill; runtime code must not guess their location.
+- Verification completed:
+  - forced backend tests: 10 passed, 0 failed/errors/skipped;
+  - full 11-module backend package: passed;
+  - Docker image rebuild/container recreation and backend login: passed;
+  - frontend `npm run build`: passed with existing dependency annotation and chunk-size warnings.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\p2-controlled-fixture-idempotency-20260724.md`.
+
 ## Integration Priority
 
 Current user priority:
