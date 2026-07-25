@@ -625,7 +625,7 @@ Current user priority:
 1. P0, P1 and P2 are complete; storage contracts, permissions, settings and content/task reliability remain regression requirements.
 2. Keep the historical no-context `RESUBMIT` boundary as a compatibility requirement while all new rule batches use persisted candidate context and item checkpoints.
 3. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
-4. Continue management-side closure through explicit integrations such as notification event producers; a saved notification rule alone must not be described as active automatic dispatch.
+4. Keep the first notification event boundary limited to explicit task completion/failure producers. Additional event codes must have a confirmed meaning and a real backend producer before they appear in configuration.
 5. Do not start P3 comic or audio implementation until their legal source, accepted formats, directory structures, processing requirements and storage contracts are explicitly confirmed by the user.
 6. Treat the current dashboard JSON as a runtime snapshot only. Do not implement or claim full backup/restore until product scope, encryption, retention and restore compatibility are confirmed.
 7. Keep tag taxonomy distinct from category taxonomy and keep the existing reader application integration-only in this repository.

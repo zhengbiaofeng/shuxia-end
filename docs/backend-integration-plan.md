@@ -314,11 +314,17 @@
 - `POST /sx/book/notify-setting/channel/save`
 - `GET /sx/book/notify-setting/rule/list`
 - `GET /sx/book/notify-setting/rule/detail`
+- `GET /sx/book/notify-setting/event/options`
 - `POST /sx/book/notify-setting/rule/save`
 - `GET /sx/book/notify-setting/template/list`
 - `GET /sx/book/notify-setting/template/detail`
 - `POST /sx/book/notify-setting/template/save`
 - `POST /sx/book/notify-setting/template/test-send`
+- `GET /sx/book/notify-setting/dispatch/list`
+- `GET /sx/book/notify-setting/dispatch/detail`
+- `POST /sx/book/notify-setting/dispatch/retry`
+
+当前自动事件边界：仅 `task.completed` 和 `task.failed`。暂停、终止、恢复和重试等管理动作不触发失败通知；其他业务事件必须在后端有明确生产者后才能加入事件目录和页面选项。
 
 ### 安全设置
 
@@ -346,6 +352,9 @@
 验收：
 
 - [ ] 所有设置页保存后可重新读取并回填。
+- [ ] 通知规则只能选择后端事件目录、有效渠道、启用模板和有效接收用户。
+- [ ] 任务完成/失败在事务提交后生成唯一发送记录，通知失败不影响原任务状态。
+- [ ] 失败发送可查看原因并手动重试，成功记录不可重复重试。
 - [ ] 用户状态变更后列表即时更新。
 - [ ] 权限树勾选、半选、保存回显一致。
 
