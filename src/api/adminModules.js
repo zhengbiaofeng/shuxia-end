@@ -275,32 +275,55 @@ export async function saveReaderSettings(payload) {
 }
 
 export async function fetchNotifySettingsPage(params = {}) {
+  const page = await fetchNotifyChannelsPage(params)
+  return { channels: page.rows, total: page.total }
+}
+
+export async function fetchNotifyChannelsPage(params = {}) {
   const response = await request.get('/sx/book/notify-setting/channel/list', {
     params: { pageNo: 1, pageSize: 20, ...params },
   })
   const page = readPageResponse(response, '获取通知渠道失败')
-
-  return {
-    channels: page.records.map(normalizeNotifyChannel),
-  }
+  return { rows: page.records.map(normalizeNotifyChannel), total: page.total }
 }
 
-export async function saveNotifyChannel(channel, enabled) {
-  const raw = channel?.raw || channel || {}
-  const response = await request.post('/sx/book/notify-setting/channel/save', {
-    id: raw.id,
-    channelCode: raw.channelCode,
-    channelName: raw.channelName,
-    channelType: raw.channelType,
-    providerName: raw.providerName,
-    endpointUrl: raw.endpointUrl,
-    authConfigJson: raw.authConfigJson,
-    testReceiver: raw.testReceiver,
-    status: enabled ? 1 : 0,
-    sortNo: raw.sortNo,
-    remark: raw.remark,
+export async function fetchNotifyRulesPage(params = {}) {
+  const response = await request.get('/sx/book/notify-setting/rule/list', {
+    params: { pageNo: 1, pageSize: 20, ...params },
   })
+  const page = readPageResponse(response, '获取通知规则失败')
+  return { rows: page.records.map(normalizeNotifyRule), total: page.total }
+}
+
+export async function fetchNotifyTemplatesPage(params = {}) {
+  const response = await request.get('/sx/book/notify-setting/template/list', {
+    params: { pageNo: 1, pageSize: 20, ...params },
+  })
+  const page = readPageResponse(response, '获取通知模板失败')
+  return { rows: page.records.map(normalizeNotifyTemplate), total: page.total }
+}
+
+export async function saveNotifyChannel(payload = {}) {
+  const raw = payload?.raw || payload
+  const response = await request.post('/sx/book/notify-setting/channel/save', raw)
   return readResultResponse(response, '保存通知渠道失败')
+}
+
+export async function saveNotifyRule(payload = {}) {
+  const raw = payload?.raw || payload
+  const response = await request.post('/sx/book/notify-setting/rule/save', raw)
+  return readResultResponse(response, '保存通知规则失败')
+}
+
+export async function saveNotifyTemplate(payload = {}) {
+  const raw = payload?.raw || payload
+  const response = await request.post('/sx/book/notify-setting/template/save', raw)
+  return readResultResponse(response, '保存通知模板失败')
+}
+
+export async function testNotifyTemplate(payload = {}) {
+  const response = await request.post('/sx/book/notify-setting/template/test-send', payload)
+  return readResultResponse(response, '通知模板测试发送失败')
 }
 
 export async function fetchSecuritySettingsPage() {
@@ -569,10 +592,54 @@ function normalizeNotifyChannel(item = {}) {
     raw: item,
     id: item.id,
     name: item.channelName || item.channelCode || '--',
-    desc: item.endpointUrl || item.providerName || item.remark || '--',
+    code: item.channelCode || '--',
+    type: item.channelType || '--',
+    provider: item.providerName || '--',
+    endpoint: item.endpointUrl || '--',
+    receiver: item.testReceiver || '--',
     enabled: status === 1,
-    status: status === 1 ? '已启用' : '未启用',
+    status: status === 1 ? '已启用' : '已停用',
     tone: status === 1 ? 'green' : 'slate',
+    updatedAt: formatDateTime(item.updateTime || item.createTime),
+  }
+}
+
+function normalizeNotifyRule(item = {}) {
+  const status = Number(item.status ?? 1)
+  const channels = Array.isArray(item.channelNames) && item.channelNames.length
+    ? item.channelNames
+    : item.channelCodes
+
+  return {
+    raw: item,
+    id: item.id,
+    name: item.ruleName || item.ruleCode || '--',
+    code: item.ruleCode || '--',
+    event: item.bizEvent || '--',
+    channels: Array.isArray(channels) ? channels.join('、') : '--',
+    template: item.templateName || item.templateCode || '--',
+    receiver: item.receiverScope || '--',
+    priority: Number(item.priority || 0),
+    status: status === 1 ? '已启用' : '已停用',
+    tone: status === 1 ? 'green' : 'slate',
+    updatedAt: formatDateTime(item.updateTime || item.createTime),
+  }
+}
+
+function normalizeNotifyTemplate(item = {}) {
+  const enabled = String(item.useStatus ?? '1') !== '0'
+
+  return {
+    raw: item,
+    id: item.id || item.templateCode,
+    name: item.templateName || item.templateCode || '--',
+    code: item.templateCode || '--',
+    type: item.templateType || '--',
+    category: item.templateCategory || '--',
+    content: item.templateContent || '--',
+    status: enabled ? '已启用' : '已停用',
+    tone: enabled ? 'green' : 'slate',
+    updatedAt: formatDateTime(item.updateTime || item.createTime),
   }
 }
 
