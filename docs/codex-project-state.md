@@ -604,6 +604,16 @@ npm run build
   - frontend `npm run build`: passed with existing dependency annotation and chunk-size warnings.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\p2-controlled-fixture-idempotency-20260724.md`.
 
+## 2026-07-25 Admin Management Closure And Test Baseline
+
+- User Management now supports real keyword/status/author filtering, pagination, detail inspection and freeze/unfreeze operations. The page labels `lastReadTime` as recent reading and no longer presents membership as a role or reading activity as login activity.
+- Operation Log now supports real filtering, pagination, detail inspection, CSV export and retention-limited cleanup. Fields not present in the backend contract, including fabricated success state and IP address, were removed.
+- Notification Settings now manages channels, rules and templates and supports template test sending. This closes configuration administration only; business-event dispatch is not considered active until each business module explicitly consumes the rules.
+- Dashboard quick actions now preserve backend permission/API metadata. Subscription update and runtime snapshot execute real endpoints; storage cleanup navigates to Storage Management for its existing destructive confirmation; collection routes to the real workbench.
+- The old “system backup” label is now “runtime snapshot”. It remains a homepage overview JSON and is not a database/content backup or restore mechanism. The old endpoint path and return field names are retained for compatibility.
+- Frontend automated testing now uses Vitest. `npm test` passed 1 file / 4 tests; `npm run build` passed with only the existing dependency annotation and chunk-size warnings.
+- Backend `:sx-book` package completed with all 9 reactor modules successful. Handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\admin-management-closure-runtime-snapshot-20260725.md`.
+
 ## Integration Priority
 
 Current user priority:
@@ -611,8 +621,10 @@ Current user priority:
 1. P0, P1 and P2 are complete; storage contracts, permissions, settings and content/task reliability remain regression requirements.
 2. Keep the historical no-context `RESUBMIT` boundary as a compatibility requirement while all new rule batches use persisted candidate context and item checkpoints.
 3. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
-4. Do not start P3 comic or audio implementation until their legal source, accepted formats, directory structures, processing requirements and storage contracts are explicitly confirmed by the user.
-5. Keep tag taxonomy distinct from category taxonomy and keep the existing reader application integration-only in this repository.
+4. Continue management-side closure through explicit integrations such as notification event producers; a saved notification rule alone must not be described as active automatic dispatch.
+5. Do not start P3 comic or audio implementation until their legal source, accepted formats, directory structures, processing requirements and storage contracts are explicitly confirmed by the user.
+6. Treat the current dashboard JSON as a runtime snapshot only. Do not implement or claim full backup/restore until product scope, encryption, retention and restore compatibility are confirmed.
+7. Keep tag taxonomy distinct from category taxonomy and keep the existing reader application integration-only in this repository.
 
 ## New Thread Startup Checklist
 
