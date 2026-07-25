@@ -303,6 +303,37 @@ export async function fetchNotifyTemplatesPage(params = {}) {
   return { rows: page.records.map(normalizeNotifyTemplate), total: page.total }
 }
 
+export async function fetchNotifyEventOptions() {
+  const response = await request.get('/sx/book/notify-setting/event/options')
+  const result = readResultResponse(response, '获取通知业务事件失败')
+  return Array.isArray(result) ? result.map((item) => ({
+    code: item.code,
+    name: item.name || item.code,
+    description: item.description || '',
+    variables: Array.isArray(item.variables) ? item.variables : [],
+  })) : []
+}
+
+export async function fetchNotifyDispatchesPage(params = {}) {
+  const response = await request.get('/sx/book/notify-setting/dispatch/list', {
+    params: { pageNo: 1, pageSize: 20, ...params },
+  })
+  const page = readPageResponse(response, '获取通知发送记录失败')
+  return { rows: page.records.map(normalizeNotifyDispatch), total: page.total }
+}
+
+export async function fetchNotifyDispatchDetail(id) {
+  if (!id) throw new Error('通知发送记录 ID 不能为空')
+  const response = await request.get('/sx/book/notify-setting/dispatch/detail', { params: { id } })
+  return normalizeNotifyDispatch(readResultResponse(response, '获取通知发送详情失败') || {})
+}
+
+export async function retryNotifyDispatch(id) {
+  if (!id) throw new Error('通知发送记录 ID 不能为空')
+  const response = await request.post('/sx/book/notify-setting/dispatch/retry', null, { params: { id } })
+  return normalizeNotifyDispatch(readResultResponse(response, '重试通知发送失败') || {})
+}
+
 export async function saveNotifyChannel(payload = {}) {
   const raw = payload?.raw || payload
   const response = await request.post('/sx/book/notify-setting/channel/save', raw)
@@ -640,6 +671,40 @@ export function normalizeNotifyTemplate(item = {}) {
     status: enabled ? '已启用' : '已停用',
     tone: enabled ? 'green' : 'slate',
     updatedAt: formatDateTime(item.updateTime || item.createTime),
+  }
+}
+
+export function normalizeNotifyDispatch(item = {}) {
+  const statusCode = String(item.dispatchStatus || 'PENDING').toUpperCase()
+  const statusMap = {
+    PENDING: { label: '待发送', tone: 'orange' },
+    PROCESSING: { label: '发送中', tone: 'blue' },
+    SUCCESS: { label: '已发送', tone: 'green' },
+    FAILED: { label: '发送失败', tone: 'red' },
+    SKIPPED: { label: '已跳过', tone: 'slate' },
+  }
+  const status = statusMap[statusCode] || { label: item.dispatchStatusName || statusCode, tone: 'slate' }
+
+  return {
+    raw: item,
+    id: item.id,
+    event: item.eventName || item.bizEvent || '--',
+    eventCode: item.bizEvent || '--',
+    source: [item.sourceType, item.sourceId].filter(Boolean).join(' / ') || '--',
+    rule: item.ruleCode || '--',
+    channel: item.channelCode || '--',
+    channelType: item.channelType || '--',
+    receiver: item.receiver || '--',
+    template: item.templateCode || '--',
+    title: item.title || '--',
+    statusCode,
+    status: status.label,
+    tone: status.tone,
+    attempts: Number(item.attemptCount || 0),
+    error: item.errorMessage || '--',
+    sentAt: formatDateTime(item.sentTime),
+    createdAt: formatDateTime(item.createTime),
+    updatedAt: formatDateTime(item.updateTime),
   }
 }
 
