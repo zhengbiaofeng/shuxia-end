@@ -626,7 +626,9 @@ npm run build
 - Notification Settings now includes dispatch status filtering, payload/error detail and guarded manual retry. Successful or currently processing records cannot be retried.
 - Migration `sx-book-notify-event-dispatch-20260725.sql` creates the dispatch table, two enabled task templates and dispatch permissions. It intentionally creates no notification rules, so deployment cannot start sending messages until an administrator explicitly configures a rule.
 - Backend targeted tests passed 4/4 and frontend tests passed 5/5. Frontend production build and the logged-in desktop notification-page check passed without page-level horizontal overflow.
-- The current Docker backend was not migrated or rebuilt in this phase. Its expected 404 for `/notify-setting/dispatch/list` remains until the P3 notification SQL, P4 dispatch SQL and rebuilt backend are deployed.
+- The local Docker environment is now migrated and rebuilt. `/notify-setting/dispatch/list` is live, the rebuilt OpenAPI endpoint returns 200, and MySQL, Redis and MinIO remain healthy.
+- Live acceptance covered the complete success/failure/retry sequence: an empty local-directory scan produced a successful system notification; a disabled temporary channel produced a persisted failure; re-enabling it and retrying from the page succeeded with the attempt count increasing from 1 to 2.
+- A real scheduled scrape for `玉奴娇` completed while the temporary rule was active and entered the same task event path. Its task and 911 chapters were preserved. All temporary rules, channels, storage, scan logs, dispatch rows and test messages were removed afterward, leaving zero active task notification rules and no automatic message behavior.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\p4-notification-event-dispatch-20260725.md`.
 
 ## Integration Priority
