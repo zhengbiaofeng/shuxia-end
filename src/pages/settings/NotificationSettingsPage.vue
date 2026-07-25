@@ -37,9 +37,12 @@
           <template #content="{ row }">
             <span class="content-preview" :title="row.content">{{ row.content }}</span>
           </template>
+          <template #error="{ row }">
+            <span class="content-preview" :title="row.error">{{ row.error }}</span>
+          </template>
           <template #actions="{ row }">
             <div class="row-actions">
-              <el-button v-if="canEditCurrent" link type="primary" @click="openEditDialog(row)">
+              <el-button v-if="activeTab < 3 && canEditCurrent" link type="primary" @click="openEditDialog(row)">
                 编辑
               </el-button>
               <el-button
@@ -50,6 +53,17 @@
               >
                 测试发送
               </el-button>
+              <el-button v-if="activeTab === 3" link type="primary" @click="openDispatchDetail(row)">
+                详情
+              </el-button>
+              <el-button
+                v-if="activeTab === 3 && canRetryDispatch && ['FAILED', 'SKIPPED'].includes(row.statusCode)"
+                link
+                type="warning"
+                @click="retryDispatch(row)"
+              >
+                重试
+              </el-button>
             </div>
           </template>
         </AdminTableCard>
@@ -57,9 +71,9 @@
 
       <AdminInfoBox
         v-if="activeTab === 1"
-        title="规则边界"
+        title="自动触发范围"
         :icon="InfoFilled"
-        :items="['本页维护事件、渠道和模板之间的配置关系；业务事件自动触发需要对应业务模块显式接入后才会生效。']"
+        :items="['当前已接入任务完成和任务失败事件；人工终止不会作为失败事件发送。其他业务事件将在对应模块明确接入后进入选项。']"
       />
     </div>
 
@@ -69,7 +83,14 @@
           <div class="form-grid">
             <el-form-item label="渠道编码" required><el-input v-model="channelForm.channelCode" /></el-form-item>
             <el-form-item label="渠道名称" required><el-input v-model="channelForm.channelName" /></el-form-item>
-            <el-form-item label="渠道类型" required><el-input v-model="channelForm.channelType" placeholder="例如 email、sms" /></el-form-item>
+            <el-form-item label="渠道类型" required>
+              <el-select v-model="channelForm.channelType">
+                <el-option label="站内信" value="system" />
+                <el-option label="邮件" value="email" />
+                <el-option label="钉钉" value="dingtalk" />
+                <el-option label="企业微信" value="wechat_enterprise" />
+              </el-select>
+            </el-form-item>
             <el-form-item label="服务商"><el-input v-model="channelForm.providerName" /></el-form-item>
             <el-form-item label="接口地址"><el-input v-model="channelForm.endpointUrl" /></el-form-item>
             <el-form-item label="测试接收人"><el-input v-model="channelForm.testReceiver" /></el-form-item>
@@ -84,7 +105,16 @@
           <div class="form-grid">
             <el-form-item label="规则编码" required><el-input v-model="ruleForm.ruleCode" /></el-form-item>
             <el-form-item label="规则名称" required><el-input v-model="ruleForm.ruleName" /></el-form-item>
-            <el-form-item label="业务事件编码" required><el-input v-model="ruleForm.bizEvent" /></el-form-item>
+            <el-form-item label="业务事件" required>
+              <el-select v-model="ruleForm.bizEvent">
+                <el-option
+                  v-for="item in eventCatalog"
+                  :key="item.code"
+                  :label="`${item.name}（${item.code}）`"
+                  :value="item.code"
+                />
+              </el-select>
+            </el-form-item>
             <el-form-item label="通知模板" required>
               <el-select v-model="ruleForm.templateCode" filterable>
                 <el-option v-for="item in templateCatalog" :key="item.code" :label="item.name" :value="item.code" />
@@ -95,10 +125,30 @@
                 <el-option v-for="item in channelCatalog" :key="item.code" :label="item.name" :value="item.code" />
               </el-select>
             </el-form-item>
-            <el-form-item label="接收范围"><el-input v-model="ruleForm.receiverScope" /></el-form-item>
-            <el-form-item label="指定接收用户"><el-input v-model="ruleForm.receiverUsersText" placeholder="多个用户用逗号分隔" /></el-form-item>
-            <el-form-item label="通知类型"><el-input v-model="ruleForm.noticeType" /></el-form-item>
-            <el-form-item label="触发状态"><el-input v-model="ruleForm.triggerStatus" /></el-form-item>
+            <el-form-item label="接收范围">
+              <el-select v-model="ruleForm.receiverScope">
+                <el-option label="指定用户" value="custom" />
+                <el-option label="全部正常用户" value="all" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="指定接收用户">
+              <el-input v-model="ruleForm.receiverUsersText" :disabled="ruleForm.receiverScope === 'all'" placeholder="多个登录账号用逗号分隔" />
+            </el-form-item>
+            <el-form-item label="通知类型">
+              <el-select v-model="ruleForm.noticeType">
+                <el-option label="系统消息" value="system" />
+                <el-option label="知识库" value="file" />
+                <el-option label="流程" value="flow" />
+                <el-option label="日程计划" value="plan" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="触发状态">
+              <el-select v-model="ruleForm.triggerStatus">
+                <el-option label="生效" value="active" />
+                <el-option label="暂停" value="paused" />
+                <el-option label="草稿" value="draft" />
+              </el-select>
+            </el-form-item>
             <el-form-item label="优先级"><el-input-number v-model="ruleForm.priority" :min="0" controls-position="right" /></el-form-item>
             <el-form-item label="状态"><el-switch v-model="ruleForm.enabled" active-text="启用" inactive-text="停用" /></el-form-item>
           </div>
@@ -126,7 +176,14 @@
     <el-dialog v-model="testVisible" title="测试发送通知" width="min(560px, 94vw)">
       <el-form label-position="top">
         <el-form-item label="模板"><el-input :model-value="testForm.templateCode" disabled /></el-form-item>
-        <el-form-item label="消息类型" required><el-input v-model="testForm.msgType" placeholder="填写已配置的渠道类型" /></el-form-item>
+        <el-form-item label="消息类型" required>
+          <el-select v-model="testForm.msgType" style="width: 100%">
+            <el-option label="站内信" value="system" />
+            <el-option label="邮件" value="email" />
+            <el-option label="钉钉" value="dingtalk" />
+            <el-option label="企业微信" value="wechat_enterprise" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="接收人" required><el-input v-model="testForm.receiver" /></el-form-item>
         <el-form-item label="标题"><el-input v-model="testForm.title" /></el-form-item>
         <el-form-item label="通知类型"><el-input v-model="testForm.noticeType" /></el-form-item>
@@ -135,6 +192,40 @@
       <template #footer>
         <el-button @click="testVisible = false">取消</el-button>
         <el-button type="primary" :loading="testing" @click="sendTest">发送测试</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="dispatchDetailVisible" title="通知发送详情" width="min(760px, 94vw)">
+      <div v-loading="dispatchDetailLoading">
+        <el-descriptions v-if="dispatchDetail" :column="2" border>
+          <el-descriptions-item label="业务事件">{{ dispatchDetail.event }}（{{ dispatchDetail.eventCode }}）</el-descriptions-item>
+          <el-descriptions-item label="发送状态">
+            <AdminStatusBadge :label="dispatchDetail.status" :tone="dispatchDetail.tone" dot />
+          </el-descriptions-item>
+          <el-descriptions-item label="来源任务">{{ dispatchDetail.source }}</el-descriptions-item>
+          <el-descriptions-item label="规则">{{ dispatchDetail.rule }}</el-descriptions-item>
+          <el-descriptions-item label="渠道">{{ dispatchDetail.channel }} / {{ dispatchDetail.channelType }}</el-descriptions-item>
+          <el-descriptions-item label="接收用户">{{ dispatchDetail.receiver }}</el-descriptions-item>
+          <el-descriptions-item label="模板">{{ dispatchDetail.template }}</el-descriptions-item>
+          <el-descriptions-item label="尝试次数">{{ dispatchDetail.attempts }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间">{{ dispatchDetail.createdAt }}</el-descriptions-item>
+          <el-descriptions-item label="发送时间">{{ dispatchDetail.sentAt }}</el-descriptions-item>
+          <el-descriptions-item label="失败原因" :span="2">{{ dispatchDetail.error }}</el-descriptions-item>
+          <el-descriptions-item label="模板变量快照" :span="2">
+            <pre class="payload-preview">{{ dispatchDetail.raw.payloadJson || '{}' }}</pre>
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <template #footer>
+        <el-button @click="dispatchDetailVisible = false">关闭</el-button>
+        <el-button
+          v-if="dispatchDetail && canRetryDispatch && ['FAILED', 'SKIPPED'].includes(dispatchDetail.statusCode)"
+          type="warning"
+          :loading="retryingId === dispatchDetail.id"
+          @click="retryDispatch(dispatchDetail)"
+        >
+          重试发送
+        </el-button>
       </template>
     </el-dialog>
   </ResourceShell>
