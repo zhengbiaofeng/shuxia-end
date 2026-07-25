@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { normalizeQuickAction } from '../dashboard'
 import {
   normalizeNotifyChannel,
+  normalizeNotifyDispatch,
   normalizeNotifyRule,
   normalizeNotifyTemplate,
   normalizeOperateLog,
@@ -80,6 +81,30 @@ describe('management data normalization', () => {
     expect(normalizeNotifyTemplate({ templateCode: 'task_failed', useStatus: '0' })).toMatchObject({
       code: 'task_failed',
       status: '已停用',
+    })
+  })
+
+  it('keeps notification dispatch failure details and retry state', () => {
+    expect(normalizeNotifyDispatch({
+      id: 'dispatch-1',
+      bizEvent: 'task.failed',
+      eventName: '任务失败',
+      sourceType: 'SCRAPE',
+      sourceId: 'task-1',
+      receiver: 'admin',
+      dispatchStatus: 'FAILED',
+      attemptCount: 2,
+      errorMessage: '邮件服务不可用',
+    })).toMatchObject({
+      id: 'dispatch-1',
+      event: '任务失败',
+      source: 'SCRAPE / task-1',
+      receiver: 'admin',
+      statusCode: 'FAILED',
+      status: '发送失败',
+      tone: 'red',
+      attempts: 2,
+      error: '邮件服务不可用',
     })
   })
 })
