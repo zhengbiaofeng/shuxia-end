@@ -233,7 +233,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { InfoFilled, Plus } from '@element-plus/icons-vue'
 import { AdminFilterBar, AdminInfoBox, AdminStatusBadge, AdminTableCard } from '../../components/admin'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
@@ -241,6 +241,10 @@ import {
   fetchNotifyChannelsPage,
   fetchNotifyRulesPage,
   fetchNotifyTemplatesPage,
+  fetchNotifyEventOptions,
+  fetchNotifyDispatchesPage,
+  fetchNotifyDispatchDetail,
+  retryNotifyDispatch,
   saveNotifyChannel,
   saveNotifyRule,
   saveNotifyTemplate,
@@ -251,19 +255,21 @@ import { useAuthStore } from '../../stores/auth'
 
 const authStore = useAuthStore()
 const page = reactive({ ...settingPages.notify })
-const tabs = ['通知渠道', '通知规则', '通知模板']
+const tabs = ['通知渠道', '通知规则', '通知模板', '发送记录']
 const activeTab = ref(0)
 const search = reactive({ placeholder: '搜索名称或编码', value: '' })
 const statusFilters = reactive([{ label: '状态', value: '全部状态', options: ['全部状态', '已启用', '已停用'] }])
-const lists = reactive({ channels: [], rules: [], templates: [] })
-const totals = reactive({ channels: 0, rules: 0, templates: 0 })
+const lists = reactive({ channels: [], rules: [], templates: [], dispatches: [] })
+const totals = reactive({ channels: 0, rules: 0, templates: 0, dispatches: 0 })
 const paginations = reactive({
   channels: { pageNo: 1, pageSize: 10 },
   rules: { pageNo: 1, pageSize: 10 },
   templates: { pageNo: 1, pageSize: 10 },
+  dispatches: { pageNo: 1, pageSize: 10 },
 })
 const channelCatalog = ref([])
 const templateCatalog = ref([])
+const eventCatalog = ref([])
 const loading = ref(false)
 const saving = ref(false)
 const testing = ref(false)
@@ -271,20 +277,25 @@ const editorVisible = ref(false)
 const editorType = ref('channel')
 const editing = ref(false)
 const testVisible = ref(false)
+const dispatchDetailVisible = ref(false)
+const dispatchDetailLoading = ref(false)
+const dispatchDetail = ref(null)
+const retryingId = ref('')
 
 const channelForm = reactive({ id: '', channelCode: '', channelName: '', channelType: '', providerName: '', endpointUrl: '', authConfigJson: '', testReceiver: '', sortNo: 0, remark: '', enabled: true })
 const ruleForm = reactive({ id: '', ruleCode: '', ruleName: '', bizEvent: '', channelCodes: [], templateCode: '', receiverScope: '', receiverUsersText: '', noticeType: '', triggerStatus: '', priority: 0, remark: '', enabled: true })
 const templateForm = reactive({ id: '', templateCode: '', templateName: '', templateContent: '', templateTestJson: '', templateType: '', templateCategory: '', enabled: true })
 const testForm = reactive({ templateCode: '', msgType: '', receiver: '', title: '', testDataJson: '', noticeType: '' })
 
-const listKey = computed(() => ['channels', 'rules', 'templates'][activeTab.value])
+const listKey = computed(() => ['channels', 'rules', 'templates', 'dispatches'][activeTab.value])
 const pagination = computed(() => paginations[listKey.value])
 const currentRows = computed(() => lists[listKey.value])
 const currentTotal = computed(() => totals[listKey.value])
-const permissionPrefix = computed(() => ['channel', 'rule', 'template'][activeTab.value])
-const canEditCurrent = computed(() => authStore.hasPermission(`sxbook:notifySetting:${permissionPrefix.value}:save`))
+const permissionPrefix = computed(() => ['channel', 'rule', 'template', 'dispatch'][activeTab.value])
+const canEditCurrent = computed(() => activeTab.value < 3 && authStore.hasPermission(`sxbook:notifySetting:${permissionPrefix.value}:save`))
 const canTestSend = computed(() => authStore.hasPermission('sxbook:notifySetting:testSend'))
-const pageActions = computed(() => [{
+const canRetryDispatch = computed(() => authStore.hasPermission('sxbook:notifySetting:dispatch:retry'))
+const pageActions = computed(() => activeTab.value === 3 ? [] : [{
   label: ['新增渠道', '新增规则', '新增模板'][activeTab.value],
   type: 'primary',
   icon: Plus,
@@ -302,10 +313,16 @@ const columns = computed(() => {
     { key: 'template', label: '模板' }, { key: 'receiver', label: '接收范围' }, { key: 'priority', label: '优先级' },
     { key: 'status', label: '状态' }, { key: 'actions', label: '操作' },
   ]
-  return [
+  if (activeTab.value === 2) return [
     { key: 'name', label: '模板名称' }, { key: 'code', label: '模板编码' }, { key: 'type', label: '类型' },
     { key: 'category', label: '分类' }, { key: 'content', label: '内容预览', style: { width: '300px' } },
     { key: 'status', label: '状态' }, { key: 'updatedAt', label: '更新时间' }, { key: 'actions', label: '操作' },
+  ]
+  return [
+    { key: 'event', label: '业务事件' }, { key: 'source', label: '来源任务' }, { key: 'rule', label: '规则' },
+    { key: 'channel', label: '渠道' }, { key: 'receiver', label: '接收用户' }, { key: 'status', label: '状态' },
+    { key: 'attempts', label: '尝试次数' }, { key: 'error', label: '失败原因', style: { width: '260px' } },
+    { key: 'createdAt', label: '创建时间' }, { key: 'sentAt', label: '发送时间' }, { key: 'actions', label: '操作' },
   ]
 })
 
