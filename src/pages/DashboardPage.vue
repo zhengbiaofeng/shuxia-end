@@ -376,7 +376,7 @@ async function handleLogout() {
 }
 
 async function handleQuickAction(entry) {
-  if (!entry.enabled || quickActionLoadingKey.value) return
+  if (entry.enabled === false || quickActionLoadingKey.value) return
 
   if (entry.key === 'SUBSCRIBE_UPDATE') {
     quickActionLoadingKey.value = entry.key
