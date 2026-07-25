@@ -30,17 +30,17 @@ export const dashboardIconFallbacks = [
   { label: '立即扫描', icon: RefreshRight },
   { label: '一键刮削', icon: MagicStick },
   { label: '更新订阅', icon: SwitchButton },
-  { label: '清理缓存', icon: Delete },
-  { label: '系统备份', icon: Brush },
+  { label: '存储清理', icon: Delete },
+  { label: '运行快照', icon: Brush },
 ]
 
 export const dashboardQuickActionFallbacks = [
   { label: '添加存储', tone: 'blue', icon: FolderOpened, routePath: '/storage' },
   { label: '立即扫描', tone: 'green', icon: RefreshRight, enabled: false },
-  { label: '一键刮削', tone: 'purple', icon: MagicStick, enabled: false },
+  { label: '一键刮削', tone: 'purple', icon: MagicStick, routePath: '/automation/collection', enabled: false },
   { label: '更新订阅', tone: 'orange', icon: SwitchButton, routePath: '/automation/subscriptions' },
-  { label: '清理缓存', tone: 'blue', icon: Delete, enabled: false },
-  { label: '系统备份', tone: 'green', icon: Brush, enabled: false },
+  { label: '存储清理', tone: 'blue', icon: Delete, routePath: '/storage', enabled: false },
+  { label: '运行快照', tone: 'green', icon: Brush, enabled: false },
 ]
 
 export const defaultTaskTabs = [

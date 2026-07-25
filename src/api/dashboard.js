@@ -32,6 +32,18 @@ export async function fetchDashboardTopStats() {
   }
 }
 
+export async function updateDashboardSubscriptions() {
+  const response = await request.post('/sx/book/dashboard/subscribe/update')
+  if (!response?.success) throw new Error(response?.message || '更新订阅失败')
+  return response.result || {}
+}
+
+export async function createDashboardRuntimeSnapshot() {
+  const response = await request.post('/sx/book/dashboard/backup/run')
+  if (!response?.success) throw new Error(response?.message || '生成运行快照失败')
+  return response.result || {}
+}
+
 function normalizeDashboardHomePage(result = {}) {
   const storageOverview = result.storageOverview || {}
 
@@ -134,6 +146,9 @@ function normalizeQuickAction(item = {}) {
     tone: normalizeTone(item.tone, 'blue'),
     iconKey: item.iconKey || '',
     routePath: item.routePath || '',
+    permission: item.permission || '',
+    method: String(item.method || '').toUpperCase(),
+    api: item.api || '',
     enabled: item.enabled !== false,
     dangerous: Boolean(item.dangerous),
     confirmText: item.confirmText || '',
