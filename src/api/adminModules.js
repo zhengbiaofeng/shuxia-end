@@ -118,6 +118,18 @@ export async function fetchUsersPage(params = {}) {
   }
 }
 
+export async function fetchUserDetail(userId) {
+  if (!userId) throw new Error('用户 ID 不能为空')
+  const response = await request.get(`/sx/book/user/manage/detail/${encodeURIComponent(userId)}`)
+  return normalizeUserRow(readResultResponse(response, '获取用户详情失败') || {})
+}
+
+export async function changeUserStatus(userId, status) {
+  if (!userId) throw new Error('用户 ID 不能为空')
+  const response = await request.post('/sx/book/user/manage/status', { userId, status })
+  return readResultResponse(response, '变更用户状态失败')
+}
+
 export async function fetchRolesPage() {
   const rolesResponse = await request.get('/sys/role/queryall')
   const roles = normalizeRoleList(readResultResponse(rolesResponse, '获取角色列表失败'))
@@ -367,6 +379,24 @@ export async function fetchOperationLogPage(params = {}) {
   }
 }
 
+export async function fetchOperationLogDetail(id) {
+  if (!id) throw new Error('操作日志 ID 不能为空')
+  const response = await request.get(`/sx/book/operate-log/detail/${encodeURIComponent(id)}`)
+  return normalizeOperateLog(readResultResponse(response, '获取操作日志详情失败') || {})
+}
+
+export async function exportOperationLogs(params = {}) {
+  return request.get('/sx/book/operate-log/export', {
+    params,
+    responseType: 'blob',
+  })
+}
+
+export async function cleanupOperationLogs(payload = {}) {
+  const response = await request.post('/sx/book/operate-log/cleanup', payload)
+  return readResultResponse(response, '清理操作日志失败') || {}
+}
+
 export async function fetchTaskLogPage(params = {}) {
   const response = await request.get('/sx/book/task-log/list', {
     params: { pageNo: 1, pageSize: 20, ...params },
@@ -504,12 +534,13 @@ function normalizeUserRow(item = {}) {
     id: item.userId,
     username: item.username || '--',
     nickname,
-    email: item.email || item.phone || '--',
-    role: item.memberLevel || item.sourceType || '用户',
-    roleTone: item.memberLevel ? 'blue' : 'slate',
+    contact: item.email || item.phone || '--',
+    membership: item.memberLevel || '普通用户',
+    membershipTone: item.memberLevel ? 'blue' : 'slate',
+    source: item.sourceType || '--',
     status: status === 2 ? '冻结' : '正常',
     tone: status === 2 ? 'red' : 'green',
-    lastLogin: formatDateTime(item.lastReadTime),
+    recentRead: formatDateTime(item.lastReadTime),
     createdAt: formatDateTime(item.createTime),
     avatar: nickname.slice(0, 1).toUpperCase(),
   }
@@ -555,9 +586,6 @@ function normalizeOperateLog(item = {}) {
     action: item.operateType || '--',
     target: item.bookName || item.bookId || '--',
     content: item.operateDesc || '--',
-    status: '成功',
-    tone: 'green',
-    ip: '--',
   }
 }
 
