@@ -27,7 +27,7 @@
           :page-size="pagination.pageSize"
           :rows="currentRows"
           :total="currentTotal"
-          min-width="1120px"
+          :min-width="activeTab === 3 ? '1500px' : '1120px'"
           @page-change="changePage"
           @page-size-change="changePageSize"
         >
@@ -407,8 +407,8 @@ function resetEditor(type) {
 function fillEditor(type, raw = {}) {
   resetEditor(type)
   if (type === 'channel') Object.assign(channelForm, raw, { enabled: Number(raw.status ?? 1) === 1 })
-  if (type === 'rule') Object.assign(ruleForm, raw, { channelCodes: [...(raw.channelCodes || [])], receiverUsersText: (raw.receiverUsers || []).join(','), enabled: Number(raw.status ?? 1) === 1 })
-  if (type === 'template') Object.assign(templateForm, raw, { enabled: String(raw.useStatus ?? '1') !== '0' })
+  if (type === 'rule') Object.assign(ruleForm, raw, { channelCodes: [...(raw.channelCodes || [])], receiverScope: raw.receiverScope || 'custom', noticeType: raw.noticeType || 'system', triggerStatus: raw.triggerStatus || 'active', receiverUsersText: (raw.receiverUsers || []).join(','), enabled: Number(raw.status ?? 1) === 1 })
+  if (type === 'template') Object.assign(templateForm, raw, { templateType: raw.templateType || '1', templateCategory: raw.templateCategory || 'notice', enabled: String(raw.useStatus ?? '1') !== '0' })
 }
 
 async function safeLoadCatalogs() {
