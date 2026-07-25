@@ -548,7 +548,7 @@ function normalizeSubscribeRow(item = {}) {
   }
 }
 
-function normalizeUserRow(item = {}) {
+export function normalizeUserRow(item = {}) {
   const status = Number(item.status || 1)
   const nickname = item.nickName || item.realname || item.username || '--'
 
@@ -585,7 +585,7 @@ function normalizeRoleList(value) {
   }))
 }
 
-function normalizeNotifyChannel(item = {}) {
+export function normalizeNotifyChannel(item = {}) {
   const status = Number(item.status ?? 1)
 
   return {
@@ -604,7 +604,7 @@ function normalizeNotifyChannel(item = {}) {
   }
 }
 
-function normalizeNotifyRule(item = {}) {
+export function normalizeNotifyRule(item = {}) {
   const status = Number(item.status ?? 1)
   const channels = Array.isArray(item.channelNames) && item.channelNames.length
     ? item.channelNames
@@ -626,7 +626,7 @@ function normalizeNotifyRule(item = {}) {
   }
 }
 
-function normalizeNotifyTemplate(item = {}) {
+export function normalizeNotifyTemplate(item = {}) {
   const enabled = String(item.useStatus ?? '1') !== '0'
 
   return {
@@ -643,7 +643,7 @@ function normalizeNotifyTemplate(item = {}) {
   }
 }
 
-function normalizeOperateLog(item = {}) {
+export function normalizeOperateLog(item = {}) {
   return {
     raw: item,
     id: item.id,

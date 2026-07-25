@@ -139,7 +139,7 @@ function normalizeStorageConnection(item = {}) {
   }
 }
 
-function normalizeQuickAction(item = {}) {
+export function normalizeQuickAction(item = {}) {
   return {
     key: item.key || item.label || '',
     label: item.label || '--',
