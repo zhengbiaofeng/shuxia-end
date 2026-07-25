@@ -71,7 +71,7 @@
         <article class="panel panel--storage">
           <div class="panel__head">
             <h2>存储空间概览</h2>
-            <a href="#">查看更多</a>
+            <button class="panel__link" type="button" @click="router.push('/storage')">查看更多</button>
           </div>
           <div class="storage-body">
             <div class="storage-summary">
@@ -122,10 +122,13 @@
               :key="entry.label"
               class="quick-card"
               :class="`tone-${entry.tone}`"
-              :disabled="entry.enabled === false"
+              :disabled="entry.enabled === false || Boolean(quickActionLoadingKey)"
               @click="handleQuickAction(entry)"
             >
-              <el-icon><component :is="entry.icon" /></el-icon>
+              <el-icon :class="{ 'is-loading': quickActionLoadingKey === entry.key }">
+                <Loading v-if="quickActionLoadingKey === entry.key" />
+                <component :is="entry.icon" v-else />
+              </el-icon>
               <span>{{ entry.label }}</span>
             </button>
           </div>
@@ -136,7 +139,7 @@
         <article class="panel panel--tasks">
           <div class="panel__head">
             <h2>最近任务</h2>
-            <a href="#">查看全部</a>
+            <button class="panel__link" type="button" @click="router.push('/automation/tasks')">查看全部</button>
           </div>
           <div class="task-tabs">
             <button
@@ -170,7 +173,7 @@
         <article class="panel panel--connections">
           <div class="panel__head">
             <h2>存储连接状态</h2>
-            <a href="#">查看全部</a>
+            <button class="panel__link" type="button" @click="router.push('/storage')">查看全部</button>
           </div>
           <ul class="connection-list">
             <li v-for="entry in dashboardConnections" :key="entry.name">
@@ -193,7 +196,7 @@
         <article class="panel panel--notifications">
           <div class="panel__head">
             <h2>系统通知</h2>
-            <a href="#">查看更多</a>
+            <button class="panel__link" type="button" @click="router.push('/logs/operations')">查看日志</button>
           </div>
           <ul class="notification-list">
             <li v-for="(entry, index) in notifications" :key="`${entry.title}-${entry.time}-${index}`">
@@ -219,10 +222,15 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { RefreshRight } from '@element-plus/icons-vue'
+import { Loading, RefreshRight } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import { useAuthStore } from '../stores/auth'
 import { useSiteSettingsStore } from '../stores/siteSettings'
-import { fetchDashboardHomePage } from '../api/dashboard'
+import {
+  createDashboardRuntimeSnapshot,
+  fetchDashboardHomePage,
+  updateDashboardSubscriptions,
+} from '../api/dashboard'
 import { AppShell } from '../components/layout'
 import SidebarNav from '../components/nav/SidebarNav.vue'
 import StatCard from '../components/dashboard/StatCard.vue'
@@ -232,7 +240,7 @@ import {
   dashboardQuickActionFallbacks,
   defaultTaskTabs,
 } from '../config/dashboard'
-import { computed, onMounted, shallowRef } from 'vue'
+import { computed, onMounted, ref, shallowRef } from 'vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -269,6 +277,7 @@ const storageOverview = shallowRef({
 })
 const dashboardStorageItems = shallowRef([])
 const dashboardQuickActions = shallowRef(dashboardQuickActionFallbacks)
+const quickActionLoadingKey = ref('')
 const taskTabs = shallowRef(defaultTaskTabs)
 const tasks = shallowRef([])
 const dashboardConnections = shallowRef([])
@@ -284,14 +293,15 @@ const storageDashOffset = computed(() => {
 const quickActionPermissions = {
   添加存储: 'sxbook:storage:source:add',
   立即扫描: 'sxbook:book:add',
-  一键刮削: 'sxbook:subscription:execute',
-  更新订阅: 'sxbook:subscription:list',
-  清理缓存: 'sxbook:storage:cleanup',
+  一键刮削: 'sxbook:scrapeRule:debug',
+  更新订阅: 'sxbook:dashboard:view',
+  存储清理: 'sxbook:storage:cleanup',
+  运行快照: 'sxbook:dashboard:view',
 }
 const visibleDashboardQuickActions = computed(() => dashboardQuickActions.value.filter((entry) => {
   if (entry.enabled === false) return false
-  const permission = quickActionPermissions[entry.label]
-  return Boolean(permission) && authStore.hasPermission(permission)
+  const permission = entry.permission || quickActionPermissions[entry.label]
+  return !permission || authStore.hasPermission(permission)
 }))
 const statRouteByTitle = {
   书籍: '/books',
@@ -365,11 +375,37 @@ async function handleLogout() {
   router.push('/login')
 }
 
-function handleQuickAction(entry) {
-  if (!entry.enabled) return
-  if (entry.routePath) {
-    router.push(entry.routePath)
+async function handleQuickAction(entry) {
+  if (!entry.enabled || quickActionLoadingKey.value) return
+
+  if (entry.key === 'SUBSCRIBE_UPDATE') {
+    quickActionLoadingKey.value = entry.key
+    try {
+      const result = await updateDashboardSubscriptions()
+      ElMessage.success(result.summary || '订阅更新任务已触发')
+      await loadDashboard()
+    } catch (error) {
+      ElMessage.error(error.message || '更新订阅失败')
+    } finally {
+      quickActionLoadingKey.value = ''
+    }
+    return
   }
+
+  if (entry.key === 'SYSTEM_BACKUP') {
+    quickActionLoadingKey.value = entry.key
+    try {
+      const result = await createDashboardRuntimeSnapshot()
+      ElMessage.success(`运行快照已生成：${result.fileName || '已完成'}`)
+    } catch (error) {
+      ElMessage.error(error.message || '生成运行快照失败')
+    } finally {
+      quickActionLoadingKey.value = ''
+    }
+    return
+  }
+
+  if (entry.routePath) router.push(entry.routePath)
 }
 
 function mergeIconModels(records) {
@@ -527,8 +563,12 @@ onMounted(() => {
   letter-spacing: 0;
 }
 
-.panel__head a {
+.panel__link {
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #176bff;
+  cursor: pointer;
   font-size: 12px;
   font-weight: 600;
 }
