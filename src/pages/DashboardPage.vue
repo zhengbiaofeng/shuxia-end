@@ -891,6 +891,22 @@ onMounted(() => {
   box-shadow: 0 14px 32px rgba(35, 55, 94, 0.14);
 }
 
+:global(.dashboard-status-popover .tone-text-green) {
+  color: #12a553;
+}
+
+:global(.dashboard-status-popover .tone-text-blue) {
+  color: #176bff;
+}
+
+:global(.dashboard-status-popover .tone-text-orange) {
+  color: #e97800;
+}
+
+:global(.dashboard-status-popover .tone-text-red) {
+  color: #dc3545;
+}
+
 .empty-panel,
 .empty-row {
   display: flex;
