@@ -90,6 +90,9 @@ function emitSearch() {
   display: flex;
   align-items: center;
   gap: 14px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   padding: 18px 20px;
   border: 1px solid var(--admin-panel-border);
   border-radius: var(--admin-radius-card);
@@ -118,7 +121,9 @@ function emitSearch() {
 .admin-filter-bar__actions {
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
+  min-width: 0;
 }
 
 .admin-filter-bar__button {
@@ -155,6 +160,26 @@ function emitSearch() {
 
   .admin-filter-bar__spacer {
     display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-filter-bar {
+    padding: 16px;
+  }
+
+  .admin-filter-bar__search,
+  .admin-filter-bar__date,
+  .admin-filter-bar__select,
+  .admin-filter-bar__actions {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .admin-filter-bar__button {
+    flex: 1 1 calc(50% - 7px);
+    margin-left: 0;
   }
 }
 </style>

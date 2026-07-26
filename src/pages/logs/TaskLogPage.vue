@@ -227,8 +227,14 @@ onMounted(loadTaskLogs)
 <style scoped>
 .admin-page-stack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: 22px;
   margin-top: 22px;
+}
+
+.admin-page-stack > * {
+  min-width: 0;
 }
 
 .progress-cell {

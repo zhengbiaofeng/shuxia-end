@@ -37,6 +37,13 @@ defineProps({
 
 @media (max-width: 720px) {
   .resource-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .resource-metrics {
     grid-template-columns: 1fr;
   }
 }

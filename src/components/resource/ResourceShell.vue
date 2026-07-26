@@ -122,6 +122,11 @@ async function handleLogout() {
   gap: 24px;
 }
 
+.resource-shell__top > *,
+.resource-shell__command > * {
+  min-width: 0;
+}
+
 .resource-shell__top h1 {
   margin: 0 0 10px;
   color: var(--admin-title);
@@ -225,6 +230,7 @@ async function handleLogout() {
 
 .resource-actions :deep(.el-button) {
   height: 40px;
+  margin-left: 0;
   padding: 0 18px;
   border-radius: var(--admin-radius-control);
   font-weight: 700;
@@ -265,8 +271,28 @@ async function handleLogout() {
   .resource-tabs,
   .resource-actions {
     width: 100%;
-    overflow-x: auto;
     justify-content: flex-start;
+  }
+
+  .resource-tabs {
+    overflow-x: auto;
+  }
+
+  .resource-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .resource-shell__footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+    overflow-wrap: anywhere;
+  }
+
+  .resource-shell__footer span:last-child {
+    position: static;
   }
 }
 </style>

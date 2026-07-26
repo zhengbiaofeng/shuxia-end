@@ -691,7 +691,12 @@ function handleLogout() {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  min-width: 1120px;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 12px 16px;
 }
 

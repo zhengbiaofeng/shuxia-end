@@ -6,6 +6,7 @@
       :current-page="currentPage"
       :page-size="pageSize"
       :page-sizes="pageSizes"
+      :pager-count="5"
       :total="total"
       layout="prev, pager, next, jumper"
       @current-change="handleCurrentChange"
@@ -82,6 +83,17 @@ function handleSizeChange(size) {
     display: flex;
     align-items: flex-start;
     flex-direction: column;
+    gap: 14px;
+    padding: 14px 16px;
+  }
+
+  .resource-pagination :deep(.el-pagination) {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .resource-pagination :deep(.el-pagination__jump) {
+    display: none;
   }
 }
 </style>

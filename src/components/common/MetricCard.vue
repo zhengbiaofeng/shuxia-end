@@ -205,4 +205,26 @@ function handleClick() {
   background: none;
   color: var(--color-danger);
 }
+
+@media (max-width: 720px) {
+  .metric-card {
+    min-height: 108px;
+    padding: 16px;
+  }
+
+  .metric-card__head {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .metric-card__title,
+  .metric-card__label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .metric-card__value {
+    font-size: 24px;
+  }
+}
 </style>

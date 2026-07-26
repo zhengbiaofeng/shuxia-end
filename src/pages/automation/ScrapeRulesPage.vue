@@ -35,8 +35,8 @@
           <div class="rule-name">
             <span><el-icon><DataAnalysis /></el-icon></span>
             <div>
-              <strong>{{ row.name }}</strong>
-              <small>{{ row.desc }}</small>
+              <strong :title="row.name">{{ row.name }}</strong>
+              <small :title="row.desc">{{ row.desc }}</small>
             </div>
           </div>
         </template>
@@ -47,8 +47,8 @@
         </template>
         <template #entry="{ row }">
           <div class="entry-url">
-            <strong>{{ row.entryUrl }}</strong>
-            <small>{{ row.entryLabel }}</small>
+            <strong :title="row.entryUrl">{{ row.entryUrl }}</strong>
+            <small :title="row.entryLabel">{{ row.entryLabel }}</small>
           </div>
         </template>
         <template #rate="{ row }">

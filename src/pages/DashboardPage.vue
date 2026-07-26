@@ -174,15 +174,15 @@
                 <el-icon><RefreshRight /></el-icon>
               </span>
               <div class="task-main">
-                <strong>{{ entry.title }}</strong>
-                <span>{{ entry.category }}</span>
+                <strong :title="entry.title">{{ entry.title }}</strong>
+                <span :title="entry.category">{{ entry.category }}</span>
               </div>
               <div class="task-progress">
                 <i :class="`tone-bg-${entry.statusTone}`" :style="{ width: `${entry.progress}%` }" />
               </div>
-              <span class="task-percent">{{ entry.progressText || `${entry.progress || 0}%` }}</span>
-              <span class="task-state" :class="`tone-text-${entry.statusTone}`">{{ entry.status }}</span>
-              <time>{{ entry.time }}</time>
+              <span class="task-percent" :title="entry.progressText || `${entry.progress || 0}%`">{{ entry.progressText || `${entry.progress || 0}%` }}</span>
+              <span class="task-state" :class="`tone-text-${entry.statusTone}`" :title="entry.status">{{ entry.status }}</span>
+              <time :title="entry.time">{{ entry.time }}</time>
             </li>
             <li v-if="!tasks.length" class="empty-row">暂无最近任务</li>
           </ul>
@@ -199,12 +199,12 @@
                 <el-icon><component :is="entry.icon" /></el-icon>
               </span>
               <div>
-                <strong>{{ entry.name }}</strong>
-                <span>{{ entry.path }}</span>
+                <strong :title="entry.name">{{ entry.name }}</strong>
+                <span :title="entry.path">{{ entry.path }}</span>
               </div>
               <div class="connection-state">
                 <strong :class="`tone-text-${entry.stateTone}`"><i />{{ entry.state }}</strong>
-                <span>最后扫描：{{ entry.time }}</span>
+                <span :title="`最后扫描：${entry.time}`">最后扫描：{{ entry.time }}</span>
               </div>
             </li>
             <li v-if="!dashboardConnections.length" class="empty-row">暂无存储连接数据</li>
@@ -220,10 +220,10 @@
             <li v-for="(entry, index) in notifications" :key="`${entry.title}-${entry.time}-${index}`">
               <span class="notice-icon" :class="`tone-${entry.tone}`">i</span>
               <div>
-                <strong>{{ entry.title }}</strong>
-                <span>{{ entry.desc }}</span>
+                <strong :title="entry.title">{{ entry.title }}</strong>
+                <span :title="entry.desc">{{ entry.desc }}</span>
               </div>
-              <time>{{ entry.time }}</time>
+              <time :title="entry.time">{{ entry.time }}</time>
             </li>
             <li v-if="!notifications.length" class="empty-row">暂无系统通知</li>
           </ul>
