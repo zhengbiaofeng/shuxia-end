@@ -541,8 +541,7 @@ onMounted(() => {
 }
 
 .panel--system {
-  max-height: 260px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .panel--actions,
@@ -582,7 +581,7 @@ onMounted(() => {
 }
 
 .service-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   margin-bottom: 11px;
 }
 
@@ -596,12 +595,15 @@ onMounted(() => {
 
 .service-card {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 9px;
-  min-height: 44px;
-  height: 44px;
-  padding: 8px 12px;
-  overflow: hidden;
+  min-height: 58px;
+  padding: 10px 12px;
+}
+
+.service-card > div {
+  min-width: 0;
+  flex: 1;
 }
 
 .service-card__icon,
@@ -621,58 +623,51 @@ onMounted(() => {
 
 .service-card strong {
   display: block;
-  overflow: hidden;
   color: #26385f;
   font-size: 12px;
   font-weight: 700;
-  line-height: 1.15;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
 .service-card span:not(.service-card__icon) {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 5px;
   margin-top: 4px;
-  max-width: 100%;
-  overflow: hidden;
   font-size: 11px;
-  line-height: 1.1;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .metric-grid {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   margin-bottom: 11px;
 }
 
 .mini-metric {
-  height: 80px;
+  min-height: 80px;
   padding: 8px 10px;
-  overflow: hidden;
 }
 
 .mini-metric span {
   display: block;
-  overflow: hidden;
   color: #3a4d75;
   font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .mini-metric strong {
   display: block;
-  height: 22px;
+  min-height: 22px;
   margin-top: 7px;
-  overflow: hidden;
   color: #081a45;
   font-size: 17px;
   line-height: 22px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
 .mini-metric svg {
@@ -688,7 +683,7 @@ onMounted(() => {
 }
 
 .system-detail-grid {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   padding: 10px 8px;
   border-radius: 7px;
   background: #fafcff;
@@ -700,21 +695,20 @@ onMounted(() => {
 
 .system-detail-grid span {
   display: block;
-  overflow: hidden;
   color: #60708e;
   font-size: 11px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .system-detail-grid strong {
   display: block;
   margin-top: 5px;
-  overflow: hidden;
   color: #25385f;
   font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .empty-panel,
