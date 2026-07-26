@@ -631,17 +631,31 @@ npm run build
 - A real scheduled scrape for `玉奴娇` completed while the temporary rule was active and entered the same task event path. Its task and 911 chapters were preserved. All temporary rules, channels, storage, scan logs, dispatch rows and test messages were removed afterward, leaving zero active task notification rules and no automatic message behavior.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\p4-notification-event-dispatch-20260725.md`.
 
+## 2026-07-26 P5 Release Regression Baseline
+
+- P0-P4 were regressed as one administration system without adding new content domains. Books remain local/upload-only, novels remain network collection/subscription content, and Storage Management remains the only destination registry.
+- Storage references are consistent: one valid default exists for each ebook/novel scope; active subscriptions and managed files have zero dangling configured-storage references.
+- Controlled novel acceptance run `p21785033551` passed with 3 novels, 5 chapters, zero duplicate books/subscriptions/chapters and zero successful-checkpoint replay. Its generated task/context/log rows were cleaned by exact IDs without touching real tasks.
+- Added backend `scripts/p5-role-contract-acceptance.ps1`. It verified 108 content-manager and 60 readonly-auditor permissions, four real read endpoints per role and three protected write denials; temporary users and role links were fully removed.
+- Task summary/list, task-log, notification dispatch and event catalog APIs were cross-checked. The only notification events remain `task.completed` and `task.failed`; active rules and dispatch rows remain zero.
+- A restart snapshot covered storage, subscription Cron/destination, Quartz triggers, notification counts, reader/site/security settings and content counts. `jeecg-system-start` returned to HTTP 200 with an identical snapshot and exactly one subscription trigger.
+- Logged-in browser checks covered Storage Management, Task Center, Follow Management, Books and Notification Settings. Book batch import offered only `sx-book (MinIO)` and subscription edit showed `novel (MinIO)`. Task covers rendered from real content.
+- Task Center detail logs now wrap long English text and URLs; the detail panel has no horizontal overflow. The batch selection summary and delete actions remain separated into distinct toolbar groups.
+- Verification passed: frontend Vitest 5/5, frontend production build, full 11-module backend package, Docker restart persistence and browser data/layout checks.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\p5-release-regression-baseline-20260726.md`.
+
 ## Integration Priority
 
 Current user priority:
 
-1. P0, P1 and P2 are complete; storage contracts, permissions, settings and content/task reliability remain regression requirements.
+1. P0-P5 are complete; storage contracts, permissions, settings, content/task reliability and restart persistence remain release regression requirements.
 2. Keep the historical no-context `RESUBMIT` boundary as a compatibility requirement while all new rule batches use persisted candidate context and item checkpoints.
 3. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
 4. Keep the first notification event boundary limited to explicit task completion/failure producers. Additional event codes must have a confirmed meaning and a real backend producer before they appear in configuration.
 5. Do not start P3 comic or audio implementation until their legal source, accepted formats, directory structures, processing requirements and storage contracts are explicitly confirmed by the user.
 6. Treat the current dashboard JSON as a runtime snapshot only. Do not implement or claim full backup/restore until product scope, encryption, retention and restore compatibility are confirmed.
 7. Keep tag taxonomy distinct from category taxonomy and keep the existing reader application integration-only in this repository.
+8. Before implementing another domain, confirm the NAS release/installation approach and then close Compose mount templates, first-start diagnostics, upgrade instructions and real-device path acceptance. Do not fold comic, audio, reader UI or undefined backup/restore work into that phase.
 
 ## New Thread Startup Checklist
 
