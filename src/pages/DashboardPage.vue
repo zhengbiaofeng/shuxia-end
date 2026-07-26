@@ -43,6 +43,7 @@
               popper-class="dashboard-status-popover"
               :show-after="120"
               trigger="hover"
+              :visible="activeStatusGroupKey === group.key"
               :width="300"
             >
               <template #reference>
@@ -50,6 +51,10 @@
                   class="status-group-item"
                   type="button"
                   :aria-label="`${group.title}，${group.summary}`"
+                  @blur="activeStatusGroupKey = ''"
+                  @focus="activeStatusGroupKey = group.key"
+                  @mouseenter="activeStatusGroupKey = group.key"
+                  @mouseleave="activeStatusGroupKey = ''"
                 >
                   <span class="status-group-item__icon" :class="`tone-${group.tone}`">
                     <el-icon><component :is="group.icon" /></el-icon>
@@ -303,6 +308,7 @@ const storageOverview = shallowRef({
 const dashboardStorageItems = shallowRef([])
 const dashboardQuickActions = shallowRef(dashboardQuickActionFallbacks)
 const quickActionLoadingKey = ref('')
+const activeStatusGroupKey = ref('')
 const taskTabs = shallowRef(defaultTaskTabs)
 const tasks = shallowRef([])
 const dashboardConnections = shallowRef([])
