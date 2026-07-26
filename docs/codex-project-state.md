@@ -646,6 +646,16 @@ npm run build
 
 ## Integration Priority
 
+## 2026-07-26 Reader Category Visibility ACL
+
+- User Management now distinguishes configurable reader accounts from administrators and management-only accounts. Only administrators can open the content-visibility editor.
+- An administrator can blacklist ebook and novel category nodes for one reader account. Parent selections apply to every descendant, while accounts without rules retain the existing all-visible behavior.
+- The reader-facing backend now enforces the same rule across discovery, category navigation, detail/catalog/chapter access, search/ranking, related content, bookshelf, history, progress, download records, previews, downloads, comments and payment entry points.
+- Direct access to restricted content returns the generic unavailable response. Reader clients must not implement an independent interpretation of category rules; the backend remains the final visibility boundary.
+- Historical purchase orders remain available as financial records, but cannot be used to reopen restricted content. Management comment auditing remains an administrator-wide function.
+- Migration: `sx-book-user-category-visibility-20260726.sql`. Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\reader-category-visibility-20260726.md`.
+- Core backend visibility tests passed 4/4. Frontend production build and backend compilation passed; runtime migration/container/browser acceptance is the remaining release check for this milestone.
+
 Current user priority:
 
 1. P0-P5 are complete; storage contracts, permissions, settings, content/task reliability and restart persistence remain release regression requirements.
