@@ -891,19 +891,20 @@ onMounted(() => {
   box-shadow: 0 14px 32px rgba(35, 55, 94, 0.14);
 }
 
-:global(.dashboard-status-popover .tone-text-green) {
+:global(.dashboard-status-popover .status-popover dd.tone-text-green) {
   color: #12a553;
 }
 
-:global(.dashboard-status-popover .tone-text-blue) {
+:global(.dashboard-status-popover .status-popover dd.tone-text-blue),
+:global(.dashboard-status-popover .status-popover dd.tone-text-indigo) {
   color: #176bff;
 }
 
-:global(.dashboard-status-popover .tone-text-orange) {
+:global(.dashboard-status-popover .status-popover dd.tone-text-orange) {
   color: #e97800;
 }
 
-:global(.dashboard-status-popover .tone-text-red) {
+:global(.dashboard-status-popover .status-popover dd.tone-text-red) {
   color: #dc3545;
 }
 
