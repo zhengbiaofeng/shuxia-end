@@ -658,8 +658,6 @@ npm run build
 - Reversible reader API acceptance proved that denying the novel `玄幻` category simultaneously filters list/detail/catalog/chapter/bookshelf access and that restoring the empty rule set restores access. Temporary publication and bookshelf changes were restored.
 - Browser acceptance passed on `1280x720` and `390x844`: only reader accounts receive the action, the real category trees load, checkbox counts and “全部可见” work, the dialog footer remains visible, and the console is clean.
 
-## Integration Priority
-
 ## 2026-07-26 Global Admin UI Responsive Audit
 
 - The administration frontend completed a full layout audit across 21 primary routes at 1440px, 842px and 390px viewports. Wide data tables remain internally scrollable, while every audited page now keeps page-level horizontal overflow at zero.
@@ -667,6 +665,8 @@ npm run build
 - The Task Log grid no longer lets its 1120px table widen the filter bar or document. Shared mobile filters, pagination, content batch toolbars, configurable footers and fixed-width Element Plus dialogs/drawers now stay within the visible viewport.
 - Dashboard recent tasks/connections/notifications and Scrape Rules truncated fields expose their complete backend text through hover titles; existing content-table titles and internal table scrolling remain unchanged.
 - Verification passed: frontend Vitest 5/5, frontend production build, a real 620px Novel dialog constrained to 366px at a 390px viewport, and 42 responsive route combinations with no page-level overflow.
+
+## Integration Priority
 
 Current user priority:
 
