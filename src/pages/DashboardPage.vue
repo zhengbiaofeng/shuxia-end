@@ -335,6 +335,109 @@ const statRouteByTitle = {
   有声: '/audio',
 }
 const statRouteByIndex = ['/books', '/novels', '/comics', '/audio']
+const dashboardStatusGroupDefinitions = [
+  {
+    key: 'core',
+    title: '核心服务',
+    icon: Monitor,
+    labels: new Set(['应用服务', 'Docker 容器', '数据库', '缓存']),
+    fallbackSource: 'service',
+  },
+  {
+    key: 'storage',
+    title: '存储链路',
+    icon: Connection,
+    labels: new Set(['NAS 连接', '存储连接', '上传方式', '存储源数']),
+    fallbackSource: 'detail',
+  },
+  {
+    key: 'content',
+    title: '内容与任务',
+    icon: Document,
+    labels: new Set(['任务中心', '内容资源']),
+  },
+  {
+    key: 'host',
+    title: '主机资源',
+    icon: PieChart,
+    labels: new Set(['运行时长', '启动时间']),
+    fallbackSource: 'metric',
+  },
+]
+
+function buildDashboardStatusGroups(services = [], metrics = [], details = []) {
+  const entries = [
+    ...services.map((entry) => ({
+      label: entry.label,
+      value: entry.status,
+      tone: normalizeStatusTone(entry.tone),
+      source: 'service',
+    })),
+    ...metrics.map((entry) => ({
+      label: entry.title,
+      value: entry.value,
+      tone: normalizeStatusTone(entry.tone),
+      source: 'metric',
+    })),
+    ...details.map((entry) => ({
+      label: entry.label,
+      value: entry.value,
+      tone: 'blue',
+      source: 'detail',
+    })),
+  ].filter((entry) => entry.label)
+
+  const groupedEntries = new Map(dashboardStatusGroupDefinitions.map((group) => [group.key, []]))
+
+  entries.forEach((entry) => {
+    const matchedGroup = dashboardStatusGroupDefinitions.find((group) => group.labels.has(entry.label))
+      || dashboardStatusGroupDefinitions.find((group) => group.fallbackSource === entry.source)
+      || dashboardStatusGroupDefinitions[0]
+    groupedEntries.get(matchedGroup.key).push(entry)
+  })
+
+  return dashboardStatusGroupDefinitions
+    .map((group) => {
+      const groupEntries = groupedEntries.get(group.key)
+      return {
+        ...group,
+        entries: groupEntries,
+        summary: summarizeStatusGroup(group.key, groupEntries),
+        tone: resolveStatusGroupTone(groupEntries),
+      }
+    })
+    .filter((group) => group.entries.length)
+}
+
+function summarizeStatusGroup(groupKey, entries) {
+  const concerns = entries.filter((entry) => ['red', 'orange'].includes(entry.tone))
+  if (concerns.length === 1) return `${concerns[0].label}：${concerns[0].value}`
+  if (concerns.length > 1) return `${concerns.length} 项需关注`
+
+  if (groupKey === 'host') {
+    const resourceEntries = entries.filter((entry) => ['CPU 使用率', '内存使用率'].includes(entry.label))
+    if (resourceEntries.length) {
+      return resourceEntries.map((entry) => `${entry.label.replace('使用率', '')} ${entry.value}`).join(' · ')
+    }
+  }
+
+  const healthyCount = entries.filter((entry) => entry.tone === 'green').length
+  if (healthyCount) return `${healthyCount}/${entries.length} 状态正常`
+  return `${entries.length} 项运行信息`
+}
+
+function resolveStatusGroupTone(entries) {
+  if (entries.some((entry) => entry.tone === 'red')) return 'red'
+  if (entries.some((entry) => entry.tone === 'orange')) return 'orange'
+  if (entries.some((entry) => entry.tone === 'green')) return 'green'
+  return 'blue'
+}
+
+function normalizeStatusTone(tone) {
+  return ['blue', 'green', 'orange', 'red', 'purple', 'indigo', 'violet', 'slate', 'gray', 'cyan'].includes(tone)
+    ? tone
+    : 'blue'
+}
 
 async function loadDashboard() {
   try {
