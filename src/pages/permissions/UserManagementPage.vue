@@ -54,6 +54,15 @@
                 详情
               </el-button>
               <el-button
+                v-if="canConfigureVisibility && row.readerAccount"
+                :icon="Hide"
+                link
+                type="primary"
+                @click="openVisibility(row)"
+              >
+                内容权限
+              </el-button>
+              <el-button
                 v-if="canChangeStatus"
                 :disabled="isCurrentUser(row) || changingUserId === row.id"
                 :loading="changingUserId === row.id"
@@ -81,22 +90,30 @@
         <el-descriptions-item label="手机号">{{ detailRow.raw.phone || '--' }}</el-descriptions-item>
         <el-descriptions-item label="会员等级">{{ detailRow.membership }}</el-descriptions-item>
         <el-descriptions-item label="来源">{{ detailRow.source }}</el-descriptions-item>
+        <el-descriptions-item label="账户类型">{{ detailRow.readerAccount ? '阅读端账户' : '后台账户' }}</el-descriptions-item>
         <el-descriptions-item label="书架记录">{{ detailRow.raw.bookshelfCount ?? 0 }}</el-descriptions-item>
         <el-descriptions-item label="阅读历史">{{ detailRow.raw.readHistoryCount ?? 0 }}</el-descriptions-item>
         <el-descriptions-item label="最近阅读">{{ detailRow.recentRead }}</el-descriptions-item>
         <el-descriptions-item label="注册时间">{{ detailRow.createdAt }}</el-descriptions-item>
       </el-descriptions>
     </el-dialog>
+
+    <UserContentVisibilityDialog
+      v-model="visibilityVisible"
+      :user="visibilityUser"
+      :can-edit="canEditVisibility"
+    />
   </ResourceShell>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { InfoFilled } from '@element-plus/icons-vue'
+import { Hide, InfoFilled } from '@element-plus/icons-vue'
 import { AdminFilterBar, AdminInfoBox, AdminStatusBadge, AdminTableCard } from '../../components/admin'
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
+import UserContentVisibilityDialog from '../../components/permissions/UserContentVisibilityDialog.vue'
 import { changeUserStatus, fetchUserDetail, fetchUsersPage } from '../../api/adminModules'
 import { permissionPages } from '../../config/adminModules'
 import { useAuthStore } from '../../stores/auth'
@@ -113,8 +130,12 @@ const loading = ref(false)
 const changingUserId = ref('')
 const detailVisible = ref(false)
 const detailRow = ref(null)
+const visibilityVisible = ref(false)
+const visibilityUser = ref(null)
 const canViewDetail = computed(() => authStore.hasPermission('sxbook:userManage:detail'))
 const canChangeStatus = computed(() => authStore.hasPermission('sxbook:userManage:status'))
+const canConfigureVisibility = computed(() => authStore.hasPermission('sxbook:userManage:visibility:view'))
+const canEditVisibility = computed(() => authStore.hasPermission('sxbook:userManage:visibility:edit'))
 
 const columns = [
   { key: 'username', label: '用户名' },
@@ -213,6 +234,12 @@ async function confirmStatusChange(row) {
   } finally {
     changingUserId.value = ''
   }
+}
+
+function openVisibility(row) {
+  if (!canConfigureVisibility.value || !row?.readerAccount) return
+  visibilityUser.value = row
+  visibilityVisible.value = true
 }
 
 onMounted(loadUsers)

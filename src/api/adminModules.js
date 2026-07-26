@@ -130,6 +130,18 @@ export async function changeUserStatus(userId, status) {
   return readResultResponse(response, '变更用户状态失败')
 }
 
+export async function fetchUserContentVisibility(userId) {
+  if (!userId) throw new Error('用户 ID 不能为空')
+  const response = await request.get(`/sx/book/user/manage/visibility/${encodeURIComponent(userId)}`)
+  return readResultResponse(response, '获取阅读内容权限失败') || {}
+}
+
+export async function saveUserContentVisibility(payload = {}) {
+  if (!payload.userId) throw new Error('用户 ID 不能为空')
+  const response = await request.post('/sx/book/user/manage/visibility', payload)
+  return readResultResponse(response, '保存阅读内容权限失败') || {}
+}
+
 export async function fetchRolesPage() {
   const rolesResponse = await request.get('/sys/role/queryall')
   const roles = normalizeRoleList(readResultResponse(rolesResponse, '获取角色列表失败'))
@@ -592,6 +604,7 @@ export function normalizeUserRow(item = {}) {
     membership: item.memberLevel || '普通用户',
     membershipTone: item.memberLevel ? 'blue' : 'slate',
     source: item.sourceType || '--',
+    readerAccount: item.readerAccount === true,
     status: status === 2 ? '冻结' : '正常',
     tone: status === 2 ? 'red' : 'green',
     recentRead: formatDateTime(item.lastReadTime),
