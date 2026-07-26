@@ -644,8 +644,6 @@ npm run build
 - Verification passed: frontend Vitest 5/5, frontend production build, full 11-module backend package, Docker restart persistence and browser data/layout checks.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\p5-release-regression-baseline-20260726.md`.
 
-## Integration Priority
-
 ## 2026-07-26 Reader Category Visibility ACL
 
 - User Management now distinguishes configurable reader accounts from administrators and management-only accounts. Only administrators can open the content-visibility editor.
@@ -655,6 +653,8 @@ npm run build
 - Historical purchase orders remain available as financial records, but cannot be used to reopen restricted content. Management comment auditing remains an administrator-wide function.
 - Migration: `sx-book-user-category-visibility-20260726.sql`. Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\reader-category-visibility-20260726.md`.
 - Core backend visibility tests passed 4/4. Frontend production build and backend compilation passed; runtime migration/container/browser acceptance is the remaining release check for this milestone.
+
+## Integration Priority
 
 Current user priority:
 
