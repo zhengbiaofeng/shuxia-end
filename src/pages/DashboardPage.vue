@@ -1344,10 +1344,7 @@ onMounted(() => {
   }
 
   .stats-grid,
-  .service-grid,
-  .metric-grid,
   .quick-grid,
-  .system-detail-grid,
   .storage-body {
     grid-template-columns: 1fr;
   }
