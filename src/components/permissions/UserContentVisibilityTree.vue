@@ -85,7 +85,7 @@ defineExpose({ setCheckedKeys, getCheckedKeys })
 .scope-toolbar :deep(.el-input) { width: 100%; }
 .tree-heading { display: flex; align-items: center; justify-content: space-between; min-height: 42px; margin-top: 14px; padding: 0 14px; border: 1px solid #e1e9f5; border-bottom: 0; border-radius: 8px 8px 0 0; background: #f7faff; color: #526987; font-size: 13px; }
 .tree-heading strong { color: #1d67ff; font-size: 13px; }
-.category-tree { height: 330px; overflow: auto; padding: 8px; border: 1px solid #e1e9f5; border-radius: 0 0 8px 8px; }
+.category-tree { height: clamp(240px, 39vh, 330px); overflow: auto; padding: 8px; border: 1px solid #e1e9f5; border-radius: 0 0 8px 8px; }
 .category-tree :deep(.el-tree-node__content) { min-height: 38px; height: auto; border-radius: 6px; }
 .category-tree :deep(.el-tree-node__content:hover) { background: #f2f7ff; }
 .category-node { display: flex; align-items: center; justify-content: space-between; min-width: 0; width: 100%; gap: 16px; padding-right: 10px; }

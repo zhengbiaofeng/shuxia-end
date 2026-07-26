@@ -173,7 +173,7 @@ function closeDialog() {
 .heading-copy { display: grid; min-width: 0; gap: 3px; }
 .heading-copy strong { color: #102557; font-size: 17px; line-height: 1.35; }
 .heading-copy span { overflow: hidden; color: #64748b; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
-.visibility-body { min-height: 430px; }
+.visibility-body { min-height: 0; }
 .scope-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid #e1e9f5; border-radius: 8px; background: #f7faff; }
 .scope-summary > div { display: grid; grid-template-columns: minmax(88px, auto) minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 64px; padding: 12px 18px; }
 .scope-summary > div + div { border-left: 1px solid #e1e9f5; }
@@ -181,6 +181,10 @@ function closeDialog() {
 .scope-summary strong { color: #102557; font-size: 15px; }
 .scope-summary small { color: #3d5f94; font-size: 12px; white-space: nowrap; }
 .visibility-tabs { margin-top: 16px; }
+:global(.content-visibility-dialog) { display: flex; flex-direction: column; max-height: 90vh; margin-top: 5vh; overflow: hidden; }
+:global(.content-visibility-dialog .el-dialog__header),
+:global(.content-visibility-dialog .el-dialog__footer) { flex: 0 0 auto; }
+:global(.content-visibility-dialog .el-dialog__body) { flex: 1 1 auto; min-height: 0; overflow: auto; }
 @media (max-width: 640px) {
   .scope-summary { grid-template-columns: 1fr; }
   .scope-summary > div { grid-template-columns: 1fr auto; }
