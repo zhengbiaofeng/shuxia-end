@@ -660,6 +660,14 @@ npm run build
 
 ## Integration Priority
 
+## 2026-07-26 Global Admin UI Responsive Audit
+
+- The administration frontend completed a full layout audit across 21 primary routes at 1440px, 842px and 390px viewports. Wide data tables remain internally scrollable, while every audited page now keeps page-level horizontal overflow at zero.
+- Shared page actions wrap on narrow screens instead of hiding commands behind a horizontal scrollbar. Shared metric grids use two compact columns on normal phone widths and fall back to one column only on very narrow screens.
+- The Task Log grid no longer lets its 1120px table widen the filter bar or document. Shared mobile filters, pagination, content batch toolbars, configurable footers and fixed-width Element Plus dialogs/drawers now stay within the visible viewport.
+- Dashboard recent tasks/connections/notifications and Scrape Rules truncated fields expose their complete backend text through hover titles; existing content-table titles and internal table scrolling remain unchanged.
+- Verification passed: frontend Vitest 5/5, frontend production build, a real 620px Novel dialog constrained to 366px at a 390px viewport, and 42 responsive route combinations with no page-level overflow.
+
 Current user priority:
 
 1. P0-P5 are complete; storage contracts, permissions, settings, content/task reliability and restart persistence remain release regression requirements.
