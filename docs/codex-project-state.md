@@ -615,7 +615,7 @@ npm run build
 - Frontend automated testing now uses Vitest. `npm test` passed 1 file / 4 tests; `npm run build` passed with only the existing dependency annotation and chunk-size warnings.
 - Backend `:sx-book` package completed with all 9 reactor modules successful. Handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\admin-management-closure-runtime-snapshot-20260725.md`.
 - Browser checks passed for desktop user/log/notification views and their real data. A shared table-width constraint now keeps the page viewport stable on narrow screens while wide tables scroll only inside their own container.
-- The live Docker container was not rebuilt in this phase. It still serves the old dashboard notice code until the user packages the startup module and replaces/restarts the container; final online confirmation of the long-notice fix remains a deployment check, not an unresolved source-code issue.
+- This closure phase originally stopped before container deployment. The later P4 notification deployment rebuilt the same startup image, so the dashboard long-notice fix is now also present in the running local container.
 - The root `.gitignore` `logs` rule previously hid the source directory `src/pages/logs/`. A scoped exception now keeps runtime logs ignored while allowing the operation-log page to be versioned.
 
 ## 2026-07-25 P4 Task Notification Event Dispatch
