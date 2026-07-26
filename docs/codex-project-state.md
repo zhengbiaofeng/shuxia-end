@@ -101,10 +101,10 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 ## Recently Completed Work
 
 - Completed the reading-client responsive UI density pass in `E:\code\trae_workspcae\shuxia\qianduan\shuxia` without changing routes, APIs, data flow, or feature behavior:
-  - Added shared layout, spacing, control, touch-target, card-radius, and content-width tokens; desktop navigation is compact, portrait-tablet navigation becomes horizontal below the content-driven 960px breakpoint, and primary mobile controls retain 44px targets.
+  - Added shared layout, spacing, control, touch-target, card-radius, and content-width tokens. At widths up to 1199px, phone and tablet navigation is now a fixed bottom bar with all six existing destinations, safe-area clearance, 56px touch targets, and matching content inset; desktop navigation remains the compact left sidebar.
   - Fixed the home media-card flex cascade that stretched nominal 97px covers to about 163px. Home/library/novel covers now use an 82px standard preset with stable aspect ratios, restrained panel heights, and page-local scrolling only where a media row requires it.
   - Library layouts use two columns from 768px through 1199px instead of stacking all six panels. Novel hero/content grids, login, placeholder pages, and both EPUB/PDF readers received matching desktop/tablet/mobile rules.
-  - Browser regression covered 1440x900, 1024x900, 834x1112, and 390x844. Home, library, novel, login, placeholder, EPUB, and PDF views had no document-level horizontal overflow; reader toolbars and bottom navigation do not overlap on mobile. Light/dark shell layout was also checked.
+  - Browser regression covered 1440x900 desktop plus 375x812 phone, 812x375 phone landscape, 834x1112 tablet, and 1024x768 tablet. Home, library, novel, audio, comic, and settings views had no document-level horizontal overflow; the fixed bottom navigation does not overlap page content. Light/dark navigation surfaces were both checked.
   - Verification: reading-client `npm run build` passed on 2026-07-26. The dev server remains available at `http://127.0.0.1:5174` (PID 48712). The only build note is the existing Vite large-chunk warning.
 
 - Completed the P2 recoverable batch-scrape checkpoint slice:
