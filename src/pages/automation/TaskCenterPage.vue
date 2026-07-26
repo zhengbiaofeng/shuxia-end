@@ -758,10 +758,17 @@ onBeforeUnmount(() => {
 .task-timeline ol {
   display: grid;
   gap: 11px;
+  min-width: 0;
   margin: 14px 0 0;
   padding-left: 18px;
   color: #40558f;
   font-size: 12px;
+}
+
+.task-timeline li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .task-detail__actions {
