@@ -35,37 +35,50 @@
             <h2>系统状态</h2>
           </div>
 
-          <div class="service-grid">
-            <div v-for="entry in dashboardServiceStatuses" :key="entry.label" class="service-card">
-              <span class="service-card__icon" :class="`tone-${entry.tone}`">
-                <el-icon><component :is="entry.icon" /></el-icon>
-              </span>
-              <div>
-                <strong>{{ entry.label }}</strong>
-                <span :class="`tone-text-${entry.tone}`"><i />{{ entry.status }}</span>
-              </div>
-            </div>
-            <div v-if="!dashboardServiceStatuses.length" class="empty-panel">暂无系统状态</div>
-          </div>
+          <div v-if="dashboardStatusGroups.length" class="status-group-grid">
+            <el-popover
+              v-for="group in dashboardStatusGroups"
+              :key="group.key"
+              placement="bottom-start"
+              popper-class="dashboard-status-popover"
+              :show-after="120"
+              trigger="hover"
+              :width="300"
+            >
+              <template #reference>
+                <button
+                  class="status-group-item"
+                  type="button"
+                  :aria-label="`${group.title}，${group.summary}`"
+                >
+                  <span class="status-group-item__icon" :class="`tone-${group.tone}`">
+                    <el-icon><component :is="group.icon" /></el-icon>
+                  </span>
+                  <span class="status-group-item__copy">
+                    <strong>{{ group.title }}</strong>
+                    <span :class="`tone-text-${group.tone}`">{{ group.summary }}</span>
+                  </span>
+                  <span class="status-group-item__count">{{ group.entries.length }}</span>
+                </button>
+              </template>
 
-          <div class="metric-grid">
-            <div v-for="entry in dashboardMetricCards" :key="entry.title" class="mini-metric">
-              <span>{{ entry.title }}</span>
-              <strong>{{ entry.value }}</strong>
-              <svg viewBox="0 0 104 42" aria-hidden="true">
-                <path :d="entry.path" :stroke="entry.color" fill="none" />
-              </svg>
-            </div>
-            <div v-if="!dashboardMetricCards.length" class="empty-panel">暂无系统指标</div>
+              <section class="status-popover" :aria-label="`${group.title}明细`">
+                <header class="status-popover__head">
+                  <strong>{{ group.title }}</strong>
+                  <span>{{ group.entries.length }} 项</span>
+                </header>
+                <dl class="status-popover__list">
+                  <div v-for="entry in group.entries" :key="`${group.key}-${entry.label}`">
+                    <dt>{{ entry.label }}</dt>
+                    <dd :class="`tone-text-${entry.tone}`">
+                      <i />{{ entry.value }}
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+            </el-popover>
           </div>
-
-          <div class="system-detail-grid">
-            <div v-for="entry in dashboardStatusDetails" :key="entry.label">
-              <span>{{ entry.label }}</span>
-              <strong>{{ entry.value }}</strong>
-            </div>
-            <div v-if="!dashboardStatusDetails.length" class="empty-panel">暂无状态明细</div>
-          </div>
+          <div v-else class="empty-panel">暂无系统状态</div>
         </article>
 
         <article class="panel panel--storage">
@@ -222,7 +235,14 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { Loading, RefreshRight } from '@element-plus/icons-vue'
+import {
+  Connection,
+  Document,
+  Loading,
+  Monitor,
+  PieChart,
+  RefreshRight,
+} from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '../stores/auth'
 import { useSiteSettingsStore } from '../stores/siteSettings'
@@ -270,6 +290,11 @@ const statItems = shallowRef([])
 const dashboardServiceStatuses = shallowRef([])
 const dashboardMetricCards = shallowRef([])
 const dashboardStatusDetails = shallowRef([])
+const dashboardStatusGroups = computed(() => buildDashboardStatusGroups(
+  dashboardServiceStatuses.value,
+  dashboardMetricCards.value,
+  dashboardStatusDetails.value,
+))
 const storageOverview = shallowRef({
   totalText: '0 B',
   usageText: '0 B (0%)',
