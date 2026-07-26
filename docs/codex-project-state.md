@@ -652,7 +652,10 @@ npm run build
 - Direct access to restricted content returns the generic unavailable response. Reader clients must not implement an independent interpretation of category rules; the backend remains the final visibility boundary.
 - Historical purchase orders remain available as financial records, but cannot be used to reopen restricted content. Management comment auditing remains an administrator-wide function.
 - Migration: `sx-book-user-category-visibility-20260726.sql`. Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\reader-category-visibility-20260726.md`.
-- Core backend visibility tests passed 4/4. Frontend production build and backend compilation passed; runtime migration/container/browser acceptance is the remaining release check for this milestone.
+- Core backend visibility tests passed 4/4 and frontend Vitest passed 5/5. Frontend production build and the full 11-module backend package passed.
+- The local database migration, image rebuild and container recreation are complete. OpenAPI returned HTTP 200; the two management permissions exist only on `admin`, and no default reader deny rules were created.
+- Reversible reader API acceptance proved that denying the novel `玄幻` category simultaneously filters list/detail/catalog/chapter/bookshelf access and that restoring the empty rule set restores access. Temporary publication and bookshelf changes were restored.
+- Browser acceptance passed on `1280x720` and `390x844`: only reader accounts receive the action, the real category trees load, checkbox counts and “全部可见” work, the dialog footer remains visible, and the console is clean.
 
 ## Integration Priority
 
