@@ -100,6 +100,12 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Recently Completed Work
 
+- Fixed the EPUB reading-progress race that could leave a valid CFI anchor with `readPosition=0` and `readPercent=0`:
+  - Progress bootstrap now exposes a completion barrier. Route exits wait for location generation, saved-position restoration and bootstrap repair instead of skipping the final save while initialization is active.
+  - Bootstrap repair writes are explicitly allowed, all progress writes are serialized, and CFI progress is persisted only after the EPUB location table is available. This prevents transient zero values and slower stale requests from overwriting the latest page.
+  - The affected Red Star Over China CFI was independently resolved against the real 80-spine/210-location EPUB to `position=3828`, `percent=4`; the local `admin` progress and bookshelf records were repaired through the normal API and both now return 4%.
+  - Verification: reader production build passed, the 5174 development server was restarted and confirmed to serve the bootstrap barrier, reliable-payload guard, serialized queue and bootstrap-repair code. The existing Vite large-chunk warning remains unchanged.
+
 - Fixed the reader application's blank EPUB screen for authenticated preview URLs without a file extension:
   - `BookEpubReader.vue` now passes `openAs: "epub"` to Epub.js, so `/sx/book/preview?fileId=...` is opened as an archived EPUB instead of being misdetected as an extracted directory.
   - Initial rendition failures are no longer swallowed. The reader now shows explicit loading and failure states with a retry action instead of leaving an unexplained empty canvas.
