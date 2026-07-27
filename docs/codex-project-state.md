@@ -100,6 +100,15 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Recently Completed Work
 
+- Completed the controlled novel lifecycle integration pass across the admin app, backend, MinIO and reader app:
+  - A unique fixture novel was collected with 2 chapters, published, discovered through reader list/search/detail, read chapter-by-chapter, and exercised through bookshelf/history/progress writes.
+  - Follow sync advanced the remote fixture to 3 chapters and produced `added=1, skipped=2, failed=0, localChapters=3`; existing chapters were not duplicated, and admin/reader chapter statistics updated immediately.
+  - Reader category visibility and offline enforcement were verified on list, search, bookshelf, history, detail and direct chapter routes, then permissions were restored.
+  - Novel list and publish validation now use actual chapter rows, and follow execution refreshes stored chapter statistics after every run.
+  - Task Center deletion now removes entity-backed task logs in the same transaction, preventing deleted tasks from reappearing as log-backed virtual rows. A database-backed regression confirmed both task and log `del_flag=1` after one UI deletion.
+  - The fixture novel, subscription, tasks/logs, generated scrape rule and source channel were fully removed; active records for the fixture run are zero, while the existing `玉奴娇` data remained unchanged.
+  - Backend compile/full package and Docker rebuild passed. Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-lifecycle-integration-20260727.md`.
+
 - Completed the first real book lifecycle acceptance pass across administration, backend, MinIO and the separate reader application:
   - A unique PDF was uploaded through the administration UI, assigned a generated cover, parsed into 11 chapters, published, discovered on the reader home/library/search/detail surfaces, and rendered as a real 14-page PDF with authenticated progress/shelf/history writes.
   - Offline content is now consistently excluded from recent reading, bookshelf and reading-history queries in addition to the existing discovery/detail filters.
