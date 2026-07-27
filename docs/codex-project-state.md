@@ -719,6 +719,13 @@ npm run build
 - Temporary publication, history and progress data used for acceptance were fully restored. The database currently has no published ebook or novel among those fixtures, so reader empty states are expected until an administrator publishes real content.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\reader-front-real-data-integration-20260727.md`.
 
+## 2026-07-27 Reader EPUB Sandbox Compatibility
+
+- The reader keeps epub.js scripted content disabled. User-uploaded EPUB documents continue to render in sandboxed iframes without `allow-scripts`; do not enable it merely to suppress browser console messages.
+- The real Red Star EPUB fixture was scanned across all 80 HTML/XHTML/JS entries and contains no script elements, unload handlers or `javascript:` URLs. The repeated `about:srcdoc` script blocks seen with the `Dual Screen Linker` browser extension are third-party extension injection attempts being correctly rejected by the sandbox, not book or application scripts.
+- `epubjs@0.3.93` still registers deprecated anonymous `unload` listeners in both view managers. A reproducible `patch-package` patch removes those listeners; Vue's existing unmount path remains responsible for destroying the rendition and book. `npm install` reapplies the patch through `postinstall`.
+- Reader production build passed after the compatibility patch. The existing bundle-size warning remains unchanged.
+
 ## Integration Priority
 
 Current user priority:
