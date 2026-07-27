@@ -740,6 +740,14 @@ npm run build
 - Desktop-only layout rules start at 1200px. Existing tablet and phone bottom navigation, horizontal card scrolling and touch sizing remain unchanged.
 - Long recent-update titles, chapters and category labels truncate safely and expose the complete value through the native hover title. The reader production build passed, and the existing development server returned HTTP 200 on port 5174.
 
+## 2026-07-27 Reader Bookhouse PC Dashboard Alignment
+
+- The reader Bookhouse route now uses a dedicated dashboard instead of the generic content-list composition. Its desktop hierarchy follows the approved reference: bookshelf and seven-day reading summary, category discovery and configured recommendations, then latest arrivals and reading insight.
+- Every displayed value comes from the existing reader APIs: published ebook totals, ebook bookshelf records, seven-day read duration/days/books, category counts, configured recommendation sections, latest portal records, history count and download count. Unsupported preference scores, ratings and category-reading percentages were not fabricated.
+- Category selection updates the latest-book view through the real portal request. The complete category/sort/pagination browser remains available as an expandable section, so visual alignment does not remove the existing discovery workflow.
+- The Home and Bookhouse routes now share one `home-layout--wide` desktop shell for sidebar, topbar and content spacing. Tablet and phone layouts continue to use the shared bottom navigation and responsive single/two-column fallbacks.
+- The reader production build passed with only the existing bundle-size warning, and the running development service returned HTTP 200 for `/library` on port 5174.
+
 ## Integration Priority
 
 Current user priority:
