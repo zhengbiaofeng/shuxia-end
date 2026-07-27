@@ -107,7 +107,7 @@
               清空
             </el-button>
           </div>
-          <table class="content-table">
+          <table class="content-table" :class="config.tableClass">
             <thead>
               <tr>
                 <th v-if="isSelectable" class="selection-column">
@@ -132,7 +132,13 @@
                 </td>
                 <td v-for="column in config.columns" :key="column.key" :class="column.class">
                   <template v-if="column.type === 'cover'">
-                    <span class="item-cover" :style="coverStyle(row.cover)" />
+                    <AuthenticatedImage
+                      v-if="row.coverUrl"
+                      class="item-cover"
+                      :src="row.coverUrl"
+                      :alt="row.title || row[column.key] || '封面'"
+                    />
+                    <span v-else class="item-cover" :style="coverStyle(row.cover)" />
                   </template>
 
                   <template v-else-if="column.type === 'title'">
@@ -144,7 +150,13 @@
 
                   <template v-else-if="column.type === 'coverTitle'">
                     <div class="media-cell">
-                      <span class="item-cover" :style="coverStyle(row.cover)" />
+                      <AuthenticatedImage
+                        v-if="row.coverUrl"
+                        class="item-cover"
+                        :src="row.coverUrl"
+                        :alt="row.title || '封面'"
+                      />
+                      <span v-else class="item-cover" :style="coverStyle(row.cover)" />
                       <div class="title-cell">
                         <strong :title="row.title">
                           {{ row.title }}
@@ -162,7 +174,16 @@
                   </template>
 
                   <template v-else-if="column.type === 'tags'">
-                    <span v-for="tag in row[column.key]" :key="tag" class="chip chip-tag">{{ tag }}</span>
+                    <div class="tag-cell">
+                      <span
+                        v-for="tag in row[column.key]"
+                        :key="tag"
+                        class="chip chip-tag"
+                        :title="tag"
+                      >
+                        {{ tag }}
+                      </span>
+                    </div>
                   </template>
 
                   <template v-else-if="column.type === 'status'">
@@ -258,6 +279,7 @@ import { useAuthStore } from '../../stores/auth'
 import { AppShell } from '../layout'
 import SidebarNav from '../nav/SidebarNav.vue'
 import BookMetricCard from '../books/BookMetricCard.vue'
+import AuthenticatedImage from '../common/AuthenticatedImage.vue'
 import { createSideMenus } from '../../config/navigation'
 
 const props = defineProps({
@@ -712,6 +734,10 @@ function handleLogout() {
   width: 100%;
 }
 
+.content-table.books-table {
+  min-width: 1518px;
+}
+
 .content-table th {
   background: #fbfcff;
   color: #102557;
@@ -746,6 +772,50 @@ function handleLogout() {
 .content-table .selection-column {
   text-align: center;
   width: 48px;
+}
+
+.content-table .column-cover {
+  width: 76px;
+}
+
+.content-table .column-title {
+  width: 170px;
+}
+
+.content-table .column-author {
+  width: 150px;
+}
+
+.content-table .column-category {
+  width: 90px;
+}
+
+.content-table .column-tags {
+  width: 210px;
+}
+
+.content-table .column-storage {
+  width: 155px;
+}
+
+.content-table .column-format {
+  width: 75px;
+}
+
+.content-table .column-size {
+  width: 100px;
+}
+
+.content-table .column-status {
+  width: 100px;
+}
+
+.content-table .column-date {
+  width: 140px;
+}
+
+.content-table .column-actions {
+  width: 104px;
 }
 
 .item-cover {
@@ -825,7 +895,22 @@ function handleLogout() {
 .chip-tag {
   background: #eff6ff;
   color: #2563eb;
-  margin-right: 5px;
+  margin: 0;
+}
+
+.tag-cell {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tag-cell .chip {
+  flex: 0 1 auto;
+  min-width: 0;
+  transform: none;
 }
 
 .chip.blue,

@@ -636,18 +636,18 @@ const baseFilters = [
 ]
 
 const baseColumns = [
-  { key: 'cover', label: '封面', type: 'cover' },
-  { key: 'title', label: '书名', type: 'title', subKey: 'isbn' },
-  { key: 'author', label: '作者' },
-  { key: 'category', label: '分类', type: 'chip' },
-  { key: 'tags', label: '标签', type: 'tags' },
-  { key: 'store', label: '存储位置', type: 'source', subKey: 'path' },
-  { key: 'format', label: '格式' },
-  { key: 'size', label: '文件大小' },
-  { key: 'publishStatus', label: '上架状态', type: 'status' },
-  { key: 'scrapeStatus', label: '解析状态', type: 'status' },
-  { key: 'addedAt', label: '添加时间' },
-  { key: 'actions', label: '操作', type: 'actions' },
+  { key: 'cover', label: '封面', type: 'cover', class: 'column-cover' },
+  { key: 'title', label: '书名', type: 'title', subKey: 'isbn', class: 'column-title' },
+  { key: 'author', label: '作者', class: 'column-author' },
+  { key: 'category', label: '分类', type: 'chip', class: 'column-category' },
+  { key: 'tags', label: '标签', type: 'tags', class: 'column-tags' },
+  { key: 'store', label: '存储位置', type: 'source', subKey: 'path', class: 'column-storage' },
+  { key: 'format', label: '格式', class: 'column-format' },
+  { key: 'size', label: '文件大小', class: 'column-size' },
+  { key: 'publishStatus', label: '上架状态', type: 'status', class: 'column-status' },
+  { key: 'scrapeStatus', label: '解析状态', type: 'status', class: 'column-status' },
+  { key: 'addedAt', label: '添加时间', class: 'column-date' },
+  { key: 'actions', label: '操作', type: 'actions', class: 'column-actions' },
 ]
 
 const defaultRowActions = [
@@ -737,6 +737,7 @@ const pageConfig = computed(() => ({
   ],
   metrics: buildMetrics(pageSummary.value),
   filters: buildFilters(),
+  tableClass: 'books-table',
   columns: baseColumns,
   rowActions: buildRowActions(actionMetas.value),
   selectable: true,
