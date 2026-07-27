@@ -51,6 +51,7 @@ async function loadImage(value) {
   const version = ++loadVersion
   releaseObjectUrl()
   resolvedSrc.value = ''
+  loading.value = false
 
   const source = String(value || '').trim()
   if (!source) return
@@ -81,7 +82,8 @@ async function loadImage(value) {
 
 function isBackendResource(source) {
   if (source.startsWith('data:') || source.startsWith('blob:')) return false
-  if (source.startsWith('/')) return true
+  if (source.startsWith('/sx/') || source.startsWith('/jeecg-boot/')) return true
+  if (source.startsWith('/')) return false
 
   try {
     const apiUrl = new URL(API_BASE_URL, window.location.origin)
