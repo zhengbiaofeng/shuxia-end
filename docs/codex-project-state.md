@@ -674,11 +674,22 @@ npm run build
 - Dashboard recent tasks/connections/notifications and Scrape Rules truncated fields expose their complete backend text through hover titles; existing content-table titles and internal table scrolling remain unchanged.
 - Verification passed: frontend Vitest 5/5, frontend production build, a real 620px Novel dialog constrained to 366px at a 390px viewport, and 42 responsive route combinations with no page-level overflow.
 
+## 2026-07-27 Reader Real Data Integration
+
+- The separate reader application at `E:\code\trae_workspcae\shuxia\qianduan\shuxia` now consumes real backend data for login, home, book/novel lists, search, detail, catalog, bookshelf, settings, EPUB/PDF/text reading, history and progress.
+- The administration frontend remains management-only. Books remain local/NAS upload or folder-import content; novels remain administrator-collected network content. Audio and comic remain placeholders and are not part of this implementation.
+- Reader discovery honors online status and the server-enforced category visibility ACL. Configured homepage rows can no longer expose missing or unpublished records.
+- Reader covers and protected ebook/PDF files now use backend proxy endpoints rather than internal MinIO URLs. Authenticated readers send `X-Access-Token` for protected preview and download requests.
+- A real progress-save failure was found during browser acceptance: a logically deleted bookshelf row collided with the unique user/book key. Manual shelf addition and progress auto-shelving now restore that row instead of inserting a duplicate.
+- Verification passed: 3 targeted backend tests, the full 11-module backend package, Docker image rebuild/container recreation, reader production build, and real desktop/mobile/tablet browser flows. The tablet viewport had no page-level horizontal overflow and no console errors.
+- Temporary publication, history and progress data used for acceptance were fully restored. The database currently has no published ebook or novel among those fixtures, so reader empty states are expected until an administrator publishes real content.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\reader-front-real-data-integration-20260727.md`.
+
 ## Integration Priority
 
 Current user priority:
 
-1. P0-P5 are complete; storage contracts, permissions, settings, content/task reliability and restart persistence remain release regression requirements.
+1. P0-P5 and the first reader real-data integration pass are complete; storage contracts, permissions, category visibility, authenticated file access, reader progress and restart persistence remain release regression requirements.
 2. Keep the historical no-context `RESUBMIT` boundary as a compatibility requirement while all new rule batches use persisted candidate context and item checkpoints.
 3. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
 4. Keep the first notification event boundary limited to explicit task completion/failure producers. Additional event codes must have a confirmed meaning and a real backend producer before they appear in configuration.
