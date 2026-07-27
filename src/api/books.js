@@ -568,7 +568,7 @@ function normalizeBookRecord(item = {}) {
     isbn: item.isbn || item.isbnNo || item.id || '--',
     author: item.authorName || item.author || '--',
     category,
-    tags: buildTags(item, bookType),
+    tags: buildTags(item),
     store: item.storageSourceName || item.storageName || item.bucketName || '书匣书库',
     path: item.storagePath || item.contentUrl || item.fileUrl || item.outputUrl || coverUrl || '--',
     format: normalizeFormat(item, bookType),
@@ -804,14 +804,9 @@ function normalizeChapterRecord(item = {}) {
   };
 }
 
-function buildTags(item, bookType) {
-  const tags = [];
-  const typeLabel = normalizeCategoryName({ categoryCode: bookType });
-  if (typeLabel && typeLabel !== '全部分类') tags.push(typeLabel);
-  if (Array.isArray(item.tagNames)) tags.push(...item.tagNames.filter(Boolean));
-  if (item.publishStatus !== undefined) tags.push(normalizePublishStatus(item.publishStatus));
-  if (item.transcodeStatus !== undefined) tags.push(normalizeTranscodeStatus(item.transcodeStatus, bookType));
-  return [...new Set(tags)];
+function buildTags(item) {
+  const tags = Array.isArray(item.tagNames) ? item.tagNames : [];
+  return [...new Set(tags.map((tag) => String(tag || '').trim()).filter(Boolean))];
 }
 
 function normalizeCategoryName(item = {}) {
