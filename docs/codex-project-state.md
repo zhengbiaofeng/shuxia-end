@@ -100,6 +100,11 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Recently Completed Work
 
+- Fixed the reader application's blank EPUB screen for authenticated preview URLs without a file extension:
+  - `BookEpubReader.vue` now passes `openAs: "epub"` to Epub.js, so `/sx/book/preview?fileId=...` is opened as an archived EPUB instead of being misdetected as an extracted directory.
+  - Initial rendition failures are no longer swallowed. The reader now shows explicit loading and failure states with a retry action instead of leaving an unexplained empty canvas.
+  - Verification: the affected URL was reproduced as Epub.js auto-detection type `directory`, and the reader production build passed on 2026-07-27. The existing Vite large-chunk warning remains unchanged.
+
 - Fixed the administration Books table cover and column-layout regression:
   - Book covers now load through an authenticated image component, so protected `/sx/book/preview` responses receive `X-Access-Token` without exposing that token to third-party image hosts.
   - Object URLs are revoked when rows change or unmount, and failed images retain a stable title-based placeholder instead of rendering a broken image.
