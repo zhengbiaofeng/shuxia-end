@@ -732,6 +732,14 @@ npm run build
 - EPUB and PDF readers now snapshot the existing `html` and `body` horizontal/vertical overflow styles before applying reader mode and restore all four values on unmount. Reader teardown must never assign a new global `hidden` value because that disables scrolling on Home and Library after navigation.
 - A direct lifecycle check covered a never-settling save, concurrent flush coalescing and exact host-style restoration. Reader production build passed with only the existing bundle-size warning.
 
+## 2026-07-27 Reader PC Home Alignment
+
+- The reader home now follows the confirmed desktop information hierarchy: compact top controls, side-by-side continue-reading/listening panels, a single-row recent-update strip, four content-domain entry cards and a single-row recommendation strip.
+- Book, novel, audio and comic remain stable visual domains. Audio and comic currently expose zero-count entry cards and formal `暂无相关书籍` states; no audio/comic API, storage rule or processing behavior was inferred or implemented.
+- Recent Updates and Popular Recommendations share one reusable domain-tab control. The book and novel tabs filter real `bizType` data, while unintegrated domains stay empty instead of reusing unrelated records.
+- Desktop-only layout rules start at 1200px. Existing tablet and phone bottom navigation, horizontal card scrolling and touch sizing remain unchanged.
+- Long recent-update titles, chapters and category labels truncate safely and expose the complete value through the native hover title. The reader production build passed, and the existing development server returned HTTP 200 on port 5174.
+
 ## Integration Priority
 
 Current user priority:
@@ -740,7 +748,7 @@ Current user priority:
 2. Keep the historical no-context `RESUBMIT` boundary as a compatibility requirement while all new rule batches use persisted candidate context and item checkpoints.
 3. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
 4. Keep the first notification event boundary limited to explicit task completion/failure producers. Additional event codes must have a confirmed meaning and a real backend producer before they appear in configuration.
-5. Do not start P3 comic or audio implementation until their legal source, accepted formats, directory structures, processing requirements and storage contracts are explicitly confirmed by the user.
+5. Do not start P3 comic or audio implementation until their legal source, accepted formats, directory structures, processing requirements and storage contracts are explicitly confirmed by the user. Stable visual slots and empty states on the reader home do not broaden this boundary.
 6. Treat the current dashboard JSON as a runtime snapshot only. Do not implement or claim full backup/restore until product scope, encryption, retention and restore compatibility are confirmed.
 7. Keep tag taxonomy distinct from category taxonomy and keep the existing reader application integration-only in this repository.
 8. Before implementing another domain, confirm the NAS release/installation approach and then close Compose mount templates, first-start diagnostics, upgrade instructions and real-device path acceptance. Do not fold comic, audio, reader UI or undefined backup/restore work into that phase.
