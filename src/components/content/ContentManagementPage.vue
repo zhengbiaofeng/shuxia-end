@@ -176,13 +176,28 @@
                   <template v-else-if="column.type === 'tags'">
                     <div class="tag-cell">
                       <span
-                        v-for="tag in row[column.key]"
+                        v-for="tag in visibleTags(row[column.key], column.maxVisibleTags)"
                         :key="tag"
                         class="chip chip-tag"
                         :title="tag"
                       >
                         {{ tag }}
                       </span>
+                      <el-tooltip
+                        v-if="hiddenTags(row[column.key], column.maxVisibleTags).length"
+                        :content="hiddenTags(row[column.key], column.maxVisibleTags).join('、')"
+                        effect="light"
+                        placement="top"
+                        popper-class="content-tags-tooltip"
+                        :show-after="200"
+                      >
+                        <span
+                          class="chip chip-more"
+                          :aria-label="`还有 ${hiddenTags(row[column.key], column.maxVisibleTags).length} 个标签`"
+                        >
+                          +{{ hiddenTags(row[column.key], column.maxVisibleTags).length }}
+                        </span>
+                      </el-tooltip>
                     </div>
                   </template>
 
@@ -400,6 +415,29 @@ function normalizeOptions(options = []) {
     }
     return option
   })
+}
+
+function normalizeTags(tags = []) {
+  if (Array.isArray(tags)) {
+    return tags.map((tag) => String(tag || '').trim()).filter(Boolean)
+  }
+  return String(tags || '')
+    .split(/[,，]/)
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+}
+
+function visibleTags(tags, limit = 3) {
+  return normalizeTags(tags).slice(0, normalizeTagLimit(limit))
+}
+
+function hiddenTags(tags, limit = 3) {
+  return normalizeTags(tags).slice(normalizeTagLimit(limit))
+}
+
+function normalizeTagLimit(limit) {
+  const value = Number(limit)
+  return Number.isFinite(value) && value > 0 ? Math.floor(value) : 3
 }
 
 function coverStyle(cover) {
@@ -901,7 +939,7 @@ function handleLogout() {
 .tag-cell {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 4px;
   min-width: 0;
   overflow: hidden;
@@ -911,6 +949,19 @@ function handleLogout() {
   flex: 0 1 auto;
   min-width: 0;
   transform: none;
+}
+
+.chip-more {
+  background: #f5f7fb;
+  color: #52658d;
+  cursor: help;
+  flex: 0 0 auto !important;
+}
+
+:global(.content-tags-tooltip) {
+  line-height: 1.6;
+  max-width: 320px;
+  overflow-wrap: anywhere;
 }
 
 .chip.blue,

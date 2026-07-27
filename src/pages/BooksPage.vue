@@ -640,7 +640,7 @@ const baseColumns = [
   { key: 'title', label: '书名', type: 'title', subKey: 'isbn', class: 'column-title' },
   { key: 'author', label: '作者', class: 'column-author' },
   { key: 'category', label: '分类', type: 'chip', class: 'column-category' },
-  { key: 'tags', label: '标签', type: 'tags', class: 'column-tags' },
+  { key: 'tags', label: '标签', type: 'tags', class: 'column-tags', maxVisibleTags: 3 },
   { key: 'store', label: '存储位置', type: 'source', subKey: 'path', class: 'column-storage' },
   { key: 'format', label: '格式', class: 'column-format' },
   { key: 'size', label: '文件大小', class: 'column-size' },
