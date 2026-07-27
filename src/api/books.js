@@ -811,7 +811,7 @@ function buildTags(item, bookType) {
   if (Array.isArray(item.tagNames)) tags.push(...item.tagNames.filter(Boolean));
   if (item.publishStatus !== undefined) tags.push(normalizePublishStatus(item.publishStatus));
   if (item.transcodeStatus !== undefined) tags.push(normalizeTranscodeStatus(item.transcodeStatus, bookType));
-  return [...new Set(tags)].slice(0, 3);
+  return [...new Set(tags)];
 }
 
 function normalizeCategoryName(item = {}) {
