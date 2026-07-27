@@ -100,6 +100,14 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Recently Completed Work
 
+- Completed the first real book lifecycle acceptance pass across administration, backend, MinIO and the separate reader application:
+  - A unique PDF was uploaded through the administration UI, assigned a generated cover, parsed into 11 chapters, published, discovered on the reader home/library/search/detail surfaces, and rendered as a real 14-page PDF with authenticated progress/shelf/history writes.
+  - Offline content is now consistently excluded from recent reading, bookshelf and reading-history queries in addition to the existing discovery/detail filters.
+  - The `/sx/book/preview` and `/sx/book/download` file boundary now prevents anonymous/reader accounts from using a known file ID to read draft or offline media. Backend management roles retain draft/offline preview access, and unbound temporary content is backend-only.
+  - Backend role recognition is centralized in `SxCurrentUserSupport`; normal online cover requests do not perform the management-role lookup, avoiding an extra query on high-frequency cover lists.
+  - Live publish/offline regression passed for anonymous, `ceshi`, and `admin` access. The controlled PDF fixture and all associated database/MinIO/user-read rows were removed afterward; active file count returned from 81 to 79.
+  - Verification passed: 5 targeted backend tests, full 11-module package, Docker rebuild/recreate, OpenAPI health check, and final reader browser refresh with zero console errors. Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\reader-front-real-data-integration-20260727.md`.
+
 - Completed the reading-client responsive UI density pass in `E:\code\trae_workspcae\shuxia\qianduan\shuxia` without changing routes, APIs, data flow, or feature behavior:
   - Added shared layout, spacing, control, touch-target, card-radius, and content-width tokens. At widths up to 1199px, phone and tablet navigation is now a fixed bottom bar with all six existing destinations, safe-area clearance, 56px touch targets, and matching content inset; desktop navigation remains the compact left sidebar.
   - Fixed the home media-card flex cascade that stretched nominal 97px covers to about 163px. Desktop home/library/novel covers use an 82px standard preset with stable aspect ratios; handheld home carousels now preserve 92px reading/audio cards and 96px recommendation cards instead of shrinking every item to fit one row.
