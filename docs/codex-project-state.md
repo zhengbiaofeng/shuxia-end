@@ -103,7 +103,7 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 - Fixed the administration Books table cover and column-layout regression:
   - Book covers now load through an authenticated image component, so protected `/sx/book/preview` responses receive `X-Access-Token` without exposing that token to third-party image hosts.
   - Object URLs are revoked when rows change or unmount, and failed images retain a stable title-based placeholder instead of rendering a broken image.
-  - The Books table now has explicit semantic column widths and an internal horizontal-scroll boundary. Tag chips wrap inside their own cell and no longer overlap the adjacent storage location.
+  - The Books table now has explicit semantic column widths and an internal horizontal-scroll boundary. It displays the first three real backend tags on one line and collapses the remainder into a hoverable `+N`, so tags never overlap the adjacent storage location or change row height.
   - Verification passed with the production build and live browser checks at 1920x1080 and 1366x768. All 10 visible covers rendered, tag cells had no overflow, and the page had no document-level horizontal overflow.
 
 - Completed the controlled novel lifecycle integration pass across the admin app, backend, MinIO and reader app:
