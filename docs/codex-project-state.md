@@ -726,6 +726,12 @@ npm run build
 - `epubjs@0.3.93` still registers deprecated anonymous `unload` listeners in both view managers. A reproducible `patch-package` patch removes those listeners; Vue's existing unmount path remains responsible for destroying the rendition and book. `npm install` reapplies the patch through `postinstall`.
 - Reader production build passed after the compatibility patch. The existing bundle-size warning remains unchanged.
 
+## 2026-07-27 Reader Exit And Scroll Lifecycle
+
+- EPUB navigation no longer performs a progress flush both in the button handler and again in the route guard. EPUB, PDF and text readers now share one bounded exit flush: progress saving still starts before route completion, but a stalled index generation or request can delay navigation by at most 800 ms.
+- EPUB and PDF readers now snapshot the existing `html` and `body` horizontal/vertical overflow styles before applying reader mode and restore all four values on unmount. Reader teardown must never assign a new global `hidden` value because that disables scrolling on Home and Library after navigation.
+- A direct lifecycle check covered a never-settling save, concurrent flush coalescing and exact host-style restoration. Reader production build passed with only the existing bundle-size warning.
+
 ## Integration Priority
 
 Current user priority:
