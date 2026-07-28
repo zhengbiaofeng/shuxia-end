@@ -763,6 +763,15 @@ npm run build
 - Empty bookshelf, recommendation and update areas remain explicit because the current database has no published novel visible to this account. No placeholder novel records were introduced.
 - Reader production build passed with only the existing bundle-size warning. Browser acceptance at `1280x720` covered layout dimensions, independent scrolling, recommendation sorting, the expandable full catalog and a clean console.
 
+## 2026-07-28 BQG One-Time Batch Acceptance
+
+- The management collection workbench submitted a one-time BQG metadata batch for 20 candidates. Task `f422be22b4c642fe855ab021005140d7` completed 20/20.
+- Reader validation exposed two backend/source defects before release: shared-rule BQG book IDs could cross-contaminate batch members, and the current BQG API mirrors returned injected chapter bodies.
+- The backend now derives the API book ID from each subscription detail URL, rejects the observed high-specificity pollution markers before storage, and fails a chapter task when every attempted fetch fails with no readable local chapter.
+- All affected chapters were removed from the active dataset. The original 20 subscriptions remain: 1 verified novel is enabled/online with 1,575 readable chapters; 19 are disabled/offline with 0 active chapters. Temporary replacement/test candidates were deleted.
+- The reader novel page, detail, catalog, chapter 1, next chapter and return navigation passed for the verified novel with no application console errors. The requested 20-readable-novel result remains blocked by upstream BQG data quality and was not falsely published.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\bqg-batch-content-acceptance-20260728.md`.
+
 ## Integration Priority
 
 Current user priority:
