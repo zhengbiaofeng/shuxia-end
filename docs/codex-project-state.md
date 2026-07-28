@@ -773,8 +773,6 @@ npm run build
 - The Novel dashboard now keeps shelf rows full-width, left-aligns sparse recommendation results, separates trend charts from statistic text, and reserves enough height for complete recommendation cards. Browser acceptance at `1280x720`, `768x1024` and `400x800` found no horizontal page overflow, card clipping or application console errors.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\bqg-batch-content-acceptance-20260728.md`.
 
-## Integration Priority
-
 ## 2026-07-28 Scrape API Endpoint Management
 
 - Compatible novel API mirrors are no longer Java constants. Each scrape rule now owns an ordered, persisted `apiEndpoints` list maintained from the management-side Station Adapter form.
@@ -784,6 +782,8 @@ npm run build
 - Migration `sx-book-scrape-rule-api-endpoints-20260728.sql` has been applied locally. The two existing BQG rules each have three ordered endpoints; all three passed the management-page test with 150 candidates.
 - The backend container was rebuilt and recreated, six focused backend tests passed, and the frontend production build passed. Browser acceptance covered save/reload persistence, medium-width no-overlap layout and a clean management console.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\scrape-rule-api-endpoints-20260728.md`.
+
+## Integration Priority
 
 Current user priority:
 
