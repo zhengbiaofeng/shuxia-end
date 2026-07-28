@@ -40,7 +40,10 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item label="优先级" prop="priority">
+            <el-form-item prop="priority">
+              <template #label>
+                <AdminFieldLabel label="优先级" :help="SCRAPE_RULE_PRIORITY_HELP" />
+              </template>
               <el-input-number v-model="form.priority" class="form-control" :min="0" :max="999" />
             </el-form-item>
             <el-form-item label="状态">
@@ -112,16 +115,16 @@
                   <el-switch v-model="endpoint.enabled" active-text="启用" inactive-text="停用" />
                 </div>
                 <div class="api-endpoint-actions">
-                  <el-tooltip content="上移，提高故障切换优先级">
-                    <el-button :icon="ArrowUp" :disabled="index === 0" circle @click="moveApiEndpoint(index, -1)" />
-                  </el-tooltip>
-                  <el-tooltip content="下移，降低故障切换优先级">
-                    <el-button :icon="ArrowDown" :disabled="index === form.apiEndpoints.length - 1" circle @click="moveApiEndpoint(index, 1)" />
-                  </el-tooltip>
+                  <AdminTooltip content="上移，提高故障切换优先级">
+                    <el-button aria-label="上移接口" :icon="ArrowUp" :disabled="index === 0" circle @click="moveApiEndpoint(index, -1)" />
+                  </AdminTooltip>
+                  <AdminTooltip content="下移，降低故障切换优先级">
+                    <el-button aria-label="下移接口" :icon="ArrowDown" :disabled="index === form.apiEndpoints.length - 1" circle @click="moveApiEndpoint(index, 1)" />
+                  </AdminTooltip>
                   <el-button :icon="Connection" :loading="endpoint._testing" @click="testApiEndpoint(endpoint, index)">测试</el-button>
-                  <el-tooltip content="删除接口">
-                    <el-button :icon="Delete" type="danger" plain circle @click="removeApiEndpoint(index)" />
-                  </el-tooltip>
+                  <AdminTooltip content="删除接口">
+                    <el-button aria-label="删除接口" :icon="Delete" type="danger" plain circle @click="removeApiEndpoint(index)" />
+                  </AdminTooltip>
                 </div>
               </article>
             </div>
@@ -189,8 +192,9 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowDown, ArrowUp, Connection, DataAnalysis, Delete, InfoFilled, Plus } from '@element-plus/icons-vue'
-import { AdminInfoBox, AdminStatusBadge } from '../../components/admin'
+import { AdminFieldLabel, AdminInfoBox, AdminStatusBadge, AdminTooltip } from '../../components/admin'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
+import { SCRAPE_RULE_PRIORITY_HELP } from '../../config/adminHelpText'
 import {
   BIZ_TYPE_OPTIONS,
   REQUEST_METHOD_OPTIONS,
