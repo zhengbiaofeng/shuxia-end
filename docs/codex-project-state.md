@@ -766,10 +766,11 @@ npm run build
 ## 2026-07-28 BQG One-Time Batch Acceptance
 
 - The management collection workbench submitted a one-time BQG metadata batch for 20 candidates. Task `f422be22b4c642fe855ab021005140d7` completed 20/20.
-- Reader validation exposed two backend/source defects before release: shared-rule BQG book IDs could cross-contaminate batch members, and the current BQG API mirrors returned injected chapter bodies.
+- Reader validation exposed two backend/source defects before release: shared-rule BQG book IDs could cross-contaminate batch members, and the currently configured `apibi.cc` / `apiqu.cc` / `apige.cc` API mirrors returned injected chapter bodies. This finding applies to those mirrors, not to the target BQG website as a whole.
 - The backend now derives the API book ID from each subscription detail URL, rejects the observed high-specificity pollution markers before storage, and fails a chapter task when every attempted fetch fails with no readable local chapter.
 - All affected chapters were removed from the active dataset. The original 20 subscriptions remain: 1 verified novel is enabled/online with 1,575 readable chapters; 19 are disabled/offline with 0 active chapters. Temporary replacement/test candidates were deleted.
-- The reader novel page, detail, catalog, chapter 1, next chapter and return navigation passed for the verified novel with no application console errors. The requested 20-readable-novel result remains blocked by upstream BQG data quality and was not falsely published.
+- The reader novel page, detail, catalog, chapter 1, next chapter and return navigation passed for the verified novel with no application console errors. The requested 20-readable-novel result remains blocked by the configured API-mirror content; the next source step is a real-site page adapter or a verified clean API contract, followed by re-collection of the 19 metadata-only records.
+- The Novel dashboard now keeps shelf rows full-width, left-aligns sparse recommendation results, separates trend charts from statistic text, and reserves enough height for complete recommendation cards. Browser acceptance at `1280x720`, `768x1024` and `400x800` found no horizontal page overflow, card clipping or application console errors.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\bqg-batch-content-acceptance-20260728.md`.
 
 ## Integration Priority
