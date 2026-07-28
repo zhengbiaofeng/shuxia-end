@@ -87,41 +87,126 @@
       <AdminInfoBox title="站点适配说明" :icon="InfoFilled" :items="page.notes" />
     </div>
 
-    <el-drawer v-model="detailVisible" title="站点适配详情" size="640px" destroy-on-close>
+    <el-drawer v-model="detailVisible" class="rule-detail-drawer" size="min(720px, 100vw)" destroy-on-close>
+      <template #header>
+        <div class="detail-drawer-heading">
+          <span class="detail-drawer-heading__icon"><DataAnalysis /></span>
+          <div>
+            <strong>站点适配详情</strong>
+            <small>查看站点访问配置与字段解析规则</small>
+          </div>
+        </div>
+      </template>
       <div v-loading="detailLoading" class="detail-panel">
         <template v-if="selectedRule">
-          <el-descriptions :column="1" border>
-            <el-descriptions-item label="适配名称">{{ selectedRule.ruleName || '--' }}</el-descriptions-item>
-            <el-descriptions-item label="内容类型">{{ bizLabel(selectedRule.bizType) }}</el-descriptions-item>
-            <el-descriptions-item label="站点名称">{{ selectedRule.siteName || '--' }}</el-descriptions-item>
-            <el-descriptions-item label="连接模板编码">{{ selectedRule.channelCode || '--' }}</el-descriptions-item>
-            <el-descriptions-item label="站点根地址">{{ selectedRule.baseUrl || '--' }}</el-descriptions-item>
-            <el-descriptions-item label="列表地址">{{ selectedRule.listUrl || '--' }}</el-descriptions-item>
-            <el-descriptions-item label="调试地址">{{ selectedRule.debugUrl || '--' }}</el-descriptions-item>
-            <el-descriptions-item label="请求方法">{{ selectedRule.requestMethod || '--' }}</el-descriptions-item>
-            <el-descriptions-item label="正文接口组">
-              <div v-if="selectedRule.apiEndpoints?.length" class="endpoint-summary">
-                <div v-for="(endpoint, index) in selectedRule.apiEndpoints" :key="`${endpoint.url}-${index}`">
-                  <span>{{ index + 1 }}. {{ endpoint.name }}</span>
-                  <code>{{ endpoint.url }}</code>
-                  <AdminStatusBadge :label="endpoint.enabled ? '启用' : '停用'" :tone="endpoint.enabled ? 'green' : 'slate'" />
-                </div>
+          <section class="detail-overview">
+            <div class="detail-overview__heading">
+              <div>
+                <span>站点适配</span>
+                <h2>{{ selectedRule.ruleName || '--' }}</h2>
               </div>
-              <span v-else>普通 HTML 解析</span>
-            </el-descriptions-item>
-            <el-descriptions-item label="优先级">{{ selectedRule.priority }}</el-descriptions-item>
-            <el-descriptions-item label="状态">{{ selectedRule.status === 1 ? '启用' : '禁用' }}</el-descriptions-item>
-            <el-descriptions-item label="备注">{{ selectedRule.remark || '--' }}</el-descriptions-item>
-          </el-descriptions>
+              <AdminStatusBadge
+                :label="selectedRule.status === 1 ? '已启用' : '已禁用'"
+                :tone="selectedRule.status === 1 ? 'green' : 'slate'"
+                dot
+              />
+            </div>
+            <dl class="detail-facts">
+              <div>
+                <dt>内容类型</dt>
+                <dd>{{ bizLabel(selectedRule.bizType) }}</dd>
+              </div>
+              <div>
+                <dt>目标站点</dt>
+                <dd>{{ selectedRule.siteName || '--' }}</dd>
+              </div>
+              <div>
+                <dt>请求方法</dt>
+                <dd>{{ selectedRule.requestMethod || '--' }}</dd>
+              </div>
+              <div>
+                <AdminTooltip :content="SCRAPE_RULE_PRIORITY_HELP">
+                  <dt class="detail-help-label" tabindex="0">
+                    优先级
+                    <el-icon><QuestionFilled /></el-icon>
+                  </dt>
+                </AdminTooltip>
+                <dd>{{ selectedRule.priority ?? '--' }}</dd>
+              </div>
+              <div class="is-wide">
+                <dt>连接模板编码</dt>
+                <dd>{{ selectedRule.channelCode || '未绑定连接模板' }}</dd>
+              </div>
+            </dl>
+          </section>
 
-          <section class="selector-grid">
-            <h3>选择器配置</h3>
+          <section class="detail-section">
+            <header class="detail-section__heading">
+              <span><el-icon><Link /></el-icon></span>
+              <div>
+                <h3>访问地址</h3>
+                <p>该适配访问、发现和调试内容时使用的地址</p>
+              </div>
+            </header>
+            <dl class="address-list">
+              <div>
+                <dt>站点根地址</dt>
+                <dd><code>{{ selectedRule.baseUrl || '--' }}</code></dd>
+              </div>
+              <div>
+                <dt>列表地址</dt>
+                <dd><code>{{ selectedRule.listUrl || '--' }}</code></dd>
+              </div>
+              <div>
+                <dt>调试地址</dt>
+                <dd><code>{{ selectedRule.debugUrl || '--' }}</code></dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="detail-section">
+            <header class="detail-section__heading">
+              <span><el-icon><Connection /></el-icon></span>
+              <div>
+                <h3>正文接口</h3>
+                <p>按顺序尝试已启用的接口；未配置时使用普通 HTML 解析</p>
+              </div>
+            </header>
+            <div v-if="selectedRule.apiEndpoints?.length" class="endpoint-summary">
+              <article v-for="(endpoint, index) in selectedRule.apiEndpoints" :key="`${endpoint.url}-${index}`">
+                <span class="endpoint-summary__index">{{ index + 1 }}</span>
+                <div>
+                  <strong>{{ endpoint.name || `接口 ${index + 1}` }}</strong>
+                  <code>{{ endpoint.url || '--' }}</code>
+                </div>
+                <AdminStatusBadge :label="endpoint.enabled ? '启用' : '停用'" :tone="endpoint.enabled ? 'green' : 'slate'" />
+              </article>
+            </div>
+            <div v-else class="detail-empty-line">普通 HTML 解析，无独立正文接口</div>
+          </section>
+
+          <section class="detail-section selector-grid">
+            <header class="detail-section__heading">
+              <span><el-icon><SetUp /></el-icon></span>
+              <div>
+                <h3>选择器配置</h3>
+                <p>用于从目标页面定位书名、作者、章节和正文等字段</p>
+              </div>
+            </header>
             <dl>
               <div v-for="item in selectorFields" :key="item.key">
                 <dt>{{ item.label }}</dt>
-                <dd>{{ selectedRule[item.key] || '--' }}</dd>
+                <dd><code>{{ selectedRule[item.key] || '--' }}</code></dd>
               </div>
             </dl>
+          </section>
+
+          <section v-if="selectedRule.remark" class="detail-section detail-remark">
+            <header class="detail-section__heading">
+              <span><el-icon><Document /></el-icon></span>
+              <div><h3>备注</h3></div>
+            </header>
+            <p>{{ selectedRule.remark }}</p>
           </section>
 
           <section class="detail-actions">
@@ -292,7 +377,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
-import { DataAnalysis, Delete, EditPen, InfoFilled, Refresh, View } from '@element-plus/icons-vue'
+import { Connection, DataAnalysis, Delete, Document, EditPen, InfoFilled, Link, QuestionFilled, Refresh, SetUp, View } from '@element-plus/icons-vue'
 import { AdminActionIcons, AdminFilterBar, AdminInfoBox, AdminStatusBadge, AdminTableCard, AdminTooltip } from '../../components/admin'
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
@@ -828,65 +913,317 @@ onMounted(() => loadRules())
 }
 
 .detail-panel {
+  display: grid;
+  gap: 16px;
   min-height: 260px;
+  padding-bottom: 76px;
+}
+
+.detail-drawer-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-drawer-heading__icon,
+.detail-section__heading > span {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #eaf2ff;
+  color: var(--admin-primary);
+  font-size: 18px;
+}
+
+.detail-drawer-heading strong,
+.detail-drawer-heading small {
+  display: block;
+}
+
+.detail-drawer-heading strong {
+  color: #102557;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.detail-drawer-heading small {
+  margin-top: 3px;
+  color: #7180a3;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.detail-overview {
+  padding: 18px;
+  border: 1px solid #dbe7fb;
+  border-radius: 8px;
+  background: #f7faff;
+}
+
+.detail-overview__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e1e9f7;
+}
+
+.detail-overview__heading span {
+  display: block;
+  color: #7180a3;
+  font-size: 12px;
+}
+
+.detail-overview__heading h2 {
+  margin: 5px 0 0;
+  overflow-wrap: anywhere;
+  color: #102557;
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.detail-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px 20px;
+  margin: 16px 0 0;
+}
+
+.detail-facts > div {
+  min-width: 0;
+}
+
+.detail-facts > .is-wide {
+  grid-column: span 2;
+}
+
+.detail-facts dt,
+.detail-facts dd {
+  margin: 0;
+}
+
+.detail-facts dt {
+  color: #7180a3;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.detail-facts dd {
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  color: #183366;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.detail-help-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 4px;
+  cursor: help;
+}
+
+.detail-help-label .el-icon {
+  font-size: 13px;
+}
+
+.detail-help-label:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--admin-primary) 50%, transparent);
+  outline-offset: 3px;
+}
+
+.detail-section {
+  padding: 18px;
+  border: 1px solid var(--admin-panel-border);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.detail-section__heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.detail-section__heading > span {
+  width: 34px;
+  height: 34px;
+  background: #f0f5ff;
+  font-size: 16px;
+}
+
+.detail-section__heading h3,
+.detail-section__heading p {
+  margin: 0;
+}
+
+.detail-section__heading h3 {
+  color: #102557;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.detail-section__heading p {
+  margin-top: 3px;
+  color: #7180a3;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.address-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.address-list > div {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 12px 0;
+  border-top: 1px solid #edf1f7;
+}
+
+.address-list > div:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.address-list > div:last-child {
+  padding-bottom: 0;
+}
+
+.address-list dt,
+.address-list dd {
+  min-width: 0;
+  margin: 0;
+}
+
+.address-list dt {
+  color: #7180a3;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.address-list code,
+.selector-grid code,
+.endpoint-summary code {
+  color: #294a80;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .endpoint-summary {
   display: grid;
-  gap: 8px;
-}
-
-.endpoint-summary > div {
-  display: grid;
-  grid-template-columns: minmax(96px, auto) minmax(0, 1fr) auto;
-  align-items: center;
   gap: 10px;
 }
 
+.endpoint-summary > article {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e1e9f7;
+  border-radius: 8px;
+  background: #f8fbff;
+}
+
+.endpoint-summary__index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #e5efff;
+  color: var(--admin-primary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.endpoint-summary strong,
 .endpoint-summary code {
+  display: block;
   min-width: 0;
-  overflow-wrap: anywhere;
-  color: #35558c;
-  font-family: inherit;
 }
 
-.selector-grid {
-  margin-top: 18px;
+.endpoint-summary strong {
+  margin-bottom: 3px;
+  color: #183366;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
-.selector-grid h3 {
-  margin: 0 0 12px;
-  color: #102557;
-  font-size: 15px;
+.detail-empty-line {
+  padding: 14px;
+  border: 1px dashed #d5dfef;
+  border-radius: 8px;
+  background: #fafcff;
+  color: #617098;
+  font-size: 13px;
+  text-align: center;
 }
 
 .selector-grid dl {
   display: grid;
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
   margin: 0;
 }
 
-.selector-grid div {
-  display: grid;
-  grid-template-columns: 120px minmax(0, 1fr);
-  gap: 12px;
+.selector-grid dl > div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #e8edf5;
+  border-radius: 8px;
+  background: #fafcff;
 }
 
 .selector-grid dt {
+  margin-bottom: 6px;
   color: #6b7da8;
+  font-size: 12px;
 }
 
 .selector-grid dd {
   min-width: 0;
   margin: 0;
+}
+
+.detail-remark p {
+  margin: 0;
   overflow-wrap: anywhere;
   color: #314a80;
+  font-size: 13px;
+  line-height: 1.7;
 }
 
 .detail-actions {
+  position: sticky;
+  z-index: 2;
+  bottom: -20px;
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
-  margin-top: 22px;
+  margin: 4px -20px -20px;
+  padding: 14px 20px;
+  border-top: 1px solid #e5eaf2;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 -8px 24px rgba(27, 55, 99, 0.06);
+  backdrop-filter: blur(10px);
 }
 
 .debug-result {
@@ -1066,6 +1403,34 @@ onMounted(() => loadRules())
 }
 
 @media (max-width: 760px) {
+  .detail-panel {
+    padding-bottom: 68px;
+  }
+
+  .detail-overview,
+  .detail-section {
+    padding: 14px;
+  }
+
+  .detail-facts,
+  .selector-grid dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail-facts > .is-wide {
+    grid-column: 1 / -1;
+  }
+
+  .address-list > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .detail-actions {
+    margin-inline: -14px;
+    padding-inline: 14px;
+  }
+
   .sample-grid {
     grid-template-columns: 1fr;
   }
