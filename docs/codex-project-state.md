@@ -100,6 +100,11 @@ This document is the handoff snapshot for new Codex threads. Read it before star
 
 ## Recently Completed Work
 
+- Unified the reading client's desktop application shell across home, library, novel, search, content detail, placeholder and settings pages:
+  - Every sidebar page now uses the same `home-layout--wide` contract, so route changes no longer switch between 200px/guttered and 220px/full-width sidebar geometry.
+  - At desktop widths, the application is fixed to `100dvh`, document scrolling is disabled, the 220px sidebar remains viewport-height and non-scrolling, and only the right-side `.home-shell` owns vertical scrolling. Tablet/mobile bottom navigation and document scrolling remain unchanged.
+  - Live verification at 1280x720 confirmed identical 220x720 sidebars on home and novel routes, document `scrollHeight=clientHeight=720`, and independent right-panel scrolling on both routes. Reader production build passed on 2026-07-28; the existing large-chunk warning remains unchanged.
+
 - Fixed the EPUB reading-progress race that could leave a valid CFI anchor with `readPosition=0` and `readPercent=0`:
   - Progress bootstrap now exposes a completion barrier. Route exits wait for location generation, saved-position restoration and bootstrap repair instead of skipping the final save while initialization is active.
   - Bootstrap repair writes are explicitly allowed, all progress writes are serialized, and CFI progress is persisted only after the EPUB location table is available. This prevents transient zero values and slower stale requests from overwriting the latest page.
