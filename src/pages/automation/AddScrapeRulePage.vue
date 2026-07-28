@@ -846,7 +846,7 @@ onMounted(async () => {
   .rule-form__side > h2,
   .rule-form__side > .debug-card,
   .rule-form__side > .side-actions,
-  .rule-form__side > .admin-guidance {
+  .rule-form__side > .admin-info-box {
     grid-column: 1 / -1;
   }
 
