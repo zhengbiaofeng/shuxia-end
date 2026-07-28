@@ -753,6 +753,16 @@ npm run build
 - The Home and Bookhouse routes now share one `home-layout--wide` desktop shell for sidebar, topbar and content spacing. Tablet and phone layouts continue to use the shared bottom navigation and responsive single/two-column fallbacks.
 - The reader production build passed with only the existing bundle-size warning, and the running development service returned HTTP 200 for `/library` on port 5174.
 
+## 2026-07-28 Reader Novel PC Dashboard Alignment
+
+- The reader Novel route now uses a dedicated dashboard aligned with the approved desktop reference: a novel channel hero and reader bookshelf, a full-width recommendation strip, then latest updates, configured recommendations, categories and reader statistics.
+- All rendered values continue to come from the existing reader APIs. The page does not fabricate ratings, completion counts or novel-specific statistics that the backend does not provide; the four statistics are labelled according to their actual account-level contracts.
+- The novel product boundary is unchanged: the reader only displays administrator-collected, synchronized and published novels. Collection, subscription and source configuration remain management-side responsibilities.
+- Recommendation tabs use the real `recommend`, `hot` and `latest` sort contracts. Category shortcuts and every "view all" action retain access to the complete category/sort/pagination catalog instead of replacing the existing discovery workflow.
+- Desktop uses the shared fixed sidebar and independently scrolling content shell. At narrower desktop widths the four lower panels become a stable two-column grid; tablet and phone keep the shared bottom navigation and collapse the dashboard without page-level horizontal overflow.
+- Empty bookshelf, recommendation and update areas remain explicit because the current database has no published novel visible to this account. No placeholder novel records were introduced.
+- Reader production build passed with only the existing bundle-size warning. Browser acceptance at `1280x720` covered layout dimensions, independent scrolling, recommendation sorting, the expandable full catalog and a clean console.
+
 ## Integration Priority
 
 Current user priority:
