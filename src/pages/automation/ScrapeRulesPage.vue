@@ -52,7 +52,7 @@
           </div>
         </template>
         <template #rate="{ row }">
-          <el-tooltip :content="templateBindingTip(row)" placement="top">
+          <el-tooltip :content="templateBindingTip(row)" placement="top" popper-class="binding-tooltip">
             <span class="binding-badge-trigger" tabindex="0">
               <AdminStatusBadge :label="row.rate" :tone="row.channelCode === '--' ? 'slate' : 'green'" />
             </span>
@@ -814,6 +814,13 @@ onMounted(() => loadRules())
 .binding-badge-trigger:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--admin-primary) 55%, transparent);
   outline-offset: 3px;
+}
+
+:global(.binding-tooltip.el-popper) {
+  max-width: 420px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .detail-panel {
