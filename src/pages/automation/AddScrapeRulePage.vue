@@ -623,6 +623,105 @@ onMounted(async () => {
   gap: 12px;
 }
 
+.form-section__header > div {
+  min-width: 0;
+}
+
+.section-description {
+  margin: 6px 0 0;
+  color: #6b7da8;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.api-endpoints-form-item {
+  margin-bottom: 0;
+}
+
+.api-endpoints-form-item :deep(.el-form-item__content) {
+  display: block;
+  width: 100%;
+}
+
+.api-endpoints {
+  display: grid;
+  gap: 10px;
+}
+
+.api-endpoint-row {
+  display: grid;
+  grid-template-columns: 32px minmax(120px, 0.55fr) minmax(260px, 1.45fr) auto auto;
+  align-items: start;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #dbe5f5;
+  border-radius: 8px;
+  background: #f8faff;
+}
+
+.api-endpoint-order {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-top: 20px;
+  border-radius: 50%;
+  background: #e8f0ff;
+  color: #2368d8;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.api-endpoint-field,
+.api-endpoint-enabled {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: #50679b;
+  font-size: 12px;
+}
+
+.api-endpoint-enabled {
+  min-width: 116px;
+}
+
+.api-endpoint-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 19px;
+  white-space: nowrap;
+}
+
+.api-endpoint-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+
+.field-error,
+.endpoint-test-result {
+  min-height: 18px;
+  color: #dc2626;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.endpoint-test-result {
+  color: #b45309;
+}
+
+.endpoint-test-result.is-pass {
+  color: #15803d;
+}
+
+.api-endpoints-empty {
+  padding: 20px;
+  border: 1px dashed #cbd8ec;
+  border-radius: 8px;
+  background: #fafcff;
+  color: #6b7da8;
+  text-align: center;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -738,12 +837,43 @@ onMounted(async () => {
   .rule-form {
     grid-template-columns: 1fr;
   }
+
+  .api-endpoint-row {
+    grid-template-columns: 32px minmax(120px, 0.55fr) minmax(240px, 1.45fr) auto;
+  }
+
+  .api-endpoint-actions {
+    grid-column: 2 / -1;
+    padding-top: 0;
+  }
 }
 
 @media (max-width: 860px) {
   .form-grid,
   .form-grid.is-selectors {
     grid-template-columns: 1fr;
+  }
+
+  .form-section__header {
+    align-items: flex-start;
+  }
+
+  .api-endpoint-row {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+
+  .api-endpoint-order {
+    grid-row: 1 / span 3;
+  }
+
+  .api-endpoint-field,
+  .api-endpoint-enabled,
+  .api-endpoint-actions {
+    grid-column: 2;
+  }
+
+  .api-endpoint-actions {
+    flex-wrap: wrap;
   }
 }
 </style>
