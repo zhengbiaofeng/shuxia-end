@@ -7,38 +7,37 @@
           <strong>{{ group.title }} <small>({{ group.count }})</small></strong>
         </div>
         <div v-if="canManageCategories" class="category-actions">
-          <button v-if="authStore.hasPermission('sxbook:category:add')" class="tooltip-button" type="button" aria-label="添加子分类" @click="$emit('add-child', group)">
-            <el-icon><Plus /></el-icon>
-            <span class="icon-tooltip">添加子分类</span>
-          </button>
-          <button v-if="authStore.hasPermission('sxbook:category:edit')" class="tooltip-button" type="button" aria-label="编辑分类" @click="$emit('edit', group)">
-            <el-icon><EditPen /></el-icon>
-            <span class="icon-tooltip">编辑分类</span>
-          </button>
-          <button
-            v-if="authStore.hasPermission('sxbook:category:delete') && canDeleteCategory(group)"
-            class="tooltip-button delete-action"
-            type="button"
-            aria-label="删除分类"
-            @click="$emit('delete', group)"
-          >
-            <el-icon><Delete /></el-icon>
-            <span class="icon-tooltip">删除分类</span>
-          </button>
-          <button
+          <AdminTooltip v-if="authStore.hasPermission('sxbook:category:add')" content="添加子分类">
+            <button type="button" aria-label="添加子分类" @click="$emit('add-child', group)">
+              <el-icon><Plus /></el-icon>
+            </button>
+          </AdminTooltip>
+          <AdminTooltip v-if="authStore.hasPermission('sxbook:category:edit')" content="编辑分类">
+            <button type="button" aria-label="编辑分类" @click="$emit('edit', group)">
+              <el-icon><EditPen /></el-icon>
+            </button>
+          </AdminTooltip>
+          <AdminTooltip v-if="authStore.hasPermission('sxbook:category:delete') && canDeleteCategory(group)" content="删除分类">
+            <button class="delete-action" type="button" aria-label="删除分类" @click="$emit('delete', group)">
+              <el-icon><Delete /></el-icon>
+            </button>
+          </AdminTooltip>
+          <AdminTooltip
             v-if="authStore.hasPermission('sxbook:category:status')"
-            class="tooltip-button"
-            type="button"
-            :class="['status-action', group.status === 0 ? 'is-enable' : 'is-disable']"
-            :aria-label="group.status === 0 ? '启用分类' : '停用分类'"
-            @click="$emit('toggle-status', group)"
+            :content="group.status === 0 ? '启用分类' : '停用分类'"
           >
-            <el-icon>
-              <CircleCheck v-if="group.status === 0" />
-              <CircleClose v-else />
-            </el-icon>
-            <span class="icon-tooltip">{{ group.status === 0 ? '启用分类' : '停用分类' }}</span>
-          </button>
+            <button
+              type="button"
+              :class="['status-action', group.status === 0 ? 'is-enable' : 'is-disable']"
+              :aria-label="group.status === 0 ? '启用分类' : '停用分类'"
+              @click="$emit('toggle-status', group)"
+            >
+              <el-icon>
+                <CircleCheck v-if="group.status === 0" />
+                <CircleClose v-else />
+              </el-icon>
+            </button>
+          </AdminTooltip>
         </div>
       </header>
 
@@ -48,20 +47,16 @@
           <el-icon><Folder /></el-icon>
           <span>{{ childLabel(child) }}</span>
           <div v-if="canManageCategories" class="tree-actions">
-            <button v-if="authStore.hasPermission('sxbook:category:edit')" class="tree-action tooltip-button" type="button" aria-label="编辑分类" @click="$emit('edit', child)">
-              <el-icon><EditPen /></el-icon>
-              <span class="icon-tooltip">编辑分类</span>
-            </button>
-            <button
-              v-if="authStore.hasPermission('sxbook:category:delete') && canDeleteCategory(child)"
-              class="tree-action tooltip-button delete-action"
-              type="button"
-              aria-label="删除分类"
-              @click="$emit('delete', child)"
-            >
-              <el-icon><Delete /></el-icon>
-              <span class="icon-tooltip">删除分类</span>
-            </button>
+            <AdminTooltip v-if="authStore.hasPermission('sxbook:category:edit')" content="编辑分类">
+              <button class="tree-action" type="button" aria-label="编辑分类" @click="$emit('edit', child)">
+                <el-icon><EditPen /></el-icon>
+              </button>
+            </AdminTooltip>
+            <AdminTooltip v-if="authStore.hasPermission('sxbook:category:delete') && canDeleteCategory(child)" content="删除分类">
+              <button class="tree-action delete-action" type="button" aria-label="删除分类" @click="$emit('delete', child)">
+                <el-icon><Delete /></el-icon>
+              </button>
+            </AdminTooltip>
           </div>
         </li>
       </ul>
@@ -87,6 +82,7 @@ import {
   FolderOpened,
   Plus,
 } from '@element-plus/icons-vue'
+import AdminTooltip from '../admin/AdminTooltip.vue'
 import { useAuthStore } from '../../stores/auth'
 
 defineProps({
@@ -197,48 +193,6 @@ function canDeleteCategory(category) {
   font-size: 16px;
 }
 
-.tooltip-button {
-  position: relative;
-}
-
-.icon-tooltip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  z-index: 20;
-  padding: 6px 9px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  background: rgba(15, 23, 42, 0.94);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, 4px);
-  transition: opacity 0.16s ease, transform 0.16s ease;
-  white-space: nowrap;
-}
-
-.icon-tooltip::after {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  width: 8px;
-  height: 8px;
-  background: rgba(15, 23, 42, 0.94);
-  content: '';
-  transform: translate(-50%, -4px) rotate(45deg);
-}
-
-.tooltip-button:hover .icon-tooltip,
-.tooltip-button:focus-visible .icon-tooltip {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
 .category-actions button:last-child {
   width: 30px;
   height: 30px;
@@ -330,23 +284,6 @@ function canDeleteCategory(category) {
 
 .tree-actions .tree-action {
   margin-left: 0;
-}
-
-.tree-action .icon-tooltip {
-  right: -6px;
-  left: auto;
-  transform: translateY(4px);
-}
-
-.tree-action .icon-tooltip::after {
-  right: 8px;
-  left: auto;
-  transform: translateY(-4px) rotate(45deg);
-}
-
-.tree-action:hover .icon-tooltip,
-.tree-action:focus-visible .icon-tooltip {
-  transform: translateY(0);
 }
 
 .category-tree li:last-child {
