@@ -84,6 +84,54 @@
         </section>
 
         <section class="form-section">
+          <header class="form-section__header">
+            <div>
+              <h2>正文接口组</h2>
+              <p class="section-description">用于笔趣阁兼容站点的批量发现和章节同步；任务按列表顺序依次尝试启用地址。</p>
+            </div>
+            <el-button :icon="Plus" @click="addApiEndpoint">添加接口</el-button>
+          </header>
+          <el-form-item class="api-endpoints-form-item" prop="apiEndpoints">
+            <div v-if="form.apiEndpoints.length" class="api-endpoints">
+              <article v-for="(endpoint, index) in form.apiEndpoints" :key="endpoint._key" class="api-endpoint-row">
+                <div class="api-endpoint-order">{{ index + 1 }}</div>
+                <label class="api-endpoint-field">
+                  <span>名称</span>
+                  <el-input v-model="endpoint.name" placeholder="例如：主接口" @blur="touchApiEndpoint(endpoint)" />
+                </label>
+                <label class="api-endpoint-field is-url">
+                  <span>API 根地址</span>
+                  <el-input v-model="endpoint.url" placeholder="https://api.example.com" @blur="touchApiEndpoint(endpoint)" />
+                  <small v-if="endpoint._touched && endpointError(index)" class="field-error">{{ endpointError(index) }}</small>
+                  <small v-else-if="endpoint._testResult" :class="['endpoint-test-result', { 'is-pass': endpoint._testResult.passed }]">
+                    {{ endpoint._testResult.message }} · {{ endpoint._testResult.durationMs ?? 0 }}ms
+                  </small>
+                </label>
+                <div class="api-endpoint-enabled">
+                  <span>状态</span>
+                  <el-switch v-model="endpoint.enabled" active-text="启用" inactive-text="停用" />
+                </div>
+                <div class="api-endpoint-actions">
+                  <el-tooltip content="上移，提高故障切换优先级">
+                    <el-button :icon="ArrowUp" :disabled="index === 0" circle @click="moveApiEndpoint(index, -1)" />
+                  </el-tooltip>
+                  <el-tooltip content="下移，降低故障切换优先级">
+                    <el-button :icon="ArrowDown" :disabled="index === form.apiEndpoints.length - 1" circle @click="moveApiEndpoint(index, 1)" />
+                  </el-tooltip>
+                  <el-button :icon="Connection" :loading="endpoint._testing" @click="testApiEndpoint(endpoint, index)">测试</el-button>
+                  <el-tooltip content="删除接口">
+                    <el-button :icon="Delete" type="danger" plain circle @click="removeApiEndpoint(index)" />
+                  </el-tooltip>
+                </div>
+              </article>
+            </div>
+            <div v-else class="api-endpoints-empty">
+              普通 HTML 站点可以留空；使用兼容 API 的站点请添加至少一个地址。
+            </div>
+          </el-form-item>
+        </section>
+
+        <section class="form-section">
           <h2>字段选择器</h2>
           <div class="form-grid is-selectors">
             <el-form-item v-for="field in selectorFields" :key="field.key" :label="field.label">
@@ -140,7 +188,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
-import { DataAnalysis, InfoFilled } from '@element-plus/icons-vue'
+import { ArrowDown, ArrowUp, Connection, DataAnalysis, Delete, InfoFilled, Plus } from '@element-plus/icons-vue'
 import { AdminInfoBox, AdminStatusBadge } from '../../components/admin'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
 import {
@@ -151,6 +199,7 @@ import {
   debugScrapeRule,
   fetchScrapeChannelsPage,
   fetchScrapeRuleDetail,
+  testScrapeApiEndpoint,
   updateScrapeRule,
 } from '../../api/automation'
 
@@ -200,12 +249,14 @@ const rules = {
   siteName: [{ required: true, message: '请输入站点名称', trigger: 'blur' }],
   priority: [{ required: true, message: '请输入优先级', trigger: 'change' }],
   requestHeadersJson: [{ validator: validateJson, trigger: 'blur' }],
+  apiEndpoints: [{ validator: validateApiEndpoints, trigger: 'change' }],
 }
 const tips = [
   '管理端采集仅用于网络小说，业务类型固定为 novel',
   '请求配置和字段选择器都在基础信息页内维护，避免重复配置',
   '连接模板是可选复用项；没有独立模板时，也可以直接在本页填写站点请求配置',
   '请求头 JSON 留空时后端会使用默认 User-Agent',
+  '正文接口组是笔趣阁兼容采集的唯一地址来源，顺序越靠前优先级越高',
   '调试至少需要调试地址和一个选择器命中项',
 ]
 
@@ -230,6 +281,7 @@ function defaultForm() {
     chapterTitleSelector: '',
     chapterUrlSelector: '',
     contentSelector: '',
+    apiEndpoints: [],
     priority: 50,
     status: 1,
     remark: '',
@@ -237,7 +289,95 @@ function defaultForm() {
 }
 
 function assignForm(data = {}) {
-  Object.assign(form, defaultForm(), data)
+  Object.assign(form, defaultForm(), data, {
+    apiEndpoints: Array.isArray(data.apiEndpoints) ? data.apiEndpoints.map(createApiEndpoint) : [],
+  })
+}
+
+function createApiEndpoint(data = {}) {
+  return {
+    _key: data._key || `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    name: data.name || '',
+    url: data.url || '',
+    enabled: data.enabled !== false,
+    _touched: false,
+    _testing: false,
+    _testResult: null,
+  }
+}
+
+function addApiEndpoint() {
+  form.apiEndpoints.push(createApiEndpoint({ name: `接口 ${form.apiEndpoints.length + 1}` }))
+}
+
+function removeApiEndpoint(index) {
+  form.apiEndpoints.splice(index, 1)
+}
+
+function moveApiEndpoint(index, offset) {
+  const target = index + offset
+  if (target < 0 || target >= form.apiEndpoints.length) return
+  const [endpoint] = form.apiEndpoints.splice(index, 1)
+  form.apiEndpoints.splice(target, 0, endpoint)
+}
+
+function touchApiEndpoint(endpoint) {
+  endpoint._touched = true
+  endpoint._testResult = null
+}
+
+function endpointError(index) {
+  const endpoint = form.apiEndpoints[index]
+  if (!endpoint?.url?.trim()) return '请输入 API 根地址'
+  try {
+    const url = new URL(endpoint.url.trim())
+    if (!['http:', 'https:'].includes(url.protocol)) return '仅支持 HTTP(S) 地址'
+  } catch {
+    return '请输入有效的 HTTP(S) 地址'
+  }
+  const duplicate = form.apiEndpoints.findIndex((item) => item.url?.trim().replace(/\/+$/, '').toLowerCase()
+    === endpoint.url.trim().replace(/\/+$/, '').toLowerCase())
+  return duplicate !== index ? '该地址与其他接口重复' : ''
+}
+
+function validateApiEndpoints(rule, value, callback) {
+  if (!Array.isArray(value) || value.length === 0) {
+    callback()
+    return
+  }
+  value.forEach((endpoint) => { endpoint._touched = true })
+  const error = value.map((endpoint, index) => endpointError(index)).find(Boolean)
+  if (error) {
+    callback(new Error(error))
+    return
+  }
+  if (!value.some((endpoint) => endpoint.enabled !== false)) {
+    callback(new Error('正文接口组至少需要启用一个地址；如需停用整个站点，请禁用站点适配'))
+    return
+  }
+  callback()
+}
+
+async function testApiEndpoint(endpoint, index) {
+  endpoint._touched = true
+  const error = endpointError(index)
+  if (error) {
+    ElMessage.warning(error)
+    return
+  }
+  endpoint._testing = true
+  endpoint._testResult = null
+  try {
+    endpoint._testResult = await testScrapeApiEndpoint({
+      url: endpoint.url,
+      requestHeadersJson: form.requestHeadersJson,
+    })
+    ElMessage[endpoint._testResult?.passed ? 'success' : 'warning'](endpoint._testResult?.message || '接口测试完成')
+  } catch (error_) {
+    ElMessage.error(error_.message || '接口测试失败')
+  } finally {
+    endpoint._testing = false
+  }
 }
 
 function validateJson(rule, value, callback) {
@@ -311,6 +451,7 @@ async function runAnalyze() {
       bizType: form.bizType,
       requestMethod: form.requestMethod,
       requestHeadersJson: form.requestHeadersJson,
+      apiEndpoints: form.apiEndpoints,
     })
     const filledCount = applyAnalyzeResult(result)
     debugResult.value = {
@@ -389,6 +530,7 @@ function buildDebugPayload() {
     debugUrl: form.debugUrl,
     requestMethod: form.requestMethod,
     requestHeadersJson: form.requestHeadersJson,
+    apiEndpoints: form.apiEndpoints,
     listSelector: form.listSelector,
     titleSelector: form.titleSelector,
     authorSelector: form.authorSelector,
