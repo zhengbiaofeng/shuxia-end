@@ -52,7 +52,11 @@
           </div>
         </template>
         <template #rate="{ row }">
-          <AdminStatusBadge :label="row.rate" :tone="row.channelCode === '--' ? 'slate' : 'green'" />
+          <el-tooltip :content="templateBindingTip(row)" placement="top">
+            <span class="binding-badge-trigger" tabindex="0">
+              <AdminStatusBadge :label="row.rate" :tone="row.channelCode === '--' ? 'slate' : 'green'" />
+            </span>
+          </el-tooltip>
         </template>
         <template #enabled="{ row }">
           <span @click.stop>
@@ -443,6 +447,13 @@ function bizLabel(value) {
   return normalizeBizType(value)
 }
 
+function templateBindingTip(row) {
+  if (row.channelCode && row.channelCode !== '--') {
+    return `已关联连接模板「${row.channelCode}」，采集时可复用该模板的公共连接配置。站点规则和正文接口组仍由当前站点适配维护。`
+  }
+  return '未关联连接模板，采集时直接使用当前站点适配中填写的请求地址、请求头和正文接口组。'
+}
+
 function handlePageAction(action) {
   if (action.label === '添加站点适配') router.push('/automation/rules/new')
   if (action.label === '连接模板') router.push('/automation/channels')
@@ -793,6 +804,17 @@ onMounted(() => loadRules())
 .priority.is-red { color: var(--admin-danger); }
 .priority.is-orange { color: var(--admin-warning); }
 .priority.is-green { color: var(--admin-success); }
+
+.binding-badge-trigger {
+  display: inline-flex;
+  border-radius: 4px;
+  cursor: help;
+}
+
+.binding-badge-trigger:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--admin-primary) 55%, transparent);
+  outline-offset: 3px;
+}
 
 .detail-panel {
   min-height: 260px;

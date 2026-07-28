@@ -456,7 +456,7 @@ function normalizeScrapeRule(item = {}) {
     apiEndpoints: normalizeApiEndpoints(item.apiEndpoints),
     priorityLabel: priorityLabel(priority),
     lastRun: formatDateTime(item.updateTime || item.createTime),
-    rate: item.channelCode ? '已绑定' : '--',
+    rate: item.channelCode ? '已绑定' : '未绑定',
   }
 }
 
