@@ -38,9 +38,9 @@
             </td>
             <td>
               <span v-if="row.capacityKnown">{{ row.total }}</span>
-              <el-tooltip v-else :content="row.capacityNote || '当前存储源无法获取物理盘容量'" placement="top">
+              <AdminTooltip v-else :content="row.capacityNote || '当前存储源无法获取物理盘容量'">
                 <span class="capacity-unknown">容量未知</span>
-              </el-tooltip>
+              </AdminTooltip>
             </td>
             <td>
               <div v-if="row.capacityKnown" class="usage-cell">
@@ -51,29 +51,30 @@
             </td>
             <td>{{ row.free }}</td>
             <td>
-              <el-tooltip :content="row.capacityNote || row.status" placement="top">
+              <AdminTooltip :content="row.capacityNote || row.status">
                 <span class="status-dot" :class="`is-${row.statusTone}`"><i />{{ row.status }}</span>
-              </el-tooltip>
+              </AdminTooltip>
             </td>
             <td><span class="scan-cell"><el-icon><VideoPlay /></el-icon>{{ row.scan }}</span></td>
             <td>{{ row.files }}</td>
             <td v-if="canManageStorage">
               <div class="table-actions">
-                <el-tooltip v-if="authStore.hasPermission('sxbook:book:add')" content="扫描目录" placement="top">
+                <AdminTooltip v-if="authStore.hasPermission('sxbook:book:add')" content="扫描目录并导入可识别的书籍">
                   <button
                     type="button"
+                    aria-label="扫描目录"
                     :disabled="!row.scannable || scanningId === row.id"
                     @click="$emit('scan', row)"
                   >
                     <el-icon><Loading v-if="scanningId === row.id" /><VideoPlay v-else /></el-icon>
                   </button>
-                </el-tooltip>
-                <el-tooltip v-if="authStore.hasPermission('sxbook:storage:source:edit')" content="编辑" placement="top">
-                  <button type="button" @click="$emit('edit', row)"><el-icon><EditPen /></el-icon></button>
-                </el-tooltip>
-                <el-tooltip v-if="authStore.hasPermission('sxbook:storage:source:delete')" content="删除" placement="top">
-                  <button type="button" class="danger" @click="$emit('delete', row)"><el-icon><Delete /></el-icon></button>
-                </el-tooltip>
+                </AdminTooltip>
+                <AdminTooltip v-if="authStore.hasPermission('sxbook:storage:source:edit')" content="编辑存储源">
+                  <button type="button" aria-label="编辑存储源" @click="$emit('edit', row)"><el-icon><EditPen /></el-icon></button>
+                </AdminTooltip>
+                <AdminTooltip v-if="authStore.hasPermission('sxbook:storage:source:delete')" content="删除存储源">
+                  <button type="button" class="danger" aria-label="删除存储源" @click="$emit('delete', row)"><el-icon><Delete /></el-icon></button>
+                </AdminTooltip>
               </div>
             </td>
           </tr>
@@ -92,6 +93,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Delete, EditPen, FolderOpened, Loading, VideoPlay } from '@element-plus/icons-vue'
+import AdminTooltip from '../admin/AdminTooltip.vue'
 import ResourcePagination from './ResourcePagination.vue'
 import { useAuthStore } from '../../stores/auth'
 

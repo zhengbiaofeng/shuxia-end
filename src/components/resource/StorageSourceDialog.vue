@@ -137,9 +137,9 @@
     class="storage-path-dialog"
   >
     <div class="browser-toolbar">
-      <el-tooltip content="返回上级目录" placement="top">
-        <el-button :icon="ArrowLeft" circle :disabled="browserLoading || !browserPath" @click="goParent" />
-      </el-tooltip>
+      <AdminTooltip content="返回上级目录">
+        <el-button aria-label="返回上级目录" :icon="ArrowLeft" circle :disabled="browserLoading || !browserPath" @click="goParent" />
+      </AdminTooltip>
       <el-input :model-value="browserPath || '可见根目录与挂载点'" readonly />
       <el-button
         v-if="browserPath"
@@ -188,6 +188,7 @@ import {
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { computed, reactive, ref, watch } from 'vue'
+import AdminTooltip from '../admin/AdminTooltip.vue'
 import {
   fetchStorageDirectories,
   fetchStoragePathRoots,
