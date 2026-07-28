@@ -84,12 +84,21 @@ export async function debugScrapeRule(payload = {}) {
   return readResultResponse(response, '调试扫描规则失败')
 }
 
+export async function testScrapeApiEndpoint(payload = {}) {
+  const response = await request.post('/sx/book/scrape-rule/testApiEndpoint', {
+    url: trimText(payload.url),
+    requestHeadersJson: trimText(payload.requestHeadersJson),
+  })
+  return readResultResponse(response, '测试正文接口失败')
+}
+
 export async function analyzeScrapeRule(payload = {}) {
   const response = await request.post('/sx/book/scrape-rule/analyze', cleanParams({
     url: trimText(payload.url),
     bizType: trimText(payload.bizType),
     requestMethod: payload.requestMethod || 'GET',
     requestHeadersJson: trimText(payload.requestHeadersJson),
+    apiEndpoints: normalizeApiEndpoints(payload.apiEndpoints),
   }))
   return normalizeScrapeRuleAnalyze(readResultResponse(response, '自动分析扫描源失败') || {})
 }
@@ -471,6 +480,7 @@ function normalizeScrapeRuleDetail(item = {}) {
     chapterTitleSelector: item.chapterTitleSelector || '',
     chapterUrlSelector: item.chapterUrlSelector || '',
     contentSelector: item.contentSelector || '',
+    apiEndpoints: normalizeApiEndpoints(item.apiEndpoints),
     priority: Number(item.priority ?? 50),
     status: Number(item.status ?? 1),
     remark: item.remark || '',
@@ -499,10 +509,20 @@ function normalizeScrapeRulePayload(payload = {}) {
     chapterTitleSelector: trimText(payload.chapterTitleSelector),
     chapterUrlSelector: trimText(payload.chapterUrlSelector),
     contentSelector: trimText(payload.contentSelector),
+    apiEndpoints: normalizeApiEndpoints(payload.apiEndpoints),
     priority: Number(payload.priority ?? 50),
     status: Number(payload.status ?? 1),
     remark: trimText(payload.remark),
   }
+}
+
+function normalizeApiEndpoints(items) {
+  if (!Array.isArray(items)) return []
+  return items.map((item, index) => ({
+    name: trimText(item?.name) || `接口 ${index + 1}`,
+    url: trimText(item?.url),
+    enabled: item?.enabled !== false,
+  })).filter((item) => item.url)
 }
 
 function normalizeScrapeRuleAnalyze(item = {}) {
