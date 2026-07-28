@@ -589,6 +589,7 @@ onMounted(async () => {
 .rule-form__main {
   display: grid;
   gap: 22px;
+  min-width: 0;
   padding: 26px 28px;
 }
 
@@ -833,9 +834,20 @@ onMounted(async () => {
   margin-left: 0;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1480px) {
   .rule-form {
     grid-template-columns: 1fr;
+  }
+
+  .rule-form__side {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .rule-form__side > h2,
+  .rule-form__side > .debug-card,
+  .rule-form__side > .side-actions,
+  .rule-form__side > .admin-guidance {
+    grid-column: 1 / -1;
   }
 
   .api-endpoint-row {
@@ -849,6 +861,10 @@ onMounted(async () => {
 }
 
 @media (max-width: 860px) {
+  .rule-form__side {
+    grid-template-columns: 1fr;
+  }
+
   .form-grid,
   .form-grid.is-selectors {
     grid-template-columns: 1fr;
