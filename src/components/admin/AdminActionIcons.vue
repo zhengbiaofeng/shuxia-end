@@ -1,17 +1,21 @@
 <template>
   <div class="admin-action-icons" aria-label="操作">
-    <button
+    <AdminTooltip
       v-for="action in visibleActions"
       :key="action.label"
-      type="button"
-      :title="action.label"
-      :class="{ 'is-danger': action.danger, 'is-boxed': action.boxed }"
-      :disabled="action.disabled || action.loading"
-      @click.stop="$emit('action', action)"
+      :content="action.tooltip || action.label"
     >
-      <el-icon v-if="!action.loading"><component :is="action.icon" /></el-icon>
-      <el-icon v-else class="is-loading"><Loading /></el-icon>
-    </button>
+      <button
+        type="button"
+        :aria-label="action.label"
+        :class="{ 'is-danger': action.danger, 'is-boxed': action.boxed }"
+        :disabled="action.disabled || action.loading"
+        @click.stop="$emit('action', action)"
+      >
+        <el-icon v-if="!action.loading"><component :is="action.icon" /></el-icon>
+        <el-icon v-else class="is-loading"><Loading /></el-icon>
+      </button>
+    </AdminTooltip>
   </div>
 </template>
 
@@ -19,6 +23,7 @@
 import { computed } from 'vue'
 import { Loading } from '@element-plus/icons-vue'
 import { useAuthStore } from '../../stores/auth'
+import AdminTooltip from './AdminTooltip.vue'
 
 const props = defineProps({
   actions: { type: Array, default: () => [] },

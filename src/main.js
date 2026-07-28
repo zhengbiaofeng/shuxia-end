@@ -6,6 +6,7 @@ import 'element-plus/dist/index.css';
 import './styles/tokens.css';
 import './styles/breakpoints.css';
 import './styles/reset.css';
+import './styles/admin-tooltips.css';
 
 import App from './App.vue';
 import router from './router';

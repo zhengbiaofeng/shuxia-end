@@ -17,7 +17,19 @@
               />
             </th>
             <th v-for="column in columns" :key="column.key" :style="column.style">
-              {{ column.label }}
+              <span class="admin-table-card__heading">
+                <span>{{ column.label }}</span>
+                <AdminTooltip v-if="column.help" :content="column.help">
+                  <button
+                    type="button"
+                    class="admin-table-card__help"
+                    :aria-label="`${column.label}说明`"
+                    @click.stop
+                  >
+                    <el-icon><QuestionFilled /></el-icon>
+                  </button>
+                </AdminTooltip>
+              </span>
             </th>
           </tr>
         </thead>
@@ -64,6 +76,8 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { QuestionFilled } from '@element-plus/icons-vue'
+import AdminTooltip from './AdminTooltip.vue'
 import ResourcePagination from '../resource/ResourcePagination.vue'
 
 const props = defineProps({
@@ -190,6 +204,38 @@ defineExpose({ clearSelection })
   font-weight: var(--admin-weight-strong);
   text-align: left;
   white-space: nowrap;
+}
+
+.admin-table-card__heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.admin-table-card__help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--admin-placeholder);
+  cursor: help;
+  font-size: 14px;
+}
+
+.admin-table-card__help:hover,
+.admin-table-card__help:focus-visible {
+  background: var(--admin-primary-soft);
+  color: var(--admin-primary);
+}
+
+.admin-table-card__help:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--admin-primary) 45%, transparent);
+  outline-offset: 2px;
 }
 
 .admin-table-card__table td {

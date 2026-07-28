@@ -1,6 +1,8 @@
 export { default as AdminActionIcons } from './AdminActionIcons.vue'
+export { default as AdminFieldLabel } from './AdminFieldLabel.vue'
 export { default as AdminFilterBar } from './AdminFilterBar.vue'
 export { default as AdminInfoBox } from './AdminInfoBox.vue'
 export { default as AdminSettingSection } from './AdminSettingSection.vue'
 export { default as AdminStatusBadge } from './AdminStatusBadge.vue'
 export { default as AdminTableCard } from './AdminTableCard.vue'
+export { default as AdminTooltip } from './AdminTooltip.vue'
