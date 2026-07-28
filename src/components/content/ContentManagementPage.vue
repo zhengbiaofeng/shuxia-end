@@ -175,29 +175,25 @@
 
                   <template v-else-if="column.type === 'tags'">
                     <div class="tag-cell">
-                      <span
+                      <AdminTooltip
                         v-for="tag in visibleTags(row[column.key], column.maxVisibleTags)"
                         :key="tag"
-                        class="chip chip-tag"
-                        :title="tag"
+                        :content="tag"
                       >
-                        {{ tag }}
-                      </span>
-                      <el-tooltip
+                        <span class="chip chip-tag">{{ tag }}</span>
+                      </AdminTooltip>
+                      <AdminTooltip
                         v-if="hiddenTags(row[column.key], column.maxVisibleTags).length"
                         :content="hiddenTags(row[column.key], column.maxVisibleTags).join('、')"
-                        effect="light"
-                        placement="top"
-                        popper-class="content-tags-tooltip"
-                        :show-after="200"
                       >
                         <span
                           class="chip chip-more"
+                          tabindex="0"
                           :aria-label="`还有 ${hiddenTags(row[column.key], column.maxVisibleTags).length} 个标签`"
                         >
                           +{{ hiddenTags(row[column.key], column.maxVisibleTags).length }}
                         </span>
-                      </el-tooltip>
+                      </AdminTooltip>
                     </div>
                   </template>
 
@@ -224,16 +220,20 @@
 
                   <template v-else-if="column.type === 'actions'">
                     <div class="row-actions">
-                      <button
+                      <AdminTooltip
                         v-for="action in visibleRowActions(row)"
                         :key="action.label"
-                        type="button"
-                        :class="{ danger: action.danger }"
-                        :title="action.label"
-                        @click="$emit('row-action', action, row)"
+                        :content="action.tooltip || action.label"
                       >
-                        <el-icon><component :is="action.icon" /></el-icon>
-                      </button>
+                        <button
+                          type="button"
+                          :aria-label="action.label"
+                          :class="{ danger: action.danger }"
+                          @click="$emit('row-action', action, row)"
+                        >
+                          <el-icon><component :is="action.icon" /></el-icon>
+                        </button>
+                      </AdminTooltip>
                     </div>
                   </template>
 
@@ -295,6 +295,7 @@ import { AppShell } from '../layout'
 import SidebarNav from '../nav/SidebarNav.vue'
 import BookMetricCard from '../books/BookMetricCard.vue'
 import AuthenticatedImage from '../common/AuthenticatedImage.vue'
+import AdminTooltip from '../admin/AdminTooltip.vue'
 import { createSideMenus } from '../../config/navigation'
 
 const props = defineProps({
@@ -956,12 +957,6 @@ function handleLogout() {
   color: #52658d;
   cursor: help;
   flex: 0 0 auto !important;
-}
-
-:global(.content-tags-tooltip) {
-  line-height: 1.6;
-  max-width: 320px;
-  overflow-wrap: anywhere;
 }
 
 .chip.blue,
