@@ -119,7 +119,10 @@
               <el-option v-for="method in requestMethods" :key="method" :label="method" :value="method" />
             </el-select>
           </el-form-item>
-          <el-form-item label="优先级" prop="priority">
+          <el-form-item prop="priority">
+            <template #label>
+              <AdminFieldLabel label="优先级" :help="SCRAPE_CHANNEL_PRIORITY_HELP" />
+            </template>
             <el-input-number v-model="form.priority" class="form-control" :min="0" :max="999" />
           </el-form-item>
           <el-form-item label="状态">
@@ -179,9 +182,10 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { Connection, Delete, EditPen, View } from '@element-plus/icons-vue'
-import { AdminActionIcons, AdminFilterBar, AdminStatusBadge, AdminTableCard } from '../../components/admin'
+import { AdminActionIcons, AdminFieldLabel, AdminFilterBar, AdminStatusBadge, AdminTableCard } from '../../components/admin'
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
+import { SCRAPE_CHANNEL_PRIORITY_HELP } from '../../config/adminHelpText'
 import { automationPages } from '../../config/adminModules'
 import { useAuthStore } from '../../stores/auth'
 import {
@@ -216,10 +220,10 @@ const columns = [
   { key: 'actions', label: '操作' },
 ]
 const channelActions = [
-  { label: '查看', icon: View, boxed: true },
-  { label: '测试', icon: Connection, permission: 'sxbook:scrapeChannel:test' },
-  { label: '编辑', icon: EditPen, permission: 'sxbook:scrapeChannel:edit' },
-  { label: '删除', icon: Delete, danger: true, permission: 'sxbook:scrapeChannel:delete' },
+  { label: '查看', tooltip: '查看连接模板详情', icon: View, boxed: true },
+  { label: '测试', tooltip: '测试连接模板可用性', icon: Connection, permission: 'sxbook:scrapeChannel:test' },
+  { label: '编辑', tooltip: '编辑连接模板', icon: EditPen, permission: 'sxbook:scrapeChannel:edit' },
+  { label: '删除', tooltip: '删除连接模板', icon: Delete, danger: true, permission: 'sxbook:scrapeChannel:delete' },
 ]
 const bizOptions = BIZ_TYPE_OPTIONS
 const requestMethods = REQUEST_METHOD_OPTIONS
