@@ -52,11 +52,11 @@
           </div>
         </template>
         <template #rate="{ row }">
-          <el-tooltip :content="templateBindingTip(row)" placement="top" popper-class="binding-tooltip">
+          <AdminTooltip :content="templateBindingTip(row)">
             <span class="binding-badge-trigger" tabindex="0">
               <AdminStatusBadge :label="row.rate" :tone="row.channelCode === '--' ? 'slate' : 'green'" />
             </span>
-          </el-tooltip>
+          </AdminTooltip>
         </template>
         <template #enabled="{ row }">
           <span @click.stop>
@@ -69,9 +69,11 @@
           </span>
         </template>
         <template #priority="{ row }">
-          <span class="priority" :class="`is-${priorityTone(row.priorityLabel)}`">
-            {{ row.priorityLabel }} · {{ row.priority }}
-          </span>
+          <AdminTooltip :content="SCRAPE_RULE_PRIORITY_HELP">
+            <span class="priority" :class="`is-${priorityTone(row.priorityLabel)}`" tabindex="0">
+              {{ row.priorityLabel }} · {{ row.priority }}
+            </span>
+          </AdminTooltip>
         </template>
         <template #actions="{ row }">
           <div class="rule-actions">
@@ -291,10 +293,11 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { DataAnalysis, Delete, EditPen, InfoFilled, Refresh, View } from '@element-plus/icons-vue'
-import { AdminActionIcons, AdminFilterBar, AdminInfoBox, AdminStatusBadge, AdminTableCard } from '../../components/admin'
+import { AdminActionIcons, AdminFilterBar, AdminInfoBox, AdminStatusBadge, AdminTableCard, AdminTooltip } from '../../components/admin'
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
 import ResourceShell from '../../components/resource/ResourceShell.vue'
 import { fetchEligibleStorageLocations } from '../../api/resourceManagement'
+import { SCRAPE_RULE_PRIORITY_HELP } from '../../config/adminHelpText'
 import { automationPages } from '../../config/adminModules'
 import { useAuthStore } from '../../stores/auth'
 import {
@@ -322,7 +325,7 @@ const columns = [
   { key: 'entry', label: '入口地址' },
   { key: 'rate', label: '模板绑定' },
   { key: 'enabled', label: '状态' },
-  { key: 'priority', label: '优先级' },
+  { key: 'priority', label: '优先级', help: SCRAPE_RULE_PRIORITY_HELP },
   { key: 'lastRun', label: '更新时间' },
   { key: 'actions', label: '操作' },
 ]
@@ -338,10 +341,10 @@ const selectorFields = [
   { key: 'contentSelector', label: '正文选择器' },
 ]
 const ruleActions = [
-  { label: '查看', icon: View, boxed: true },
-  { label: '调试', icon: DataAnalysis, permission: 'sxbook:scrapeRule:debug' },
-  { label: '编辑', icon: EditPen, permission: 'sxbook:scrapeRule:edit' },
-  { label: '删除', icon: Delete, danger: true, permission: 'sxbook:scrapeRule:delete' },
+  { label: '查看', tooltip: '查看站点适配详情', icon: View, boxed: true },
+  { label: '调试', tooltip: '使用调试地址测试当前适配', icon: DataAnalysis, permission: 'sxbook:scrapeRule:debug' },
+  { label: '编辑', tooltip: '编辑站点适配', icon: EditPen, permission: 'sxbook:scrapeRule:edit' },
+  { label: '删除', tooltip: '删除站点适配', icon: Delete, danger: true, permission: 'sxbook:scrapeRule:delete' },
 ]
 
 const loading = ref(false)
@@ -798,7 +801,15 @@ onMounted(() => loadRules())
 }
 
 .priority {
+  display: inline-flex;
+  border-radius: 4px;
+  cursor: help;
   font-weight: 800;
+}
+
+.priority:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--admin-primary) 45%, transparent);
+  outline-offset: 3px;
 }
 
 .priority.is-red { color: var(--admin-danger); }
@@ -814,13 +825,6 @@ onMounted(() => loadRules())
 .binding-badge-trigger:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--admin-primary) 55%, transparent);
   outline-offset: 3px;
-}
-
-:global(.binding-tooltip.el-popper) {
-  max-width: 420px;
-  line-height: 1.55;
-  overflow-wrap: anywhere;
-  white-space: normal;
 }
 
 .detail-panel {
