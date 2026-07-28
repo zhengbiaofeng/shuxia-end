@@ -775,6 +775,16 @@ npm run build
 
 ## Integration Priority
 
+## 2026-07-28 Scrape API Endpoint Management
+
+- Compatible novel API mirrors are no longer Java constants. Each scrape rule now owns an ordered, persisted `apiEndpoints` list maintained from the management-side Station Adapter form.
+- Administrators can add, remove, enable, disable and reorder endpoints, and test each endpoint before saving. The inline test reports candidate count and latency without creating content or tasks.
+- Discovery, one-time collection, quick sync and scheduled subscription execution all read the same saved rule configuration. An API-compatible rule with no enabled endpoint now fails with a configuration message instead of silently using a hidden fallback.
+- Multiple BQG-like sources remain separate scrape rules. Adding a third or later source is a management operation: create a rule, configure its own site URLs/selectors/endpoints, then reference it from collection and subscription flows.
+- Migration `sx-book-scrape-rule-api-endpoints-20260728.sql` has been applied locally. The two existing BQG rules each have three ordered endpoints; all three passed the management-page test with 150 candidates.
+- The backend container was rebuilt and recreated, six focused backend tests passed, and the frontend production build passed. Browser acceptance covered save/reload persistence, medium-width no-overlap layout and a clean management console.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\scrape-rule-api-endpoints-20260728.md`.
+
 Current user priority:
 
 1. P0-P5 and the first reader real-data integration pass are complete; storage contracts, permissions, category visibility, authenticated file access, reader progress and restart persistence remain release regression requirements.
