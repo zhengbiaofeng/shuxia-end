@@ -453,6 +453,7 @@ function normalizeScrapeRule(item = {}) {
     statusLabel: status === 1 ? '启用' : '禁用',
     statusTone: status === 1 ? 'green' : 'slate',
     priority,
+    apiEndpoints: normalizeApiEndpoints(item.apiEndpoints),
     priorityLabel: priorityLabel(priority),
     lastRun: formatDateTime(item.updateTime || item.createTime),
     rate: item.channelCode ? '已绑定' : '--',

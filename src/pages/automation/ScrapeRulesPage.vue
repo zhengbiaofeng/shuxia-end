@@ -93,6 +93,16 @@
             <el-descriptions-item label="列表地址">{{ selectedRule.listUrl || '--' }}</el-descriptions-item>
             <el-descriptions-item label="调试地址">{{ selectedRule.debugUrl || '--' }}</el-descriptions-item>
             <el-descriptions-item label="请求方法">{{ selectedRule.requestMethod || '--' }}</el-descriptions-item>
+            <el-descriptions-item label="正文接口组">
+              <div v-if="selectedRule.apiEndpoints?.length" class="endpoint-summary">
+                <div v-for="(endpoint, index) in selectedRule.apiEndpoints" :key="`${endpoint.url}-${index}`">
+                  <span>{{ index + 1 }}. {{ endpoint.name }}</span>
+                  <code>{{ endpoint.url }}</code>
+                  <AdminStatusBadge :label="endpoint.enabled ? '启用' : '停用'" :tone="endpoint.enabled ? 'green' : 'slate'" />
+                </div>
+              </div>
+              <span v-else>普通 HTML 解析</span>
+            </el-descriptions-item>
             <el-descriptions-item label="优先级">{{ selectedRule.priority }}</el-descriptions-item>
             <el-descriptions-item label="状态">{{ selectedRule.status === 1 ? '启用' : '禁用' }}</el-descriptions-item>
             <el-descriptions-item label="备注">{{ selectedRule.remark || '--' }}</el-descriptions-item>
@@ -786,6 +796,25 @@ onMounted(() => loadRules())
 
 .detail-panel {
   min-height: 260px;
+}
+
+.endpoint-summary {
+  display: grid;
+  gap: 8px;
+}
+
+.endpoint-summary > div {
+  display: grid;
+  grid-template-columns: minmax(96px, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.endpoint-summary code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #35558c;
+  font-family: inherit;
 }
 
 .selector-grid {
