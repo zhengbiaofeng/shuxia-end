@@ -53,31 +53,28 @@
             <td>{{ row.createdAt }}</td>
             <td v-if="canManageTags">
               <div class="table-actions">
-                <button
-                  v-if="authStore.hasPermission('sxbook:tag:edit')"
-                  type="button"
-                  title="编辑"
-                  @click="$emit('edit', row)"
-                >
-                  <el-icon><EditPen /></el-icon>
-                </button>
-                <button
+                <AdminTooltip v-if="authStore.hasPermission('sxbook:tag:edit')" content="编辑标签">
+                  <button type="button" aria-label="编辑标签" @click="$emit('edit', row)">
+                    <el-icon><EditPen /></el-icon>
+                  </button>
+                </AdminTooltip>
+                <AdminTooltip
                   v-if="authStore.hasPermission('sxbook:tag:status')"
-                  type="button"
-                  :title="row.status === 0 ? '启用' : '禁用'"
-                  @click="$emit('toggle-status', row)"
+                  :content="row.status === 0 ? '启用标签' : '禁用标签'"
                 >
-                  <el-icon><component :is="row.status === 0 ? CircleCheck : CircleClose" /></el-icon>
-                </button>
-                <button
-                  v-if="authStore.hasPermission('sxbook:tag:delete')"
-                  type="button"
-                  title="删除"
-                  class="danger"
-                  @click="$emit('delete', row)"
-                >
-                  <el-icon><Delete /></el-icon>
-                </button>
+                  <button
+                    type="button"
+                    :aria-label="row.status === 0 ? '启用标签' : '禁用标签'"
+                    @click="$emit('toggle-status', row)"
+                  >
+                    <el-icon><component :is="row.status === 0 ? CircleCheck : CircleClose" /></el-icon>
+                  </button>
+                </AdminTooltip>
+                <AdminTooltip v-if="authStore.hasPermission('sxbook:tag:delete')" content="删除标签">
+                  <button type="button" aria-label="删除标签" class="danger" @click="$emit('delete', row)">
+                    <el-icon><Delete /></el-icon>
+                  </button>
+                </AdminTooltip>
               </div>
             </td>
           </tr>
@@ -115,6 +112,7 @@ import {
   RefreshRight,
   Search,
 } from '@element-plus/icons-vue'
+import AdminTooltip from '../admin/AdminTooltip.vue'
 import { useAuthStore } from '../../stores/auth'
 
 const authStore = useAuthStore()
