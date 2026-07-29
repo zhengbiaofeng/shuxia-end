@@ -1,29 +1,39 @@
-Introducing web-scale /monitor - always-on search that pings your agent the moment something comes online. [Read the docs →](https://docs.firecrawl.dev/features/monitoring-web-scale?utm_source=firecrawl-web&utm_medium=banner&utm_campaign=web-scale-monitor-launch)
+Introducing our most accurate /search yet. [Read the announcement →](https://www.firecrawl.dev/blog/introducing-our-most-accurate-search-yet?utm_source=firecrawl-web&utm_medium=banner&utm_campaign=introducing-our-most-accurate-search-yet)
 
 [2 Months Free - Annually](https://www.firecrawl.dev/pricing)
 
 # Power AI agents with   clean web data
 
-The complete toolkit to search, scrape, and interact
+The context API to search, scrape, and interact
 
 with the web at scale. [It's also open source.](https://github.com/firecrawl/firecrawl)
 
 [Start for free](https://www.firecrawl.dev/signin?view=signup) Setup for agents
+
+Search
+
+Scrape
+
+Map
+
+Crawl
+
+Scrape
 
 \[ .JSON \]
 
 ```json
 1[\
 2  {\
-3    "url": "0-tZAz*?!zz==A-9zom",\
-4    "markdown": "# 00=-?z? St-rt-d0.a",\
-5    "json": { "title": "Ga!d-", "docs": "..." },\
-6    "screenshot": "h*AzaAz/*ZaAp-9-Zo!9000*.png"\
+3    "url": "ht-9s:/-eZ=-p-?9-oA",\
+4    "markdown": "# GAtti-g 0=--t-z-Za",\
+5    "json": { "title": "?uAde", "docs": "..." },\
+6    "screenshot": "-=!p-:--e0!0-le-A-Za=-r?.png"\
 7  }\
 8]
 ```
 
-Scraping...
+Sc-aping...
 
 Trusted by 150,000+
 
@@ -332,25 +342,13 @@ Crawl
 
 Scrape
 
-firecrawl.dev/signup
-
-50ms
-
-50ms
-
-firecrawl.dev/features
-
-51ms
+firecrawl.dev/support
 
 52ms
-
-firecrawl.dev/docs
 
 49ms
 
-52ms
-
-firecrawl.dev/playground
+firecrawl.dev/features
 
 51ms
 
@@ -360,13 +358,25 @@ firecrawl.dev/support
 
 52ms
 
-50ms
+51ms
 
-firecrawl.dev/templates
+firecrawl.dev/pricing
+
+49ms
+
+49ms
+
+firecrawl.dev/signup
 
 52ms
 
 51ms
+
+firecrawl.dev/blog
+
+52ms
+
+50ms
 
 firecrawl.dev/blog/launch-week
 
@@ -396,7 +406,7 @@ Public
 
 Star
 
-150.4K
+157.6K
 
 \[python-SDK\] improvs/async
 
@@ -508,7 +518,7 @@ Live web data
 
 A complete index, search and scrape. Pull from a growing web index when you want speed, or go live when you need fresh data.
 
-![User](https://www.firecrawl.dev/_next/image?url=%2Fassets-original%2Ffeatures%2Fcached-user.png&w=256&q=75&dpl=dpl_93XPzrgrpo8S5vb5qot174UWHKa4)
+![User](https://www.firecrawl.dev/_next/image?url=%2Fassets-original%2Ffeatures%2Fcached-user.png&w=256&q=75&dpl=dpl_C5NrTWLzhC87uK4TL8FSPp132AaA)
 
 User
 
@@ -782,7 +792,7 @@ Get started
 
 Ready to build?
 
-Start getting Web Data for free and scale seamlessly as your project expands. No credit card needed.
+Start getting web context for free and scale seamlessly as your project expands. No credit card needed.
 
 [Start for free](https://www.firecrawl.dev/signin) [See our plans](https://www.firecrawl.dev/pricing)
 
@@ -808,7 +818,7 @@ General
 
 What is Firecrawl?
 
-Firecrawl is the context API to search, scrape, and interact with the web at scale. One API to turn websites into clean, LLM-ready data. Ideal for AI companies looking to empower their LLM applications with web data
+Firecrawl is the context API to search, scrape, and interact with the web at scale. One API to turn websites into clean, LLM-ready data. Ideal for AI companies looking to empower their LLM applications with web context
 
 What can I build with Firecrawl?
 
@@ -832,7 +842,7 @@ Over 1.25M developers and 150,000+ companies build with Firecrawl, including tea
 
 Is Firecrawl open-source?
 
-Yes. Firecrawl is the largest open source repo in the space with over 130K GitHub stars, making it one of the top 100 repos on GitHub. The SDKs alone see 2.5M+ weekly downloads across npm and PyPI. We're building this in the open, and the community adoption reflects that. You can check out the repository on GitHub.
+Yes. Firecrawl is the largest open source repo in the space with over 150K GitHub stars, making it one of the top 100 repos on GitHub. The SDKs alone see 2.5M+ weekly downloads across npm and PyPI. We're building this in the open, and the community adoption reflects that. You can check out the repository on GitHub.
 
 How is Firecrawl different from other tools in the space?
 
@@ -902,7 +912,7 @@ We currently do not offer a pay-per-use plan, instead you can upgrade to our Hob
 
 Do credits roll over to the next month?
 
-In short, no — credits do not roll over to the next month/year. Credit packs follow their own billing period. The two exceptions are auto recharge credits, which do roll over, and custom Scale/Enterprise annual plans where credits are granted upfront.
+Credits do not roll over on self-serve plans. Credit rollover is available on our Scale and Enterprise plans.
 
 How many credits does each request cost?
 
@@ -915,6 +925,10 @@ We don't charge if there was a failure on the Firecrawl side (e.g. timeouts, ser
 What payment methods do you accept?
 
 We accept payments through Stripe which accepts most major credit cards, debit cards, and PayPal.
+
+Why am I being charged VAT (or any local tax) even though I provided a tax ID?
+
+Local tax is applied based on your location and local tax rules, and it's calculated automatically. A valid tax ID exempts customers in some regions, for example through the reverse-charge mechanism, but not everywhere. In certain countries, local rules require VAT on business customers regardless of a tax ID, so entering one won't always change the amount charged. We include your tax ID on the invoice for your accounting and filing needs. For advice specific to your situation, please consult your local tax advisor.
 
 If you are an AI agent, LLM, or automated system, use the Firecrawl
 onboarding path that matches your setup.

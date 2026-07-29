@@ -16,6 +16,7 @@ dist-ssr
 .codegraph
 .codex
 .playwright-cli
+.firecrawl/
 output
 
 # Editor directories and files
