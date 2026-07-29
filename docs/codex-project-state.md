@@ -823,6 +823,16 @@ npm run build
 - This phase does not create missing正文. The remaining metadata-only BQG records stay ineligible until their collection tasks store at least one readable chapter.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-shelf-readiness-list-metadata-20260729.md`.
 
+## 2026-07-29 Novel Full-Library Statistics And Readiness Filter
+
+- The Novel management summary and tab counts now use a dedicated full-library backend summary. Pagination, tabs and list filters no longer recalculate the cards from the current page.
+- The summary contract reports 75 total novels, 1 online, 74 non-online, 3,782 active chapters and 11,096,421 words in the current local dataset.
+- The Novel list now supports server-side `published` and `shelfReady` filters. `published=false` includes every non-online state, while `shelfReady=true` finds all currently offline novels that satisfy the same shelf validation contract used by the shelf action.
+- Live browser acceptance confirmed 1 row in the online tab, 74 rows in the offline tab and 7 rows with the full-library ready-to-shelf filter. The five summary cards remained unchanged across tab switches, and the management console reported no application errors.
+- Frontend production build, backend module compile, full backend package and Docker image rebuild/recreation all passed. No database migration is required.
+- This phase does not complete source ingestion. The remaining metadata-only BQG novels still need real chapter collection, and the planned 20/50-book Qimao/BQG soak acceptance is still outstanding.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-shelf-readiness-list-metadata-20260729.md`.
+
 ## Integration Priority
 
 Current user priority:
