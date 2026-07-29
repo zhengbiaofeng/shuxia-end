@@ -1199,33 +1199,44 @@ function buildFilters() {
 
 function buildTabs() {
   return [
-    { key: 'all', label: `全部小说 (${formatNumber(total.value)})` },
-    { key: 'online', label: '已上架' },
-    { key: 'offline', label: '未上架' },
+    { key: 'all', label: `全部小说 (${formatNumber(pageSummary.value.totalBooks)})` },
+    { key: 'online', label: `已上架 (${formatNumber(pageSummary.value.onlineBooks)})` },
+    { key: 'offline', label: `未上架 (${formatNumber(pageSummary.value.offlineBooks)})` },
   ]
 }
 
 function buildMetrics() {
-  const currentTotal = Number(total.value || 0)
-  const online = novels.value.filter((row) => Number(row.raw?.publishStatus) === 1).length
-  const offline = novels.value.filter((row) => Number(row.raw?.publishStatus) !== 1).length
-  const chapterTotal = novels.value.reduce((sum, row) => sum + Number(row.raw?.chapterCount || 0), 0)
-  const wordTotal = novels.value.reduce((sum, row) => sum + Number(row.raw?.wordCount || row.raw?.totalWords || 0), 0)
+  const summary = pageSummary.value
 
   return [
-    { title: '小说总数', value: formatNumber(currentTotal), unit: '本', footLabel: '当前筛选', footValue: '', footTone: 'blue', icon: Document, color: 'blue' },
-    { title: '已上架', value: formatNumber(online), unit: '本', footLabel: '本页统计', footValue: '', footTone: 'green', icon: Collection, color: 'green' },
-    { title: '未上架', value: formatNumber(offline), unit: '本', footLabel: '本页统计', footValue: '', footTone: 'orange', icon: Tickets, color: 'purple' },
-    { title: '章节数', value: formatNumber(chapterTotal), unit: '章', footLabel: '本页合计', footValue: '', footTone: 'blue', icon: Files, color: 'orange' },
-    { title: '字数', value: formatCompact(wordTotal), unit: '', footLabel: '本页合计', footValue: '', footTone: 'blue', icon: Document, color: 'cyan' },
+    { title: '小说总数', value: formatNumber(summary.totalBooks), unit: '本', footLabel: '全库统计', footValue: '', footTone: 'blue', icon: Document, color: 'blue' },
+    { title: '已上架', value: formatNumber(summary.onlineBooks), unit: '本', footLabel: '全库统计', footValue: '', footTone: 'green', icon: Collection, color: 'green' },
+    { title: '未上架', value: formatNumber(summary.offlineBooks), unit: '本', footLabel: '全库统计', footValue: '', footTone: 'orange', icon: Tickets, color: 'purple' },
+    { title: '章节数', value: formatNumber(summary.chapterCount), unit: '章', footLabel: '全库合计', footValue: '', footTone: 'blue', icon: Files, color: 'orange' },
+    { title: '字数', value: formatCompact(summary.wordCount), unit: '', footLabel: '全库合计', footValue: '', footTone: 'blue', icon: Document, color: 'cyan' },
   ]
 }
 
 function activePublishStatus() {
   if (filters.publishStatus !== '') return filters.publishStatus
-  if (activeTab.value === 'online') return 1
-  if (activeTab.value === 'offline') return 0
   return undefined
+}
+
+function activePublishedState() {
+  if (filters.publishStatus !== '') return undefined
+  if (activeTab.value === 'online') return true
+  if (activeTab.value === 'offline') return false
+  return undefined
+}
+
+function createEmptyPageSummary() {
+  return {
+    totalBooks: 0,
+    onlineBooks: 0,
+    offlineBooks: 0,
+    chapterCount: 0,
+    wordCount: 0,
+  }
 }
 
 function buildNovelPayload() {
