@@ -7,6 +7,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+if ($SourceMySqlPassword -match "['\s]") {
+    throw "SourceMySqlPassword cannot contain quotes or whitespace."
+}
+
 function Invoke-Checked {
     param(
         [Parameter(Mandatory = $true)][string]$Executable,
@@ -133,7 +137,8 @@ try {
     Invoke-Checked docker stop jeecg-system-start
     $backendWasStopped = $true
 
-    Invoke-Checked docker exec mysql sh -lc ("mysqldump -uroot -p'{0}' --single-transaction --routines --triggers --events --hex-blob --default-character-set=utf8mb4 --set-gtid-purged=OFF --databases jeecg-boot > /tmp/01-jeecg-boot.sql" -f $SourceMySqlPassword.Replace("'", "'\"'\"'"))
+    $dumpCommand = "mysqldump -uroot -p$SourceMySqlPassword --single-transaction --routines --triggers --events --hex-blob --default-character-set=utf8mb4 --set-gtid-purged=OFF --databases jeecg-boot > /tmp/01-jeecg-boot.sql"
+    Invoke-Checked docker exec mysql sh -lc $dumpCommand
     Invoke-Checked docker cp mysql:/tmp/01-jeecg-boot.sql (Join-Path $initDbRoot "01-jeecg-boot.sql")
     Invoke-Checked docker exec mysql rm -f /tmp/01-jeecg-boot.sql
 
