@@ -179,7 +179,7 @@ Get-ChildItem -LiteralPath $packageRoot -Recurse -File |
     Where-Object { $_.FullName -ne $manifestPath } |
     Sort-Object FullName |
     ForEach-Object {
-        $relativePath = [System.IO.Path]::GetRelativePath($packageRoot, $_.FullName).Replace("\", "/")
+        $relativePath = $_.FullName.Substring($packageRoot.TrimEnd("\").Length + 1).Replace("\", "/")
         $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash.ToLowerInvariant()
         "$hash  $relativePath"
     } | Set-Content -LiteralPath $manifestPath -Encoding ascii
