@@ -809,9 +809,9 @@ npm run build
 - BQG chapter execution now keeps per-book remote IDs at subscription scope, validates response book/chapter identity, rejects known injected-content fingerprints and switches through the administrator-configured mirrors before using the same-site chapter repair endpoint.
 - A run with any failed new chapter now fails explicitly; existing local chapters can no longer turn a failed incremental sync into a false success.
 - Management endpoint tests now cover list, metadata, catalog and chapter body instead of treating list reachability as proof that正文 is usable.
-- Live BQG acceptance ran two consecutive bounded tasks for `九星霸体诀`: task `e31f5dd34a8940068814ecf155cd51b2` increased valid local chapters 53 -> 55, and task `1c50404164244ccdbbd8d1e6d2a89789` increased them 55 -> 57. Both added 2 chapters with 0 failures, and chapters 54-57 passed body inspection without the known pollution fingerprint or domains.
+- Live BQG acceptance ran two consecutive bounded tasks for `九星霸体诀`: task `e31f5dd34a8940068814ecf155cd51b2` increased valid local chapters 53 -> 55, and task `1c50404164244ccdbbd8d1e6d2a89789` increased them 55 -> 57. Two additional single-mirror canaries increased the book to 59 valid chapters. Every task had 0 chapter failures, and chapters 54-59 passed body inspection without the known pollution fingerprint or domains.
 - Live Qimao acceptance task `79180ddd1f2249fc9dcfd69cd9a882df` completed `玉奴娇` idempotent follow-up with 0 added, 911 skipped, 0 failed and 911 local chapters.
-- This does not complete the BQG rollout. The remaining 19 metadata-only novels have not been fully synchronized, a 20/50-book soak has not been run, and Qimao had no upstream new chapter available for a new-body acceptance in this run.
+- This does not complete the BQG rollout. The remaining 19 metadata-only novels have not been fully synchronized, a 20/50-book soak has not been run, Qimao had no upstream new chapter available for a new-body acceptance, and the application-level BQG repair endpoint still needs a forced all-mirrors-polluted acceptance even though the upstream endpoint itself returned a valid chapter in direct testing.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-source-continuity-qimao-bqg-20260729.md`.
 
 ## Integration Priority
