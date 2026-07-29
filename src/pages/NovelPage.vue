@@ -322,6 +322,7 @@ import {
   fetchBookDetail,
   fetchBookFilterOptions,
   fetchBookList,
+  fetchBookPageSummary,
   fetchChapterRead,
   fetchNovelChapterList,
   reorderNovelChapters,
@@ -354,6 +355,15 @@ const baseFilters = [
       { label: '未上架', value: 0 },
       { label: '已上架', value: 1 },
       { label: '已下架', value: 2 },
+    ],
+  },
+  {
+    key: 'shelfReady',
+    label: '上架条件',
+    options: [
+      { label: '全部条件', value: '' },
+      { label: '可上架', value: true },
+      { label: '暂不可上架', value: false },
     ],
   },
 ]
@@ -400,6 +410,7 @@ const loading = ref(false)
 const batchLoading = ref(false)
 const novels = ref([])
 const total = ref(0)
+const pageSummary = ref(createEmptyPageSummary())
 const pageNo = ref(1)
 const pageSize = ref(10)
 const categoryOptions = ref([])
