@@ -1780,7 +1780,7 @@ function formatNumber(value) {
 
 function formatCompact(value) {
   const number = Number(value || 0)
-  if (!number) return '--'
+  if (!number) return '0 字'
   if (number >= 100000000) return `${(number / 100000000).toFixed(1)} 亿字`
   if (number >= 10000) return `${(number / 10000).toFixed(1)} 万字`
   return `${number.toLocaleString('zh-CN')} 字`
