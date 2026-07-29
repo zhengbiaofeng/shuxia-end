@@ -728,7 +728,7 @@ async function batchShelfNovels(ids, rows, publishStatus) {
     const result = await batchChangeBookShelfStatus(eligibleIds, publishStatus)
     showBatchResult(result, `批量${actionText}完成`)
     selectedNovelIds.value = []
-    await loadNovels(pageNo.value)
+    await reloadListAndSummary(pageNo.value)
     await refreshSelectedNovelIfNeeded(rows)
   } catch (error) {
     if (error !== 'cancel') {
@@ -759,7 +759,7 @@ async function batchDeleteSelectedNovels(ids, rows = []) {
       chapterVisible.value = false
       selectedNovel.value = null
     }
-    await loadNovels(pageNo.value)
+    await reloadListAndSummary(pageNo.value)
   } catch (error) {
     if (error !== 'cancel') {
       ElMessage.error(error?.message || '批量删除小说失败')
@@ -836,7 +836,7 @@ async function submitNovelForm() {
       ElMessage.success('小说已创建')
     }
     novelFormVisible.value = false
-    await loadNovels(editingNovel.value?.id ? pageNo.value : 1)
+    await reloadListAndSummary(editingNovel.value?.id ? pageNo.value : 1)
   } catch (error) {
     ElMessage.error(error?.message || '保存小说失败')
   } finally {
@@ -858,7 +858,7 @@ async function handleDeleteNovel(row) {
     })
     await deleteBook(row.id)
     ElMessage.success('小说已删除')
-    await loadNovels(pageNo.value)
+    await reloadListAndSummary(pageNo.value)
   } catch (error) {
     if (error !== 'cancel') {
       ElMessage.error(error?.message || '删除小说失败')
@@ -891,7 +891,7 @@ async function toggleShelfStatus(row) {
     batchLoading.value = true
     await changeBookShelfStatus(row.id, nextStatus)
     ElMessage.success(`小说已${actionText}`)
-    await loadNovels(pageNo.value)
+    await reloadListAndSummary(pageNo.value)
 
     if (chapterVisible.value && selectedNovel.value?.id === row.id) {
       selectedNovel.value = await fetchBookDetail(row.id)
@@ -999,7 +999,7 @@ async function submitChapterForm() {
     }
     chapterFormVisible.value = false
     await loadChapters(editingChapter.value?.id ? chapterPageNo.value : 1)
-    await loadNovels(pageNo.value)
+    await reloadListAndSummary(pageNo.value)
   } catch (error) {
     ElMessage.error(error?.message || '保存章节失败')
   } finally {
@@ -1068,7 +1068,7 @@ async function handleDeleteChapter(row) {
     await deleteNovelChapter(row.id)
     ElMessage.success('章节已删除')
     await loadChapters(chapterPageNo.value)
-    await loadNovels(pageNo.value)
+    await reloadListAndSummary(pageNo.value)
   } catch (error) {
     if (error !== 'cancel') {
       ElMessage.error(error?.message || '删除章节失败')
@@ -1168,7 +1168,7 @@ async function commitLocalImport() {
       ElMessage.success(result.summary)
     }
     resetListViewAfterUpload()
-    await Promise.allSettled([loadNovels(1), loadFilterData()])
+    await Promise.allSettled([loadNovels(1), loadPageSummary(), loadFilterData()])
   } catch (error) {
     ElMessage.error(error?.message || '批量导入小说失败')
   } finally {
