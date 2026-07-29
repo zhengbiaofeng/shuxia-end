@@ -796,6 +796,16 @@ npm run build
 
 ## Integration Priority
 
+## 2026-07-29 Task Center Execution Presentation
+
+- Task Center now distinguishes scheduled follow-up, manual follow-up, first full collection and rule-batch collection instead of presenting every scrape row as the same generic source task.
+- Successful no-change subscription runs show `up to date`. Bounded canaries show their real local/remote chapter ratio and explicitly remain incomplete even when the bounded task itself succeeded.
+- The summary card now uses the backend `completeImportedBookCount` contract. It counts distinct novels with a successful, failure-free scrape result whose local chapter count is at least the reported remote count; it no longer uses historical scrape-task volume as an imported-book count.
+- Live verification currently reports one fully imported novel. `玉奴娇` is current at 911 chapters, while the `九星霸体诀` canary remains incomplete at 52/7261 chapters.
+- Frontend targeted tests passed 4/4, frontend production build passed, the full 11-module backend package passed, Docker was rebuilt/recreated, OpenAPI returned HTTP 200 and real Task Center browser acceptance passed without page-level horizontal overflow.
+- This phase does not complete the BQG data rollout. The remaining metadata-only or partially synchronized novels still require bounded reruns, per-book count/body validation and an explicit publication decision.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\task-center-execution-presentation-20260729.md`.
+
 Current user priority:
 
 1. P0-P5 and the first reader real-data integration pass are complete; storage contracts, permissions, category visibility, authenticated file access, reader progress and restart persistence remain release regression requirements.
