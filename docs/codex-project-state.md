@@ -814,6 +814,15 @@ npm run build
 - This does not complete the BQG rollout. The remaining 19 metadata-only novels have not been fully synchronized, a 20/50-book soak has not been run, Qimao had no upstream new chapter available for a new-body acceptance, and the application-level BQG repair endpoint still needs a forced all-mirrors-polluted acceptance even though the upstream endpoint itself returned a valid chapter in direct testing.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-source-continuity-qimao-bqg-20260729.md`.
 
+## 2026-07-29 Novel Shelf Readiness And List Metadata
+
+- The management Novel list now exposes the backend shelf decision before an administrator acts. Rows distinguish `可上架`, `暂不可上架`, and `已上架`, with a hover explanation using the same validation contract as the shelf API.
+- Novel list aggregation now reads real chapter records for total chapters, readable chapters, latest chapter title, and word count. Zero-content metadata records display `暂无正文`, `0 章`, and `0 字` instead of ambiguous dashes.
+- Row shelf actions are disabled when the backend marks a novel ineligible. Batch shelf skips known-ineligible rows, reports the skipped count before submission, and still leaves the backend as the final validation authority.
+- Live browser verification covered a ready offline novel (`玉奴娇`: 911 readable chapters, latest `第911章 人物志`, 1,889,391 words), an online novel (`万相之王`: 1,694 readable chapters, 5,554,062 words), and metadata-only records with explicit blocking reasons.
+- This phase does not create missing正文. The remaining metadata-only BQG records stay ineligible until their collection tasks store at least one readable chapter.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-shelf-readiness-list-metadata-20260729.md`.
+
 ## Integration Priority
 
 Current user priority:

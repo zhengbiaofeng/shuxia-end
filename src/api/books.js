@@ -592,7 +592,9 @@ function normalizeBookRecord(item = {}) {
           : '待校验',
     shelfBlockReason: item.publishStatus === 1
       ? '当前小说已上架，可执行下架操作'
-      : item.shelfBlockReason || '等待服务端校验上架条件',
+      : item.shelfBlockReason || (item.shelfReady === true
+        ? '已有可读取正文，符合上架条件'
+        : '等待服务端校验上架条件'),
     source: item.sourceName || item.storageSourceName || item.storageName || item.bucketName || '书匣书库',
     status: normalizePublishStatus(item.publishStatus),
     statusSub: item.parseStatus !== undefined ? normalizeParseStatus(item.parseStatus, bookType) : '',
