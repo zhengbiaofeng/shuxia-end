@@ -531,8 +531,16 @@ watch(searchKeyword, () => {
 })
 
 async function refreshPage() {
-  await loadFilterData()
-  await loadNovels(1)
+  await Promise.all([loadFilterData(), loadPageSummary(), loadNovels(1)])
+}
+
+async function loadPageSummary() {
+  try {
+    pageSummary.value = await fetchBookPageSummary({ bizType: NOVEL_BIZ_TYPE })
+  } catch (error) {
+    console.warn('小说全库统计接口加载失败。', error)
+    pageSummary.value = createEmptyPageSummary()
+  }
 }
 
 async function loadFilterData() {
@@ -568,6 +576,8 @@ async function loadNovels(nextPage = pageNo.value) {
       tagName: filters.tagName || undefined,
       storageSource: filters.storageSource || undefined,
       publishStatus: activePublishStatus(),
+      published: activePublishedState(),
+      shelfReady: filters.shelfReady === '' ? undefined : filters.shelfReady,
     })
 
     novels.value = response.records
