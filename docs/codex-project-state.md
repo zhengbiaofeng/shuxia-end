@@ -758,7 +758,7 @@ npm run build
 - The reader Novel route now uses a dedicated dashboard aligned with the approved desktop reference: a novel channel hero and reader bookshelf, a full-width recommendation strip, then latest updates, configured recommendations, categories and reader statistics.
 - All rendered values continue to come from the existing reader APIs. The page does not fabricate ratings, completion counts or novel-specific statistics that the backend does not provide; the four statistics are labelled according to their actual account-level contracts.
 - The novel product boundary is unchanged: the reader only displays administrator-collected, synchronized and published novels. Collection, subscription and source configuration remain management-side responsibilities.
-- Recommendation tabs use the real `recommend`, `hot` and `latest` sort contracts. Category shortcuts and every "view all" action retain access to the complete category/sort/pagination catalog instead of replacing the existing discovery workflow.
+- Recommendation tabs use the real `recommend` and `latest` sort contracts. Category shortcuts and every "view all" action retain access to the complete category/sort/pagination catalog instead of replacing the existing discovery workflow.
 - Desktop uses the shared fixed sidebar and independently scrolling content shell. At narrower desktop widths the four lower panels become a stable two-column grid; tablet and phone keep the shared bottom navigation and collapse the dashboard without page-level horizontal overflow.
 - Empty bookshelf, recommendation and update areas remain explicit because the current database has no published novel visible to this account. No placeholder novel records were introduced.
 - Reader production build passed with only the existing bundle-size warning. Browser acceptance at `1280x720` covered layout dimensions, independent scrolling, recommendation sorting, the expandable full catalog and a clean console.
@@ -832,6 +832,14 @@ npm run build
 - Frontend production build, backend module compile, full backend package and Docker image rebuild/recreation all passed. No database migration is required.
 - This phase does not complete source ingestion. The remaining metadata-only BQG novels still need real chapter collection, and the planned 20/50-book Qimao/BQG soak acceptance is still outstanding.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\novel-shelf-readiness-list-metadata-20260729.md`.
+
+## 2026-07-29 Reader Private-Library Recommendation Semantics
+
+- The reader is a private local/NAS library, not a public content platform. Public-style ratings, stars, visit heat, popularity labels and popularity sorting must not be presented as meaningful reader metadata.
+- Reader recommendation cards now show only locally verifiable metadata: category and stored chapter count. The former star value incorrectly mapped local collect/visit counters into a rating-like treatment and has been removed.
+- Home, Book Library and Novel recommendation copy now uses `书库推荐` or `管理推荐`. User-facing `热门` sort entries were removed; catalog access still supports latest, administrator recommendation and title sorting.
+- The Novel recommendation card area reserves two title lines and a stable 300px desktop panel height. Browser acceptance at `1440x900`, `768x1024` and `375x812` confirmed eight real recommendation cards fit vertically without clipping or page-level horizontal overflow; light/dark modes had no application console errors.
+- This change does not alter administrator collection ranking, source priority or backend visit counters. Those values may remain operational inputs, but they are not reader-facing ratings or heat.
 
 ## Integration Priority
 
