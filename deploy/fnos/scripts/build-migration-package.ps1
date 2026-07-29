@@ -187,7 +187,7 @@ Get-ChildItem -LiteralPath $packageRoot -Recurse -File |
         $relativePath = $_.FullName.Substring($packageRoot.TrimEnd("\").Length + 1).Replace("\", "/")
         $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash.ToLowerInvariant()
         "$hash  $relativePath"
-    } | Set-Content -LiteralPath $manifestPath -Encoding ascii
+    } | Set-Content -LiteralPath $manifestPath -Encoding utf8
 
 Write-Host "Migration package created: $packageRoot"
 Write-Host "Local services were restarted after the consistent export."

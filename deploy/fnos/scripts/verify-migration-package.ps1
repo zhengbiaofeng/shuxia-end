@@ -12,7 +12,7 @@ if (-not (Test-Path -LiteralPath $manifestPath)) {
 }
 
 $failed = @()
-Get-Content -LiteralPath $manifestPath | ForEach-Object {
+Get-Content -LiteralPath $manifestPath -Encoding utf8 | ForEach-Object {
     if ($_ -notmatch '^([0-9a-f]{64})  (.+)$') {
         throw "Invalid manifest line: $_"
     }
