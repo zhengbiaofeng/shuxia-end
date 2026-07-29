@@ -465,6 +465,8 @@ function normalizeBookQuery(params = {}) {
     storageSource: params.storageSource || params.store,
     storagePath: params.storagePath,
     publishStatus: params.publishStatus,
+    published: params.published,
+    shelfReady: params.shelfReady,
   };
 
   Object.keys(query).forEach((key) => {
@@ -532,6 +534,8 @@ function normalizeBookPageSummary(result = {}) {
     localFileSizeText: formatFileSize(localFileSize),
     recentAddedBooks: Number(result.recentAddedBooks || 0),
     readingBooks: Number(result.readingBooks || 0),
+    chapterCount: Number(result.chapterCount || 0),
+    wordCount: Number(result.wordCount || 0),
     raw: result,
   };
 }
