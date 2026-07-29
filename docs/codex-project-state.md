@@ -783,6 +783,17 @@ npm run build
 - The backend container was rebuilt and recreated, six focused backend tests passed, and the frontend production build passed. Browser acceptance covered save/reload persistence, medium-width no-overlap layout and a clean management console.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\scrape-rule-api-endpoints-20260728.md`.
 
+## 2026-07-29 Scrape Task Order, Pause Stability And BQG Fallback
+
+- `玉奴娇` now has a validated 1-through-911 chapter order. The repair preserved all chapter IDs and 911 content files, and backup/rollback SQL remains available in the backend repository.
+- Remote chapter-number coherence now takes precedence over a local anchor, so scheduled synchronization cannot perpetuate the old corrupted order.
+- BQG chapter execution falls back to the source chapter page when configured API-mirror text is rejected by the pollution guard. Five consecutive content failures now stop a task with an actionable error.
+- Runtime `maxChapters` now honors explicit run, subscription and rule configuration in that precedence order. A live unpublished `九星霸体诀` canary logged `maxChapters=1`, added exactly one clean MinIO chapter and completed with 52 local chapters; its temporary option was restored afterward.
+- Task Center polling now reuses unchanged row objects and only refreshes selected-task detail while that task is active. Paused rows no longer flash merely because another task on the page is running.
+- Verification passed: 14 focused backend tests, full 11-module backend package, Docker rebuild/recreation with OpenAPI HTTP 200, and the administration frontend production build.
+- The remaining BQG metadata-only novels stay unpublished until bounded per-source synchronization and representative body checks pass. Do not interpret metadata discovery success as publication readiness.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\scrape-task-order-pause-and-bqg-fallback-20260729.md`.
+
 ## Integration Priority
 
 Current user priority:
