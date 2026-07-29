@@ -27,7 +27,7 @@
           :current-page="query.pageNo"
           :page-size="query.pageSize"
           :rows="page.rows"
-          min-width="1080px"
+          min-width="1200px"
           row-key="id"
           row-clickable
           :selectable="canActOnTasks"
@@ -92,6 +92,9 @@
           </template>
           <template #source="{ row }">
             <span class="source-dot"><i />{{ row.source }}</span>
+          </template>
+          <template #trigger="{ row }">
+            <AdminStatusBadge :label="row.trigger" :tone="row.triggerTone" />
           </template>
           <template #status="{ row }">
             <AdminStatusBadge :label="row.status" :tone="row.tone" />
@@ -231,9 +234,10 @@ const columns = [
   { key: 'name', label: '任务名称' },
   { key: 'kind', label: '类型' },
   { key: 'source', label: '来源 / 规则' },
+  { key: 'trigger', label: '触发方式' },
   { key: 'status', label: '\u72b6\u6001' },
   { key: 'progress', label: '进度' },
-  { key: 'start', label: '\u5f00\u59cb\u65f6\u95f4' },
+  { key: 'start', label: '触发时间' },
   { key: 'duration', label: '完成时间' },
   { key: 'actions', label: '操作' },
 ]

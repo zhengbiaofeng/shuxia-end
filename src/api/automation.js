@@ -661,11 +661,14 @@ function normalizeScrapeChannelPayload(payload = {}) {
   }
 }
 
-function normalizeTaskRow(item = {}) {
+export function normalizeTaskRow(item = {}) {
   const statusInfo = taskDisplayStatusInfo(item)
   const progressInfo = taskProgress(item)
+  const triggerInfo = taskTriggerInfo(item)
+  const outcomeInfo = taskOutcomeInfo(item)
   const title = item.bookName || item.taskId || '--'
   const coverUrl = normalizeResourceUrl(item.coverUrl)
+  const source = [item.sourceName, item.ruleName].map(trimText).filter(Boolean).join(' / ')
 
   return {
     raw: item,
@@ -673,15 +676,19 @@ function normalizeTaskRow(item = {}) {
     taskId: item.taskId,
     taskType: item.taskType,
     name: title,
-    desc: item.errorMessage || item.authorName || item.targetFormat || item.bookId || '--',
+    desc: item.errorMessage || outcomeInfo.description || item.authorName || item.targetFormat || item.bookId || '--',
     kind: item.taskTypeName || normalizeTaskType(item.taskType),
-    source: item.taskType || '--',
+    source: source || item.taskType || '--',
+    trigger: triggerInfo.label,
+    triggerTone: triggerInfo.tone,
+    triggerTime: formatDateTime(item.startedTime || item.createTime),
+    executeModeLabel: executeModeLabel(item.executeMode),
     status: item.taskStatusName || statusInfo.label,
     statusValue: Number(item.taskStatus),
     tone: statusInfo.tone,
     progress: progressInfo.value,
-    progressLabel: progressInfo.label,
-    start: formatDateTime(item.createTime),
+    progressLabel: outcomeInfo.progressLabel || progressInfo.label,
+    start: formatDateTime(item.startedTime || item.createTime),
     duration: item.finishedTime ? formatDateTime(item.finishedTime) : '--',
     cover: String(title).slice(0, 1),
     coverUrl,
@@ -697,6 +704,7 @@ function normalizeTaskRow(item = {}) {
     recoveryMode: item.recoveryMode || '',
     recoveryModeLabel: item.recoveryModeLabel || '',
     recoverySuggestion: item.recoverySuggestion || '',
+    outcomeLabel: outcomeInfo.label,
   }
 }
 
@@ -1044,7 +1052,7 @@ function normalizeLines(value) {
   return value.split('\n').map((item) => item.trim()).filter(Boolean)
 }
 
-function buildTaskMetrics(summary = {}) {
+export function buildTaskMetrics(summary = {}) {
   return [
     metric('任务总数', summary.totalCount, '个', '所有任务', 'blue', DataAnalysis),
     metric('处理中', summary.processingCount, '个', '正在处理', 'green', VideoPlay),
@@ -1052,7 +1060,7 @@ function buildTaskMetrics(summary = {}) {
     metric('已完成', summary.successCount, '个', '成功任务', 'purple', CircleCheck),
     metric('失败', summary.failCount, '个', '失败任务', 'orange', Warning),
     metric('本地扫描', summary.localScanTaskCount, '个', '扫描任务', 'cyan', Refresh),
-    metric('网页抓取', summary.webScrapeTaskCount, '个', '正文入库', 'green', VideoPlay),
+    metric('完整入库', summary.completeImportedBookCount, '本', '小说正文已完整同步', 'green', Finished),
     metric('存储迁移', summary.migrationTaskCount, '个', '文件与章节迁移', 'purple', Refresh),
   ]
 }
@@ -1090,11 +1098,20 @@ export function buildTaskDetail(row, logs = []) {
   const fields = [
     ['任务ID', row.taskId || source.taskId || '--'],
     ['任务类型', row.kind || '--'],
-    ['开始时间', row.start || formatDateTime(source.createTime)],
+    ['触发方式', row.trigger || taskTriggerInfo(source).label],
+    ['执行模式', row.executeModeLabel || executeModeLabel(source.executeMode)],
+    ['触发时间', row.triggerTime || row.start || formatDateTime(source.startedTime || source.createTime)],
     ['完成时间', formatDateTime(source.finishedTime)],
     [targetLabel, source.targetFormat || '--'],
     [itemLabel, itemCount],
   ]
+  if (row.outcomeLabel) fields.push(['执行结果', row.outcomeLabel])
+  if (source.addedChapterCount !== undefined || source.skippedChapterCount !== undefined || source.failedChapterCount !== undefined) {
+    fields.push(['章节结果', `新增 ${Number(source.addedChapterCount || 0)} / 跳过 ${Number(source.skippedChapterCount || 0)} / 失败 ${Number(source.failedChapterCount || 0)}`])
+  }
+  if (source.localChapterCountAfterSync !== undefined && source.localChapterCountAfterSync !== null) {
+    fields.push(['本地章节', `${Number(source.localChapterCountAfterSync || 0)} 章`])
+  }
   if (source.failureCategoryLabel) fields.push(['失败诊断', source.failureCategoryLabel])
   if (source.recoveryModeLabel) fields.push(['恢复方式', source.recoveryModeLabel])
   if (source.recoverySuggestion) fields.push(['处理建议', source.recoverySuggestion])
@@ -1150,8 +1167,19 @@ function taskProgress(item = {}) {
   const processed = hasProcessedCounts
     ? countValues.reduce((sum, value) => sum + Math.max(0, Number(value || 0)), 0)
     : 0
+  const localChapterCount = item.localChapterCountAfterSync === null || item.localChapterCountAfterSync === undefined
+    ? null
+    : Math.max(0, Number(item.localChapterCountAfterSync || 0))
+  const isChapterScrape = String(item.taskType || '').toUpperCase() === 'SCRAPE'
+    && String(item.executeMode || '').toUpperCase() !== 'RULE_BATCH_SYNC'
 
   if (status === 0) return { value: 0, label: '排队中' }
+  if (isChapterScrape && total > 0 && localChapterCount !== null && status !== 1) {
+    return {
+      value: Math.min(100, Math.round((localChapterCount / total) * 100)),
+      label: `${Math.min(localChapterCount, total)}/${total}`,
+    }
+  }
   if (total > 0 && hasProcessedCounts) {
     const percentage = Math.min(100, Math.round((processed / total) * 100))
     return {
@@ -1163,6 +1191,77 @@ function taskProgress(item = {}) {
   if (status === 1) return { value: 1, label: '处理中' }
   if (status === 2 || status === 3) return { value: 100, label: '100%' }
   return { value: 0, label: '--' }
+}
+
+function taskTriggerInfo(item = {}) {
+  const taskType = String(item.taskType || '').toUpperCase()
+  if (taskType !== 'SCRAPE') return { label: '系统任务', tone: 'slate' }
+
+  const triggerType = String(item.triggerType || '').toUpperCase()
+  const executeMode = String(item.executeMode || '').toUpperCase()
+  const added = Math.max(0, Number(item.addedChapterCount || 0))
+  const skipped = Math.max(0, Number(item.skippedChapterCount || 0))
+  const local = Math.max(0, Number(item.localChapterCountAfterSync || 0))
+
+  if (triggerType === 'SCHEDULED') return { label: '定时追更', tone: 'purple' }
+  if (executeMode === 'RULE_BATCH_SYNC') return { label: '批量首次采集', tone: 'blue' }
+  if (triggerType === 'MANUAL' && added > 0 && local === added && skipped === 0) {
+    return { label: '首次全量采集', tone: 'blue' }
+  }
+  if (triggerType === 'MANUAL' && (skipped > 0 || local > added)) {
+    return { label: '手动追更', tone: 'cyan' }
+  }
+  return { label: triggerType === 'MANUAL' ? '手动采集' : '采集任务', tone: 'slate' }
+}
+
+function executeModeLabel(value) {
+  const map = {
+    RULE_BATCH_SYNC: '批量发现与采集',
+    SYNC_CHAPTERS: '章节同步',
+    METADATA_ONLY: '仅同步书籍信息',
+  }
+  const normalized = String(value || '').toUpperCase()
+  return map[normalized] || value || '--'
+}
+
+function taskOutcomeInfo(item = {}) {
+  if (String(item.taskType || '').toUpperCase() !== 'SCRAPE') return { label: '', progressLabel: '', description: '' }
+
+  const status = Number(item.taskStatus)
+  const resultStatus = String(item.taskResultStatus || item.resultStatus || '').toUpperCase()
+  const executeMode = String(item.executeMode || '').toUpperCase()
+  const total = Math.max(0, Number(item.chapterCount || 0))
+  const added = Math.max(0, Number(item.addedChapterCount || 0))
+  const skipped = Math.max(0, Number(item.skippedChapterCount || 0))
+  const failed = Math.max(0, Number(item.failedChapterCount || 0))
+  const local = Math.max(0, Number(item.localChapterCountAfterSync || 0))
+
+  if (resultStatus === 'PAUSED') return { label: '任务已暂停', progressLabel: '已暂停', description: '任务已暂停，可从任务操作中恢复' }
+  if (resultStatus === 'TERMINATED') return { label: '任务已终止', progressLabel: '已终止', description: '任务已终止' }
+  if (status === 3 || resultStatus === 'FAIL') {
+    const label = failed > 0 ? `同步失败 ${failed} 章` : '采集失败'
+    return { label, progressLabel: label, description: item.errorMessage || label }
+  }
+  if (status !== 2 && resultStatus !== 'SUCCESS') return { label: '', progressLabel: '', description: '' }
+  if (executeMode === 'RULE_BATCH_SYNC') {
+    return { label: '批量采集完成', progressLabel: '批量完成', description: '批量发现与采集任务已完成' }
+  }
+
+  const fullyImported = total > 0 && failed === 0 && local >= total
+  if (fullyImported && added === 0 && skipped >= total) {
+    return { label: '无新增章节，已是最新', progressLabel: '已是最新', description: `无新增章节，当前 ${local} 章已是最新` }
+  }
+  if (fullyImported) {
+    const label = added > 0 ? `新增 ${added} 章，已完整入库` : '已完整入库'
+    return { label, progressLabel: added > 0 ? `新增 ${added} 章` : '完整入库', description: `${label}，当前共 ${local} 章` }
+  }
+
+  const label = added > 0 ? `试跑完成，新增 ${added} 章` : '试跑完成'
+  return {
+    label: `${label}，尚未完整入库`,
+    progressLabel: added > 0 ? `试跑 +${added}` : '试跑完成',
+    description: `${label}；本地 ${local}/${total || '--'} 章，尚未完整入库`,
+  }
 }
 
 function normalizeTaskType(value) {
