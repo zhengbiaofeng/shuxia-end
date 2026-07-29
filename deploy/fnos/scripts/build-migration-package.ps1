@@ -169,7 +169,12 @@ $images = @(
 )
 
 foreach ($image in $images) {
-    Invoke-Checked docker save -o (Join-Path $imagesRoot $image.File) $image.Tag
+    Invoke-Checked -Executable docker -Arguments @(
+        "save",
+        "-o",
+        (Join-Path $imagesRoot $image.File),
+        $image.Tag
+    )
 }
 
 Remove-Item -LiteralPath $buildRoot -Recurse -Force
