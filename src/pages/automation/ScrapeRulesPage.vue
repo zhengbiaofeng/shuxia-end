@@ -376,7 +376,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Connection, DataAnalysis, Delete, Document, EditPen, InfoFilled, Link, QuestionFilled, Refresh, SetUp, View } from '@element-plus/icons-vue'
 import { AdminActionIcons, AdminFilterBar, AdminInfoBox, AdminStatusBadge, AdminTableCard, AdminTooltip } from '../../components/admin'
 import ResourceMetricGrid from '../../components/resource/ResourceMetricGrid.vue'
@@ -399,6 +399,7 @@ import {
 } from '../../api/automation'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const page = {
   ...automationPages.rules,
@@ -543,8 +544,19 @@ function templateBindingTip(row) {
 }
 
 function handlePageAction(action) {
+  if (action.label === '返回采集工作台') {
+    router.push({
+      path: '/automation/collection',
+      query: route.query.returnTab === 'batch' ? { tab: 'batch' } : {},
+    })
+  }
   if (action.label === '添加站点适配') router.push('/automation/rules/new')
-  if (action.label === '连接模板') router.push('/automation/channels')
+  if (action.label === '连接模板') {
+    router.push({
+      path: '/automation/channels',
+      query: { returnTab: route.query.returnTab === 'batch' ? 'batch' : 'single' },
+    })
+  }
 }
 
 function handleSearchInput(value) {

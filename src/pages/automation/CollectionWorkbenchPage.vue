@@ -167,7 +167,7 @@
               <h2>从列表页发现小说</h2>
               <p>选择站点适配后，粘贴分类页、排行榜或多个入口地址。</p>
             </div>
-            <el-button :icon="Setting" @click="router.push('/automation/rules')">管理站点适配</el-button>
+            <el-button :icon="Setting" @click="openScrapeSettings">管理站点适配</el-button>
           </header>
 
           <el-form label-position="top">
@@ -397,8 +397,15 @@ const singleKindLabel = computed(() => ({
 const singleStepIndex = computed(() => ({ input: 0, preview: 1, result: 2 }[singlePhase.value] ?? 0))
 
 function handlePageAction(action) {
-  if (action.label === '采集设置') router.push('/automation/rules')
+  if (action.label === '采集设置') openScrapeSettings()
   if (action.label === '任务中心') router.push('/automation/tasks')
+}
+
+function openScrapeSettings() {
+  router.push({
+    path: '/automation/rules',
+    query: { returnTab: activeTab.value === 1 ? 'batch' : 'single' },
+  })
 }
 
 function handleTabChange(index) {

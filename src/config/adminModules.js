@@ -1,4 +1,5 @@
 import {
+  ArrowLeft,
   Bell,
   Calendar,
   Check,
@@ -64,6 +65,7 @@ export const automationPages = {
     subtitle: '维护站点适配、访问方式和字段解析规则；普通采集请从采集工作台开始',
     activeMenu: '采集工作台',
     actions: [
+      { label: '返回采集工作台', icon: ArrowLeft },
       { label: '连接模板', icon: Setting, permission: 'sxbook:scrapeChannel:list' },
       { label: '添加站点适配', icon: Plus, type: 'primary', permission: 'sxbook:scrapeRule:add' },
     ],
