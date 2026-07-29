@@ -794,8 +794,6 @@ npm run build
 - The remaining BQG metadata-only novels stay unpublished until bounded per-source synchronization and representative body checks pass. Do not interpret metadata discovery success as publication readiness.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\scrape-task-order-pause-and-bqg-fallback-20260729.md`.
 
-## Integration Priority
-
 ## 2026-07-29 Task Center Execution Presentation
 
 - Task Center now distinguishes scheduled follow-up, manual follow-up, first full collection and rule-batch collection instead of presenting every scrape row as the same generic source task.
@@ -805,6 +803,8 @@ npm run build
 - Frontend targeted tests passed 4/4, frontend production build passed, the full 11-module backend package passed, Docker was rebuilt/recreated, OpenAPI returned HTTP 200 and real Task Center browser acceptance passed without page-level horizontal overflow.
 - This phase does not complete the BQG data rollout. The remaining metadata-only or partially synchronized novels still require bounded reruns, per-book count/body validation and an explicit publication decision.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\task-center-execution-presentation-20260729.md`.
+
+## Integration Priority
 
 Current user priority:
 
