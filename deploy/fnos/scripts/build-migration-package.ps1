@@ -82,7 +82,7 @@ $minioPassword = [Guid]::NewGuid().ToString("N")
     "MYSQL_ROOT_PASSWORD=$mysqlPassword"
     "MINIO_ROOT_USER=shuxiaadmin"
     "MINIO_ROOT_PASSWORD=$minioPassword"
-) | Set-Content -LiteralPath (Join-Path $projectRoot ".env") -Encoding utf8NoBOM
+) | Set-Content -LiteralPath (Join-Path $projectRoot ".env") -Encoding ascii
 
 $oldApiBaseUrl = $env:VITE_API_BASE_URL
 try {

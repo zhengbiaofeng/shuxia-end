@@ -1,3 +1,9 @@
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: 20m
+    max-file: "3"
+
 services:
   mysql:
     image: mysql:8.0.46
@@ -121,9 +127,3 @@ volumes:
     name: shuxia-mysql-data
   shuxia-redis-data:
     name: shuxia-redis-data
-
-x-default-logging: &default-logging
-  driver: json-file
-  options:
-    max-size: 20m
-    max-file: "3"
