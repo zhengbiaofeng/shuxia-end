@@ -218,6 +218,20 @@
                     </div>
                   </template>
 
+                  <template v-else-if="column.type === 'readiness'">
+                    <div class="readiness-cell">
+                      <span
+                        class="readiness-chip"
+                        :class="readinessTone(row[column.readyKey], row.raw?.publishStatus)"
+                      >
+                        {{ row[column.key] }}
+                      </span>
+                      <AdminTooltip :content="row[column.subKey] || row[column.key]">
+                        <span class="readiness-reason" :title="row[column.subKey]">{{ row[column.subKey] }}</span>
+                      </AdminTooltip>
+                    </div>
+                  </template>
+
                   <template v-else-if="column.type === 'actions'">
                     <div class="row-actions">
                       <AdminTooltip
@@ -228,7 +242,8 @@
                         <button
                           type="button"
                           :aria-label="action.label"
-                          :class="{ danger: action.danger }"
+                          :class="{ danger: action.danger, disabled: action.disabled }"
+                          :disabled="action.disabled"
                           @click="$emit('row-action', action, row)"
                         >
                           <el-icon><component :is="action.icon" /></el-icon>
@@ -470,14 +485,33 @@ function visibleRowActions(row = {}) {
   const actions = filterPermittedActions(props.config.rowActions)
   const availableActions = Array.isArray(row.availableActions) ? row.availableActions.map((item) => String(item).toLowerCase()) : []
 
-  if (!availableActions.length) {
-    return actions
-  }
-
-  return actions.filter((action) => {
+  const visibleActions = !availableActions.length ? actions : actions.filter((action) => {
     const code = String(action.code || '').toLowerCase()
+    if (code === 'shelf') {
+      return availableActions.includes('shelf') || availableActions.includes('online') || availableActions.includes('offline')
+    }
     return !code || availableActions.includes(code)
   })
+
+  return visibleActions.map((action) => {
+    const disabled = resolveActionValue(action.disabled, row) === true
+    const disabledReason = resolveActionValue(action.disabledReason, row)
+    const tooltip = disabled
+      ? disabledReason || '当前状态不可执行此操作'
+      : resolveActionValue(action.tooltip, row) || action.label
+    return { ...action, disabled, tooltip }
+  })
+}
+
+function resolveActionValue(value, row) {
+  return typeof value === 'function' ? value(row) : value
+}
+
+function readinessTone(ready, publishStatus) {
+  if (Number(publishStatus) === 1) return 'is-online'
+  if (ready === true) return 'is-ready'
+  if (ready === false) return 'is-blocked'
+  return 'is-unknown'
 }
 
 function filterPermittedActions(actions = []) {
@@ -909,6 +943,49 @@ function handleLogout() {
   white-space: nowrap;
 }
 
+.readiness-cell {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.readiness-chip {
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 4px 8px;
+  width: fit-content;
+}
+
+.readiness-chip.is-ready,
+.readiness-chip.is-online {
+  background: #ecfdf5;
+  color: #16a34a;
+}
+
+.readiness-chip.is-blocked {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.readiness-chip.is-unknown {
+  background: #f5f7fb;
+  color: #64748b;
+}
+
+.readiness-reason {
+  color: #6b7ea8;
+  cursor: help;
+  display: block;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .chip,
 .mini-badge {
   border: 1px solid currentColor;
@@ -1053,6 +1130,17 @@ function handleLogout() {
 
 .row-actions button.danger:hover {
   color: #b91c1c;
+}
+
+.row-actions button.disabled,
+.row-actions button:disabled {
+  color: #b7c1d5;
+  cursor: not-allowed;
+}
+
+.row-actions button.disabled:hover,
+.row-actions button:disabled:hover {
+  color: #b7c1d5;
 }
 
 .row-actions button:last-child {

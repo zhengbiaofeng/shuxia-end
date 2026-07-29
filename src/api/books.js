@@ -578,9 +578,21 @@ function normalizeBookRecord(item = {}) {
     transcodeStatus: normalizeTranscodeStatus(item.transcodeStatus, bookType),
     addedAt: formatDateTime(item.createTime),
     updatedAt: formatDateTime(item.updateTime || item.lastUpdateTime || item.createTime),
-    latest: item.latestChapterTitle || item.latestEpisodeTitle || item.latestTitle || '--',
-    chapterCount: formatCount(item.chapterCount || item.episodeCount, '章'),
-    words: formatCount(item.wordCount || item.totalWords, '字'),
+    latest: item.latestChapterTitle || item.latestEpisodeTitle || item.latestTitle || (bookType === 'novel' ? '暂无正文' : '--'),
+    chapterCount: formatContentCount(item.chapterCount ?? item.episodeCount, '章', bookType === 'novel'),
+    words: formatContentCount(item.wordCount ?? item.totalWords, '字', bookType === 'novel'),
+    readableChapterCount: Number(item.readableChapterCount || 0),
+    shelfReady: typeof item.shelfReady === 'boolean' ? item.shelfReady : null,
+    shelfReadiness: item.publishStatus === 1
+      ? '已上架'
+      : item.shelfReady === true
+        ? '可上架'
+        : item.shelfReady === false
+          ? '暂不可上架'
+          : '待校验',
+    shelfBlockReason: item.publishStatus === 1
+      ? '当前小说已上架，可执行下架操作'
+      : item.shelfBlockReason || '等待服务端校验上架条件',
     source: item.sourceName || item.storageSourceName || item.storageName || item.bucketName || '书匣书库',
     status: normalizePublishStatus(item.publishStatus),
     statusSub: item.parseStatus !== undefined ? normalizeParseStatus(item.parseStatus, bookType) : '',
@@ -880,6 +892,14 @@ function formatFileSize(value) {
 function formatCount(value, unit) {
   const number = Number(value || 0);
   if (!number) return '--';
+  return `${number.toLocaleString('zh-CN')} ${unit}`;
+}
+
+function formatContentCount(value, unit, showZero = false) {
+  if (value === null || value === undefined || value === '') return showZero ? `0 ${unit}` : '--';
+  const number = Number(value);
+  if (!Number.isFinite(number)) return '--';
+  if (number === 0 && !showZero) return '--';
   return `${number.toLocaleString('zh-CN')} ${unit}`;
 }
 

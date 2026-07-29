@@ -364,6 +364,7 @@ const columns = [
   { key: 'category', label: '分类', type: 'chip' },
   { key: 'source', label: '来源', type: 'source', subKey: 'path' },
   { key: 'status', label: '状态', type: 'status', subKey: 'statusSub' },
+  { key: 'shelfReadiness', label: '上架条件', type: 'readiness', subKey: 'shelfBlockReason', readyKey: 'shelfReady' },
   { key: 'latest', label: '最新章节', type: 'dual', subKey: 'chapterCount' },
   { key: 'updatedAt', label: '更新时间' },
   { key: 'words', label: '字数' },
@@ -372,7 +373,15 @@ const columns = [
 
 const rowActions = [
   { code: 'chapters', label: '章节', icon: Collection, permission: 'sxbook:book:chapter:list' },
-  { code: 'shelf', label: '上下架', icon: RefreshRight, permission: 'sxbook:book:shelf' },
+  {
+    code: 'shelf',
+    label: '上下架',
+    icon: RefreshRight,
+    permission: 'sxbook:book:shelf',
+    disabled: (row) => Number(row.raw?.publishStatus) !== 1 && row.shelfReady === false,
+    disabledReason: (row) => row.shelfBlockReason,
+    tooltip: (row) => Number(row.raw?.publishStatus) === 1 ? '下架小说' : '上架小说',
+  },
   { code: 'edit', label: '编辑', icon: EditPen, permission: 'sxbook:book:edit' },
   { code: 'delete', label: '删除', icon: Delete, danger: true, permission: 'sxbook:book:delete' },
 ]
@@ -668,9 +677,24 @@ async function handleStorageMigrationSubmitted() {
 
 async function batchShelfNovels(ids, rows, publishStatus) {
   const actionText = publishStatus === 1 ? '上架' : '下架'
+  const selectedRowMap = new Map((rows || []).map((row) => [row.id, row]))
+  const blockedRows = publishStatus === 1
+    ? ids.map((id) => selectedRowMap.get(id)).filter((row) => row?.shelfReady === false)
+    : []
+  const eligibleIds = blockedRows.length
+    ? ids.filter((id) => !blockedRows.some((row) => row.id === id))
+    : ids
+
+  if (!eligibleIds.length) {
+    const reasons = [...new Set(blockedRows.map((row) => row.shelfBlockReason).filter(Boolean))]
+    ElMessage.warning(reasons[0] || '所选小说均不满足上架条件')
+    return
+  }
+
   try {
+    const skippedText = blockedRows.length ? `，另有 ${blockedRows.length} 本因不满足上架条件将跳过` : ''
     await ElMessageBox.confirm(
-      `确定批量${actionText}已选择的 ${ids.length} 本小说吗？`,
+      `确定批量${actionText} ${eligibleIds.length} 本小说吗${skippedText}？`,
       `批量${actionText}`,
       {
         confirmButtonText: actionText,
@@ -680,7 +704,7 @@ async function batchShelfNovels(ids, rows, publishStatus) {
     )
 
     batchLoading.value = true
-    const result = await batchChangeBookShelfStatus(ids, publishStatus)
+    const result = await batchChangeBookShelfStatus(eligibleIds, publishStatus)
     showBatchResult(result, `批量${actionText}完成`)
     selectedNovelIds.value = []
     await loadNovels(pageNo.value)
@@ -830,6 +854,11 @@ async function toggleShelfStatus(row) {
   const currentStatus = Number(row.raw?.publishStatus ?? -1)
   const nextStatus = currentStatus === 1 ? 2 : 1
   const actionText = nextStatus === 1 ? '上架' : '下架'
+
+  if (nextStatus === 1 && row.shelfReady === false) {
+    ElMessage.warning(row.shelfBlockReason || '当前小说不满足上架条件')
+    return
+  }
 
   try {
     await ElMessageBox.confirm(`确定${actionText}「${row.title}」吗？`, `${actionText}小说`, {
