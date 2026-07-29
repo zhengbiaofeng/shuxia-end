@@ -1830,7 +1830,7 @@ function coverStyle(cover) {
 
 onMounted(async () => {
   await Promise.allSettled([loadFilterData(), loadNovelStorageLocations()])
-  await loadNovels(1)
+  await Promise.all([loadPageSummary(), loadNovels(1)])
 })
 </script>
 
