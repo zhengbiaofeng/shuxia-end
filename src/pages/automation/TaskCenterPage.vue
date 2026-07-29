@@ -341,19 +341,23 @@ async function loadTasks(pageNo = query.pageNo, { silent = false } = {}) {
   if (!silent) loading.value = true
   try {
     const data = await fetchTaskCenterPage(query)
+    const previousSelectedStatus = selectedTask.value?.statusValue
+    const nextRows = silent ? reconcilePolledRows(page.rows, data.rows) : data.rows
     page.metrics = data.metrics
     page.tabs = data.tabs
-    page.rows = data.rows
-    selectedRows.value = selectedRows.value.filter((selected) => data.rows.some((row) => row.id === selected.id && row.canDelete))
+    page.rows = nextRows
+    selectedRows.value = selectedRows.value.filter((selected) => nextRows.some((row) => row.id === selected.id && row.canDelete))
     page.total = data.total
     query.pageNo = data.current || query.pageNo
     query.pageSize = data.pageSize || query.pageSize
     if (selectedTask.value) {
-      const sameTask = data.rows.find((row) => row.taskId === selectedTask.value.taskId && row.taskType === selectedTask.value.taskType)
-      if (sameTask) await selectTask(sameTask, { silent })
+      const sameTask = nextRows.find((row) => row.taskId === selectedTask.value.taskId && row.taskType === selectedTask.value.taskType)
+      const selectedTaskIsActive = [0, 1].includes(previousSelectedStatus) || [0, 1].includes(sameTask?.statusValue)
+      if (sameTask && (!silent || selectedTaskIsActive)) await selectTask(sameTask, { silent })
+      else if (sameTask) selectedTask.value = sameTask
       else clearSelection()
-    } else if (data.rows[0] && !silent) {
-      await selectTask(data.rows[0], { silent })
+    } else if (nextRows[0] && !silent) {
+      await selectTask(nextRows[0], { silent })
     } else {
       if (!silent) clearSelection()
     }
@@ -368,6 +372,22 @@ async function loadTasks(pageNo = query.pageNo, { silent = false } = {}) {
   } finally {
     if (!silent) loading.value = false
   }
+}
+
+function reconcilePolledRows(currentRows = [], incomingRows = []) {
+  const currentById = new Map(currentRows.map((row) => [row.id, row]))
+  return incomingRows.map((incomingRow) => {
+    const currentRow = currentById.get(incomingRow.id)
+    if (!currentRow) return incomingRow
+    if (hasTaskRowChanged(currentRow, incomingRow)) Object.assign(currentRow, incomingRow)
+    return currentRow
+  })
+}
+
+function hasTaskRowChanged(currentRow, incomingRow) {
+  const incomingKeys = Object.keys(incomingRow)
+  if (incomingKeys.length !== Object.keys(currentRow).length) return true
+  return incomingKeys.some((key) => !Object.is(currentRow[key], incomingRow[key]))
 }
 
 async function selectTask(row, { silent = false } = {}) {
