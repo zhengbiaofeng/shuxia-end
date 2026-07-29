@@ -842,6 +842,14 @@ npm run build
 - The Novel reading-statistics tiles now prioritize the complete metric label and value. The decorative mini sparkline was removed from the seven-day-duration tile so all four labels remain readable and aligned at `1440x900`, `768x1024` and `375x812`, without page-level horizontal overflow.
 - This change does not alter administrator collection ranking, source priority or backend visit counters. Those values may remain operational inputs, but they are not reader-facing ratings or heat.
 
+## 2026-07-29 Reader Novel Theme And Dual-Column Mode
+
+- The real-text novel reader now uses the shared reader preference state for background theme, font size and reading mode, matching the EPUB reader controls instead of relying on a read-only backend theme value.
+- Desktop widths from `960px` support a two-column paginated layout. Each viewport shows a two-page spread, the mouse wheel maps to horizontal page movement, footer controls expose previous/next page and the current page count, and chapter navigation remains available at spread boundaries.
+- Tablet and phone widths automatically use the single-column scrolling layout. The dual-column control is disabled with an explanatory label at those widths, while the stored desktop preference is restored when the viewport becomes wide enough again.
+- Mode changes preserve the current chapter fraction after layout settles. Width animation was intentionally excluded because it caused a second reflow and shifted the restored reading position.
+- Live acceptance used the real 659-chapter novel `封总，太太想跟你离婚很久了`: desktop `1280x720` rendered a six-spread first chapter and advanced from `1 / 6` to `2 / 6`; `768x1024` and `375x812` both auto-fell back to one column without page or toolbar overflow; returning to desktop restored dual-column mode. Light and dark reading backgrounds both rendered correctly. Reader production build passed; the existing large-chunk warning remains.
+
 ## Integration Priority
 
 Current user priority:
