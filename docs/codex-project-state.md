@@ -848,7 +848,9 @@ npm run build
 - Desktop widths from `960px` support a two-column paginated layout. Each viewport shows a two-page spread, the mouse wheel maps to horizontal page movement, footer controls expose previous/next page and the current page count, and chapter navigation remains available at spread boundaries.
 - Tablet and phone widths automatically use the single-column scrolling layout. The dual-column control is disabled with an explanatory label at those widths, while the stored desktop preference is restored when the viewport becomes wide enough again.
 - Mode changes preserve the current chapter fraction after layout settles. Width animation was intentionally excluded because it caused a second reflow and shifted the restored reading position.
+- The single-column novel reader keeps its dedicated scroll container but hides the native scrollbar track across Chromium, Firefox and legacy Microsoft engines. The reader shell now uses the flex remainder below the real rendered toolbar height instead of subtracting a fixed `58px`, preventing the extra document-level scrollbar while preserving wheel, touch, keyboard and progress-save scrolling.
 - Live acceptance used the real 659-chapter novel `封总，太太想跟你离婚很久了`: desktop `1280x720` rendered a six-spread first chapter and advanced from `1 / 6` to `2 / 6`; `768x1024` and `375x812` both auto-fell back to one column without page or toolbar overflow; returning to desktop restored dual-column mode. Light and dark reading backgrounds both rendered correctly. Reader production build passed; the existing large-chunk warning remains.
+- Scrollbar acceptance also covered desktop `1280x720`, phone `375x812` and landscape `812x375`: document height matched the viewport, no horizontal overflow was present, the native track consumed `0px`, and the internal reading surface still moved programmatically before returning to its original position.
 
 ## Integration Priority
 
