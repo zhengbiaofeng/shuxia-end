@@ -543,6 +543,10 @@ async function loadPageSummary() {
   }
 }
 
+async function reloadListAndSummary(nextPage = pageNo.value) {
+  await Promise.all([loadNovels(nextPage), loadPageSummary()])
+}
+
 async function loadFilterData() {
   const [categoriesResult, optionsResult] = await Promise.allSettled([
     fetchBookCategories({ rootCode: NOVEL_BIZ_TYPE }),
