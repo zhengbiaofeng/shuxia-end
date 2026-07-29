@@ -839,6 +839,7 @@ npm run build
 - Reader recommendation cards now show only locally verifiable metadata: category and stored chapter count. The former star value incorrectly mapped local collect/visit counters into a rating-like treatment and has been removed.
 - Home, Book Library and Novel recommendation copy now uses `书库推荐` or `管理推荐`. User-facing `热门` sort entries were removed; catalog access still supports latest, administrator recommendation and title sorting.
 - The Novel recommendation card area reserves two title lines and a stable 300px desktop panel height. Browser acceptance at `1440x900`, `768x1024` and `375x812` confirmed eight real recommendation cards fit vertically without clipping or page-level horizontal overflow; light/dark modes had no application console errors.
+- The Novel reading-statistics tiles now prioritize the complete metric label and value. The decorative mini sparkline was removed from the seven-day-duration tile so all four labels remain readable and aligned at `1440x900`, `768x1024` and `375x812`, without page-level horizontal overflow.
 - This change does not alter administrator collection ranking, source priority or backend visit counters. Those values may remain operational inputs, but they are not reader-facing ratings or heat.
 
 ## Integration Priority
