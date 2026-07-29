@@ -1,0 +1,48 @@
+spring:
+  flyway:
+    enabled: false
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  datasource:
+    dynamic:
+      datasource:
+        master:
+          url: jdbc:mysql://mysql:3306/jeecg-boot?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+          username: root
+          password: ${MYSQL_ROOT_PASSWORD}
+  data:
+    redis:
+      host: redis
+      port: 6379
+      password:
+
+jeecg:
+  uploadType: minio
+  minio:
+    minio_url: http://minio:9000
+    minio_name: ${MINIO_ROOT_USER}
+    minio_pass: ${MINIO_ROOT_PASSWORD}
+    bucketName: bookbox
+  path:
+    upload: /opt/upFiles
+  domainUrl:
+    pc: http://192.168.8.13:18082
+    app: http://192.168.8.13:18082
+
+sx:
+  book:
+    chapter:
+      content:
+        strategy: local
+        base-dir: data/sx-book/chapter-content
+
+cors:
+  allowed-origins:
+    - "http://192.168.8.13:18081"
+    - "http://192.168.8.13:18082"
+  allowed-methods: "*"
+  allowed-headers: "*"
+  allow-credentials: true
+  max-age: 3600

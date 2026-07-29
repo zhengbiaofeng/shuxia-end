@@ -1,0 +1,129 @@
+services:
+  mysql:
+    image: mysql:8.0.46
+    container_name: shuxia-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+      - --lower_case_table_names=1
+      - --max_allowed_packet=256M
+    volumes:
+      - shuxia-mysql-data:/var/lib/mysql
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    logging: *default-logging
+
+  redis:
+    image: redis:7.4.9-alpine
+    container_name: shuxia-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - shuxia-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    logging: *default-logging
+
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    container_name: shuxia-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    volumes:
+      - ./library/minio:/data
+    ports:
+      - "19000:9000"
+      - "19001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    logging: *default-logging
+
+  jeecg-system-start:
+    image: shuxia/backend:20260729
+    container_name: shuxia-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      TZ: Asia/Shanghai
+    command:
+      - java
+      - -Djava.security.egd=file:/dev/./urandom
+      - -jar
+      - jeecg-system-start-3.9.2.jar
+      - --spring.profiles.active=docker
+    volumes:
+      - ./config/application-docker.yml:/jeecg-boot/config/application-docker.yml:ro
+      - ./library/upFiles:/opt/upFiles
+      - ./library/backend-data:/jeecg-boot/data
+    ports:
+      - "18080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/jeecg-boot/v3/api-docs >/dev/null || exit 1"]
+      interval: 20s
+      timeout: 8s
+      retries: 20
+      start_period: 120s
+    logging: *default-logging
+
+  admin:
+    image: shuxia/admin:20260729
+    container_name: shuxia-admin
+    restart: unless-stopped
+    depends_on:
+      jeecg-system-start:
+        condition: service_healthy
+    ports:
+      - "18081:80"
+    logging: *default-logging
+
+  reader:
+    image: shuxia/reader:20260729
+    container_name: shuxia-reader
+    restart: unless-stopped
+    depends_on:
+      jeecg-system-start:
+        condition: service_healthy
+    ports:
+      - "18082:80"
+    logging: *default-logging
+
+volumes:
+  shuxia-mysql-data:
+    name: shuxia-mysql-data
+  shuxia-redis-data:
+    name: shuxia-redis-data
+
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: 20m
+    max-file: "3"
