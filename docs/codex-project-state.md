@@ -875,6 +875,16 @@ npm run build
 - The local rollback `shuxia-project.zip` was rebuilt with the corrected Compose file and its manifest hashes were updated. Full package SHA-256 verification passed again.
 - The uploaded migration archives and the original Windows environment are retained as rollback material until browser-level login, cover, book preview, novel reading, progress persistence, and collection configuration acceptance are completed.
 
+## 2026-07-30 Local Development And fnOS Continuous Delivery
+
+- First installation and routine delivery now have separate workflows. `deploy/fnos/scripts/build-migration-package.ps1` remains a one-time full-data migration tool; routine releases must use `deploy/fnos/scripts/build-upgrade-package.ps1` and must not package or replace NAS user data.
+- Routine release packages contain only the version-pinned administration, reader and backend amd64 images, the Compose/config update, release metadata, optional explicitly declared SQL migrations and SHA-256 checksums. They intentionally exclude `.env`, MySQL data, Redis data, MinIO objects and the `library` tree.
+- `deploy/fnos/scripts/verify-upgrade-package.ps1` validates package hashes, image archives, Compose syntax/version pins and the absence of secrets or user-data directories before NAS import.
+- Production release builds require committed and tracked source trees. `-AllowDirty` exists only for temporary NAS test builds and marks `productionReady=false` in `release.json`.
+- The local reader directory currently appears as an untracked tree under its parent Git repository, and the backend contains substantial active development changes. Both conditions correctly block a production-ready package until their milestone sources are committed/tracked; local development can continue independently.
+- Database migration remains an explicit release gate because Flyway is disabled in the current NAS profile. SQL can be packaged in reviewed order but is never executed automatically; a database backup and a reviewed rollback path are mandatory before execution.
+- The operator workflow, backup boundary, fnOS GUI steps, smoke tests and rollback procedure are documented in `deploy/fnos/UPGRADE.md`.
+
 ## Integration Priority
 
 Current user priority:
