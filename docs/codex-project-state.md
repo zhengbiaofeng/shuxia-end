@@ -884,6 +884,7 @@ npm run build
 - The local reader directory currently appears as an untracked tree under its parent Git repository, and the backend contains substantial active development changes. Both conditions correctly block a production-ready package until their milestone sources are committed/tracked; local development can continue independently.
 - Database migration remains an explicit release gate because Flyway is disabled in the current NAS profile. SQL can be packaged in reviewed order but is never executed automatically; a database backup and a reviewed rollback path are mandatory before execution.
 - The operator workflow, backup boundary, fnOS GUI steps, smoke tests and rollback procedure are documented in `deploy/fnos/UPGRADE.md`.
+- End-to-end release smoke verification built the administration frontend, reader frontend and backend, produced all three amd64 image archives, generated the versioned Compose/release metadata and passed independent hash, tar, Compose and no-user-data verification. The retained `workflow-smoke-20260730-r2` artifact is deliberately marked `productionReady=false` because current sources are still in active development.
 
 ## Integration Priority
 
