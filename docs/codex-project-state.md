@@ -886,8 +886,6 @@ npm run build
 - The operator workflow, backup boundary, fnOS GUI steps, smoke tests and rollback procedure are documented in `deploy/fnos/UPGRADE.md`.
 - End-to-end release smoke verification built the administration frontend, reader frontend and backend, produced all three amd64 image archives, generated the versioned Compose/release metadata and passed independent hash, tar, Compose and no-user-data verification. The retained `workflow-smoke-20260730-r2` artifact is deliberately marked `productionReady=false` because it was generated before the current three source milestones were committed.
 
-## Integration Priority
-
 ## 2026-07-30 Three-Repository README Synchronization
 
 - The administration, reader and backend Git repositories now each have a project-specific root README with the same system boundary and repository relationship.
@@ -895,6 +893,8 @@ npm run build
 - Local three-end startup is documented consistently as administration `5173`, reader `5174`, and backend `18080/jeecg-boot`; both frontend repositories document the Vite port conflict explicitly.
 - fnOS first migration and routine upgrades continue to use `shuxia-end/deploy/fnos/README.md` and `UPGRADE.md`. The backend root README points to those canonical delivery instructions instead of duplicating a second deployment workflow.
 - The backend repository root now has a Shuxia entry README. The generic JeecgBoot README remains available only as upstream framework context.
+
+## Integration Priority
 
 Current user priority:
 
