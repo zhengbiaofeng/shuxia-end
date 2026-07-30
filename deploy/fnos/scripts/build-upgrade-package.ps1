@@ -81,7 +81,7 @@ function Set-ComposeImageVersion {
     )
 
     $escapedImage = [regex]::Escape($Image)
-    $pattern = "(?m)^(\s*image:\s*$escapedImage:)[^\s#]+(\s*(?:#.*)?)$"
+    $pattern = "(?m)^(\s*image:\s*${escapedImage}:)[^\s#]+(\s*(?:#.*)?)$"
     $matches = [regex]::Matches($Content, $pattern)
     if ($matches.Count -ne 1) {
         throw "Expected exactly one Compose image declaration for $Image, found $($matches.Count)."
