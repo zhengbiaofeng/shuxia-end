@@ -58,8 +58,8 @@ foreach ($relativeImage in $expectedImages) {
         $failed += "Missing application image archive: $relativeImage"
         continue
     }
-    $firstEntry = & tar -tf $imagePath 2>$null | Select-Object -First 1
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($firstEntry)) {
+    $archiveEntries = @(& tar -tf $imagePath 2>$null)
+    if ($LASTEXITCODE -ne 0 -or $archiveEntries.Count -eq 0) {
         $failed += "Invalid Docker image archive: $relativeImage"
     }
 }
@@ -90,7 +90,7 @@ try {
 }
 
 if ($failed.Count -gt 0) {
-    $failed | ForEach-Object { Write-Error $_ }
+    $failed | ForEach-Object { Write-Host -ForegroundColor Red $_ }
     throw 'fnOS upgrade package verification failed.'
 }
 
