@@ -872,6 +872,7 @@ npm run build
 - Container-network acceptance returned HTTP 200 for the administration frontend, reader frontend, backend OpenAPI endpoint, and MinIO health endpoint.
 - The service ports are `18081` for administration, `18082` for the reader, `18080` for backend diagnostics, and `19000`/`19001` for MinIO. MySQL and Redis remain internal-only.
 - External access through `csfn.xtartv.com` is not configured yet: direct access to port `18081` is refused even though the internal service is healthy. Public exposure requires an explicit fnOS external-link or router mapping decision; do not expose backend, MySQL, Redis, or MinIO by default.
+- The local rollback `shuxia-project.zip` was rebuilt with the corrected Compose file and its manifest hashes were updated. Full package SHA-256 verification passed again.
 - The uploaded migration archives and the original Windows environment are retained as rollback material until browser-level login, cover, book preview, novel reading, progress persistence, and collection configuration acceptance are completed.
 
 ## Integration Priority
