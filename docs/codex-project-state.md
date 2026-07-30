@@ -855,13 +855,13 @@ npm run build
 ## 2026-07-30 fnOS Full-Data Migration Package
 
 - A complete amd64 fnOS migration package was generated at `E:\code\trae_workspcae\shuxia\qianduan\shuxia-end\output\fnos-migration-20260730-001958`.
-- The package contains six offline Docker images, a consistent MySQL dump, the complete MinIO data tree, local chapter-content files, upload files, a Compose project, generated private credentials and deployment instructions. Redis cache is intentionally rebuilt instead of migrated.
+- The package contains six offline Docker images, a consistent MySQL dump, the complete MinIO data tree, local chapter-content files, upload files, a Compose project, generated private credentials and deployment instructions. A verified `shuxia-project.zip` is included so the project can be uploaded and extracted as one file in fnOS. Redis cache is intentionally rebuilt instead of migrated.
 - Storage Management cleanup was performed before export. Eight test or historical test records were hard-deleted after confirming they had no file, task, subscription or notification references. The restored database contains only the formal `sx-book` and `novel` MinIO sources.
 - Package SHA-256 verification passed. The manifest writer/reader now uses UTF-8 so Chinese chapter filenames remain verifiable on Windows PowerShell 5.1.
 - A clean MySQL 8.0.46 restore rehearsal passed: 189 tables initialized; 92 active books/novels, 15,638 active chapter rows, 15,622 stored content paths, two active formal storage sources and zero legacy `127.0.0.1`/`localhost` MinIO URLs.
 - Active-parent content verification resolved all 6,329 referenced chapter bodies: 2,735 local chapter files plus 3,594 MinIO-backed objects, with zero missing paths.
 - The original Windows environment remains available and was restarted after the consistent export. Backend OpenAPI returned HTTP 200 at `http://127.0.0.1:18080/jeecg-boot/v3/api-docs` after export.
-- Remaining work is real-device acceptance only: import the six image archives into fnOS, upload the complete `project` directory to the 21.83 TB storage, create/start the Compose project, then verify login, covers, book preview, novel chapters, reading progress and collection configuration on `192.168.8.13`.
+- Remaining work is real-device acceptance only: upload and extract `shuxia-project.zip` on the 21.83 TB storage, import the six image archives into fnOS, create/start the Compose project, then verify login, covers, book preview, novel chapters, reading progress and collection configuration on `192.168.8.13`. Chrome automation is currently paused at the fnOS upload page because the ChatGPT Chrome extension does not yet have permission to access local file URLs.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\fnos-full-data-migration-20260730.md`.
 
 ## Integration Priority
