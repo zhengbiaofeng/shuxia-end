@@ -12,6 +12,13 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       TZ: Asia/Shanghai
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        chmod -R a+rX /docker-entrypoint-initdb.d
+        exec /usr/local/bin/docker-entrypoint.sh mysqld "$$@"
+      - --
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_general_ci
@@ -19,7 +26,7 @@ services:
       - --max_allowed_packet=256M
     volumes:
       - shuxia-mysql-data:/var/lib/mysql
-      - ./initdb:/docker-entrypoint-initdb.d:ro
+      - ./initdb:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
       interval: 10s

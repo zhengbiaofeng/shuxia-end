@@ -864,6 +864,16 @@ npm run build
 - Remaining work is real-device acceptance only: upload and extract `shuxia-project.zip` on the 21.83 TB storage, import the six image archives into fnOS, create/start the Compose project, then verify login, covers, book preview, novel chapters, reading progress and collection configuration on `192.168.8.13`. Chrome automation is currently paused at the fnOS upload page because the ChatGPT Chrome extension does not yet have permission to access local file URLs.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\fnos-full-data-migration-20260730.md`.
 
+## 2026-07-30 fnOS Real-Device Deployment Acceptance
+
+- The migration package was uploaded to the 21.83 TB fnOS storage and the six offline images were imported successfully. The Compose project now runs `shuxia-admin`, `shuxia-reader`, `shuxia-backend`, `shuxia-mysql`, `shuxia-minio`, and `shuxia-redis`; fnOS reports all six containers running and the project healthy.
+- The real fnOS bind mount initially made `/docker-entrypoint-initdb.d` unreadable to MySQL 8.0.46. The deployment template now grants read/traverse access before delegating to the official MySQL entrypoint, and uses a writable bind declaration so fnOS does not reject initialization before the SQL import begins.
+- NAS database verification reports 92 active books/novels, 15,640 active chapters, and 15,624 non-empty content paths. This is two chapters and two content paths newer than the exported snapshot, confirming that post-start tracking continued on the restored dataset instead of creating a disconnected copy.
+- Container-network acceptance returned HTTP 200 for the administration frontend, reader frontend, backend OpenAPI endpoint, and MinIO health endpoint.
+- The service ports are `18081` for administration, `18082` for the reader, `18080` for backend diagnostics, and `19000`/`19001` for MinIO. MySQL and Redis remain internal-only.
+- External access through `csfn.xtartv.com` is not configured yet: direct access to port `18081` is refused even though the internal service is healthy. Public exposure requires an explicit fnOS external-link or router mapping decision; do not expose backend, MySQL, Redis, or MinIO by default.
+- The uploaded migration archives and the original Windows environment are retained as rollback material until browser-level login, cover, book preview, novel reading, progress persistence, and collection configuration acceptance are completed.
+
 ## Integration Priority
 
 Current user priority:
