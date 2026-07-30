@@ -165,11 +165,16 @@ if ($duplicateMigrationNames) {
 if (-not $OutputRoot) {
     $OutputRoot = Join-Path $adminRoot ("output\fnos-release-$Version")
 }
-$packageRoot = [System.IO.Path]::GetFullPath($OutputRoot)
-if (Test-Path -LiteralPath $packageRoot) {
-    throw "Output directory already exists. Use a new version or remove it explicitly: $packageRoot"
+$finalPackageRoot = [System.IO.Path]::GetFullPath($OutputRoot)
+$packageRoot = "$finalPackageRoot.building"
+foreach ($candidate in @($finalPackageRoot, $packageRoot)) {
+    if (Test-Path -LiteralPath $candidate) {
+        throw "Output or staging directory already exists. Use a new version or remove the stale directory explicitly: $candidate"
+    }
 }
 
+$completed = $false
+try {
 $imagesRoot = Join-Path $packageRoot 'images'
 $projectRoot = Join-Path $packageRoot 'project'
 $buildRoot = Join-Path $packageRoot 'build'
@@ -232,7 +237,7 @@ $images = @(
     @{ Tag = "shuxia/reader:$Version"; File = "shuxia-reader-$Version-amd64.tar" }
 )
 foreach ($image in $images) {
-    Invoke-Checked docker save -o (Join-Path $imagesRoot $image.File) $image.Tag
+    Invoke-Checked -Executable docker -Arguments @('save', '-o', (Join-Path $imagesRoot $image.File), $image.Tag)
 }
 
 if ($ReleaseNotes) {
@@ -295,7 +300,14 @@ $manifestLines = Get-ChildItem -LiteralPath $packageRoot -Recurse -File |
     }
 Write-Utf8NoBom -Path $manifestPath -Content (($manifestLines -join [Environment]::NewLine) + [Environment]::NewLine)
 
-Write-Host "fnOS upgrade package created: $packageRoot"
+Move-Item -LiteralPath $packageRoot -Destination $finalPackageRoot
+$completed = $true
+Write-Host "fnOS upgrade package created: $finalPackageRoot"
 if (-not $productionReady) {
     Write-Warning "This package was built from dirty or untracked sources and is marked productionReady=false."
+}
+} finally {
+    if (-not $completed -and (Test-Path -LiteralPath $packageRoot)) {
+        Remove-Item -LiteralPath $packageRoot -Recurse -Force
+    }
 }
