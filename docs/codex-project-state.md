@@ -888,6 +888,14 @@ npm run build
 
 ## Integration Priority
 
+## 2026-07-30 Three-Repository README Synchronization
+
+- The administration, reader and backend Git repositories now each have a project-specific root README with the same system boundary and repository relationship.
+- Every README distinguishes book upload/local-folder import from novel web collection, keeps administration separate from reader usage, and marks comic/audio implementation as deferred.
+- Local three-end startup is documented consistently as administration `5173`, reader `5174`, and backend `18080/jeecg-boot`; both frontend repositories document the Vite port conflict explicitly.
+- fnOS first migration and routine upgrades continue to use `shuxia-end/deploy/fnos/README.md` and `UPGRADE.md`. The backend root README points to those canonical delivery instructions instead of duplicating a second deployment workflow.
+- The backend repository root now has a Shuxia entry README. The generic JeecgBoot README remains available only as upstream framework context.
+
 Current user priority:
 
 1. P0-P5 and the first reader real-data integration pass are complete; storage contracts, permissions, category visibility, authenticated file access, reader progress and restart persistence remain release regression requirements.
