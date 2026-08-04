@@ -76,7 +76,7 @@ export const comicPageConfig = {
 export const audioPageConfig = {
   activeMenu: '有声',
   title: '有声管理',
-  subtitle: '管理所有有声内容，支持专辑、单集管理和播放统计',
+  subtitle: '上传音频文件或扫描已登记目录，管理专辑、单集与上架状态',
   searchPlaceholder: '搜索专辑名 / 主播 / 标签',
   pageSizeOptions: [10, 20, 50],
   tabs: [
@@ -86,9 +86,8 @@ export const audioPageConfig = {
     { key: 'paused', label: '已暂停' },
   ],
   actions: [
-    { label: '导入有声', icon: Upload, permission: 'sxbook:audio:import' },
-    { label: '扫描更新', icon: RefreshRight, permission: 'sxbook:audio:import' },
-    { label: '添加有声', icon: Plus, tone: 'primary', permission: 'sxbook:audio:add' },
+    { code: 'scan', label: '扫描目录', icon: RefreshRight, permission: 'sxbook:audio:import' },
+    { code: 'upload', label: '上传有声', icon: Upload, tone: 'primary', permission: 'sxbook:audio:import' },
   ],
   filters: [
     { key: 'categoryId', label: '分类', options: [{ label: '全部分类', value: '' }] },

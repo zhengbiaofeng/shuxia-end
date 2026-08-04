@@ -27,6 +27,29 @@ export async function fetchAudioPage(params = {}) {
   }
 }
 
+export async function importAudioMedia(formData) {
+  const response = await request.post('/sx/audio/import/media', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 10 * 60 * 1000,
+  })
+
+  if (!response?.success) {
+    throw new Error(response?.message || '导入有声文件失败')
+  }
+  return response.result || {}
+}
+
+export async function scanAudioLocal(payload = {}) {
+  const response = await request.post('/sx/audio/import/local/scan', payload, {
+    timeout: 10 * 60 * 1000,
+  })
+
+  if (!response?.success) {
+    throw new Error(response?.message || '扫描有声目录失败')
+  }
+  return response.result || {}
+}
+
 async function fetchDomainPage(url, params, normalizer) {
   const response = await request.get(url, { params: cleanQuery(params) })
 
@@ -88,6 +111,7 @@ function normalizeAudioRow(item = {}) {
     source: item.albumLabel || item.voiceTeam || '--',
     updatedAt: formatDateTime(item.updateTime),
     cover: normalizeCover(item.coverUrl),
+    coverUrl: normalizeCover(item.coverUrl || (item.coverFileId ? `/sx/book/preview?fileId=${encodeURIComponent(item.coverFileId)}` : '')),
     tags,
     badges: tags.slice(0, 2).map((label) => ({ label, tone: 'green' })),
     publishStatusText: normalizePublishStatus(item.publishStatus),
