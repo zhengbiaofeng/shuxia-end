@@ -902,7 +902,7 @@ Current user priority:
 2. Keep the historical no-context `RESUBMIT` boundary as a compatibility requirement while all new rule batches use persisted candidate context and item checkpoints.
 3. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
 4. Keep the first notification event boundary limited to explicit task completion/failure producers. Additional event codes must have a confirmed meaning and a real backend producer before they appear in configuration.
-5. Audio/comic boundaries are confirmed: both are user-upload or registered local/NAS-folder scan domains, never web-scraped and never AI/TTS-generated in the current hardware scope. Audio and comic use independent `audio` and `comic` MinIO buckets, while custom destinations must come from Storage Management. The audio upload/scan and reader playback MVP is implemented; release-scale Range streaming, metadata extraction and the complete comic workflow remain incomplete.
+5. Audio/comic boundaries are confirmed: both are user-upload or registered local/NAS-folder scan domains, never web-scraped and never AI/TTS-generated in the current hardware scope. Audio and comic use independent `audio` and `comic` MinIO buckets, while custom destinations must come from Storage Management. Audio upload/scan/playback and comic upload/scan/page-reading MVPs are implemented; release-scale Range streaming, metadata extraction, background scanning and comic incremental-page merging remain incomplete.
 6. Treat the current dashboard JSON as a runtime snapshot only. Do not implement or claim full backup/restore until product scope, encryption, retention and restore compatibility are confirmed.
 7. Keep tag taxonomy distinct from category taxonomy and keep the existing reader application integration-only in this repository.
 8. Continue P3 vertically: complete audio import and playback first, then comic import and reading. Keep NAS routine releases separate from first-install migration and do not infer undefined backup/restore behavior.
@@ -922,6 +922,14 @@ Current user priority:
 - Administration now exposes two real audio ingestion actions: upload one album from audio files, or scan an enabled exact-scope `audio` local/NAS location registered in Storage Management. The backend revalidates the selected storage and never falls back to book, novel or comic storage.
 - Upload and scan create album, track and file-relation records. Audio files are naturally ordered, repeated local scans skip already-related normalized paths, and newly imported albums remain offline until administrator review.
 - The reader now has a real Audio channel, audio-aware search and content details, a track catalog, protected audio loading, previous/next controls and listening-progress persistence. Progress is saved every 15 seconds and on pause, track switch, completion and page leave.
+
+## 2026-08-04 Comic Import And Reader MVP
+
+- Comic management now supports multi-image upload and scans only enabled, writable local/NAS locations whose Storage Management scope is `comic`. Uploads and scans create comic, episode, page-file and optional cover-file relations without falling back to book, novel or audio storage.
+- Comic scan treats a directory containing images as one comic and its immediate child directories as episodes. Covers use the names `cover`, `folder`, `front` or `封面`; page files use natural ordering; repeated scans skip already-related normalized paths.
+- The reader now has a real Comic channel, comic-aware search and details, a protected-image vertical reader, episode catalog, previous/next navigation and page/overall progress persistence.
+- Original local fixtures are available under `output/test-data/media-import`: `灯塔来信` contains one three-page comic episode, and `夜航札记` contains two WAV tracks. The output directory is intentionally ignored by Git; generation and test steps are documented in `docs/test-media-fixtures.md`.
+- Remaining work: preview-proxy Range streaming for release-scale audio, automatic audio metadata extraction, task-center-backed scanning, comic archive formats and incremental merging when new page files are appended to an existing episode.
 - Backend module compile, administration production build and reader production build passed.
 - Still incomplete: automatic duration/bitrate/embedded-cover metadata extraction; HTTP Range streaming for large authenticated media; task-center background scan/cancellation; all comic import, page-reader and comic-progress work.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\audio-import-reader-mvp-20260804.md`.
