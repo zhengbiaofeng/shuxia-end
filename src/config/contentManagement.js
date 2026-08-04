@@ -5,7 +5,6 @@ import {
   Headset,
   MoreFilled,
   Opportunity,
-  Plus,
   RefreshRight,
   Upload,
 } from '@element-plus/icons-vue'
