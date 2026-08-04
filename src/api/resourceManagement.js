@@ -236,6 +236,7 @@ function normalizeStorageRow(item = {}) {
     ? Math.round((used / total) * 100)
     : Number(item.usagePercent || 0)
   const sourceType = String(item.sourceType || '').toLowerCase()
+  const bizScope = item.bizScope || 'both'
   const status = normalizeStorageStatus(item, sourceType)
 
   return {
@@ -245,11 +246,14 @@ function normalizeStorageRow(item = {}) {
     desc: item.remark || item.bucketName || item.sourceKey || '--',
     type: normalizeSourceType(item.sourceType),
     path: item.localBasePath || item.endpoint || item.bucketName || '--',
-    bizScope: item.bizScope || 'both',
+    bizScope,
+    scopeLabel: formatStorageScope(bizScope),
     objectPrefix: item.objectPrefix || '',
     writable: Number(item.writable ?? 1) === 1,
     defaultEbook: Number(item.defaultEbook ?? 0) === 1,
     defaultNovel: Number(item.defaultNovel ?? 0) === 1,
+    defaultAudio: Number(item.defaultAudio ?? 0) === 1,
+    defaultComic: Number(item.defaultComic ?? 0) === 1,
     total: hasCapacity ? formatBytes(total) : '--',
     used: hasCapacity ? formatBytes(used) : '--',
     percent: Math.min(Math.max(percent, 0), 100),
@@ -262,9 +266,22 @@ function normalizeStorageRow(item = {}) {
     scan: formatDateTime(item.lastScanTime || item.updateTime || item.createTime),
     files: formatNumber(item.fileCount),
     color: sourceType === 'minio' ? 'purple' : 'blue',
-    scannable: sourceType === 'local' && item.status !== 0 && Boolean(item.localBasePath),
+    scannable: sourceType === 'local'
+      && item.status !== 0
+      && Boolean(item.localBasePath)
+      && ['ebook', 'novel', 'both'].includes(bizScope),
     scanPath: item.localBasePath || '',
   }
+}
+
+function formatStorageScope(scope) {
+  return ({
+    ebook: '书籍',
+    novel: '小说',
+    both: '书籍 + 小说',
+    audio: '有声',
+    comic: '漫画',
+  })[scope] || '未指定'
 }
 
 function mergeStorageSourceData(config = {}, status = {}) {

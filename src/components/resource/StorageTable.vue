@@ -6,6 +6,7 @@
           <tr>
             <th>存储名称</th>
             <th>类型</th>
+            <th>适用内容</th>
             <th>路径 / 地址</th>
             <th>总容量</th>
             <th>已使用</th>
@@ -30,6 +31,7 @@
               </div>
             </td>
             <td><span class="type-chip" :class="typeTone(row.type)">{{ row.type }}</span></td>
+            <td><span class="scope-chip">{{ row.scopeLabel }}</span></td>
             <td>
               <div class="path-cell" :title="row.path">
                 <strong>{{ row.path }}</strong>
@@ -59,7 +61,10 @@
             <td>{{ row.files }}</td>
             <td v-if="canManageStorage">
               <div class="table-actions">
-                <AdminTooltip v-if="authStore.hasPermission('sxbook:book:add')" content="扫描目录并导入可识别的书籍">
+                <AdminTooltip
+                  v-if="authStore.hasPermission('sxbook:book:add')"
+                  :content="row.scannable ? '扫描目录并导入可识别的书籍或小说' : scanDisabledHint(row)"
+                >
                   <button
                     type="button"
                     aria-label="扫描目录"
@@ -117,6 +122,12 @@ function typeTone(type) {
   if (type === 'WebDAV') return 'purple'
   if (type === '网盘') return 'orange'
   return 'blue'
+}
+
+function scanDisabledHint(row) {
+  if (row?.bizScope === 'audio') return '请从有声管理页发起媒体扫描'
+  if (row?.bizScope === 'comic') return '请从漫画管理页发起媒体扫描'
+  return '该存储源不是可扫描的本地目录'
 }
 </script>
 
@@ -240,13 +251,20 @@ function typeTone(type) {
   color: #617098;
 }
 
-.type-chip {
+.type-chip,
+.scope-chip {
   display: inline-flex;
   align-items: center;
   height: 25px;
   padding: 0 8px;
   border-radius: 5px;
   font-weight: 700;
+}
+
+.scope-chip {
+  border: 1px solid #dbe6f7;
+  background: #f7f9fd;
+  color: #52658f;
 }
 
 .type-chip.blue { border: 1px solid #bfdbfe; background: #eff6ff; color: #1476ff; }

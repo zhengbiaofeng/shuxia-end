@@ -79,7 +79,7 @@ const submitting = ref(false)
 const targetLocationId = ref('')
 
 const isNovel = computed(() => props.bizType === 'novel')
-const contentLabel = computed(() => (isNovel.value ? '小说' : '书籍'))
+const contentLabel = computed(() => ({ ebook: '书籍', novel: '小说', audio: '有声读物', comic: '漫画' })[props.bizType] || '内容')
 const selectedCount = computed(() => [...new Set(props.bookIds.filter(Boolean))].length)
 
 function updateVisible(value) {
@@ -87,7 +87,7 @@ function updateVisible(value) {
 }
 
 function formatLocation(location) {
-  const scopeLabel = location.bizScope === 'both' ? '通用' : location.bizScope === 'novel' ? '小说' : '书籍'
+  const scopeLabel = ({ both: '书籍 + 小说', ebook: '书籍', novel: '小说', audio: '有声', comic: '漫画' })[location.bizScope] || '未指定'
   const prefix = location.objectPrefix ? ` / ${location.objectPrefix}` : ''
   return `${location.name} (${scopeLabel}${prefix})`
 }

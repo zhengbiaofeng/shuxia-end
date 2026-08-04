@@ -77,6 +77,8 @@ const formInitialValues = computed(() => {
     writable: Number(raw.writable ?? 1),
     defaultEbook: Number(raw.defaultEbook ?? 0),
     defaultNovel: Number(raw.defaultNovel ?? 0),
+    defaultAudio: Number(raw.defaultAudio ?? 0),
+    defaultComic: Number(raw.defaultComic ?? 0),
     status: Number(raw.status ?? 1),
     sortNo: Number(raw.sortNo || 0),
     remark: raw.remark || '',
@@ -154,7 +156,11 @@ async function handleDeleteStorage(row) {
 async function handleScanStorage(row) {
   const rootPath = row?.scanPath || row?.raw?.localBasePath || row?.path
   if (!row?.scannable || !rootPath) {
-    ElMessage.warning('当前存储源不是可扫描的本地目录')
+    if (['audio', 'comic'].includes(row?.bizScope)) {
+      ElMessage.info('该路径已登记为媒体存储；请从对应的有声或漫画管理页发起导入扫描')
+      return
+    }
+    ElMessage.warning('当前存储源不是可扫描的书籍或小说目录')
     return
   }
 
@@ -262,6 +268,8 @@ function normalizeStoragePayload(values) {
     writable: Number(values.writable ?? 1),
     defaultEbook: Number(values.defaultEbook ?? 0),
     defaultNovel: Number(values.defaultNovel ?? 0),
+    defaultAudio: Number(values.defaultAudio ?? 0),
+    defaultComic: Number(values.defaultComic ?? 0),
     status: Number(values.status ?? 1),
     sortNo: Number(values.sortNo || 0),
     remark: values.remark || undefined,

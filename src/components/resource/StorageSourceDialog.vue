@@ -77,7 +77,7 @@
           <el-input v-model.trim="form.endpoint" placeholder="例如：http://minio:9000" />
         </el-form-item>
         <el-form-item label="桶名称" prop="bucketName">
-          <el-input v-model.trim="form.bucketName" placeholder="例如：sx-book 或 novel" />
+          <el-input v-model.trim="form.bucketName" placeholder="例如：sx-book、novel、audio 或 comic" />
         </el-form-item>
         <el-alert
           title="MinIO 桶只提供逻辑对象用量，不提供宿主磁盘总容量；未配置独立监控时容量将显示为未知。"
@@ -115,6 +115,14 @@
         <label class="switch-row" :class="{ disabled: !supportsNovel }">
           <span><strong>小说默认位置</strong><small>网络小说同步的默认目标</small></span>
           <el-switch v-model="form.defaultNovel" :disabled="!supportsNovel" />
+        </label>
+        <label class="switch-row" :class="{ disabled: !supportsAudio }">
+          <span><strong>有声默认位置</strong><small>上传或目录扫描有声读物的默认目标</small></span>
+          <el-switch v-model="form.defaultAudio" :disabled="!supportsAudio" />
+        </label>
+        <label class="switch-row" :class="{ disabled: !supportsComic }">
+          <span><strong>漫画默认位置</strong><small>上传或目录扫描漫画的默认目标</small></span>
+          <el-switch v-model="form.defaultComic" :disabled="!supportsComic" />
         </label>
       </section>
 
@@ -224,6 +232,8 @@ const defaultForm = {
   writable: true,
   defaultEbook: false,
   defaultNovel: false,
+  defaultAudio: false,
+  defaultComic: false,
   enabled: true,
   sortNo: 0,
   remark: '',
@@ -234,11 +244,15 @@ const bizScopeOptions = [
   { label: '书籍', value: 'ebook' },
   { label: '小说', value: 'novel' },
   { label: '书籍 + 小说', value: 'both' },
+  { label: '有声', value: 'audio' },
+  { label: '漫画', value: 'comic' },
 ]
 
 const isLocal = computed(() => form.sourceType === 'local')
 const supportsEbook = computed(() => form.bizScope === 'ebook' || form.bizScope === 'both')
 const supportsNovel = computed(() => form.bizScope === 'novel' || form.bizScope === 'both')
+const supportsAudio = computed(() => form.bizScope === 'audio')
+const supportsComic = computed(() => form.bizScope === 'comic')
 const probeTone = computed(() => probeResult.value?.status === 'AVAILABLE' ? 'success' : 'warning')
 const probeTitle = computed(() => {
   if (probeResult.value?.status === 'AVAILABLE') return '路径可用'
@@ -272,6 +286,8 @@ watch(() => props.modelValue, (open) => {
     writable: Number(initial.writable ?? 1) === 1,
     defaultEbook: Number(initial.defaultEbook ?? 0) === 1,
     defaultNovel: Number(initial.defaultNovel ?? 0) === 1,
+    defaultAudio: Number(initial.defaultAudio ?? 0) === 1,
+    defaultComic: Number(initial.defaultComic ?? 0) === 1,
     enabled: Number(initial.status ?? 1) === 1,
   })
   probeResult.value = initial.pathStatus ? {
@@ -292,6 +308,8 @@ watch(() => props.modelValue, (open) => {
 watch(() => form.bizScope, () => {
   if (!supportsEbook.value) form.defaultEbook = false
   if (!supportsNovel.value) form.defaultNovel = false
+  if (!supportsAudio.value) form.defaultAudio = false
+  if (!supportsComic.value) form.defaultComic = false
 })
 
 watch(() => form.sourceType, () => {
@@ -409,6 +427,8 @@ async function submit() {
     writable: form.writable ? 1 : 0,
     defaultEbook: form.defaultEbook ? 1 : 0,
     defaultNovel: form.defaultNovel ? 1 : 0,
+    defaultAudio: form.defaultAudio ? 1 : 0,
+    defaultComic: form.defaultComic ? 1 : 0,
     status: form.enabled ? 1 : 0,
     sortNo: Number(form.sortNo || 0),
     remark: form.remark || undefined,
