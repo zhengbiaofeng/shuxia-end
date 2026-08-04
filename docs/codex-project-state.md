@@ -905,7 +905,7 @@ Current user priority:
 5. Audio/comic boundaries are confirmed: both are user-upload or registered local/NAS-folder scan domains, never web-scraped and never AI/TTS-generated in the current hardware scope. Audio and comic use independent `audio` and `comic` MinIO buckets, while custom destinations must come from Storage Management. Audio upload/scan/playback and comic upload/scan/page-reading MVPs are implemented; release-scale Range streaming, metadata extraction, background scanning and comic incremental-page merging remain incomplete.
 6. Treat the current dashboard JSON as a runtime snapshot only. Do not implement or claim full backup/restore until product scope, encryption, retention and restore compatibility are confirmed.
 7. Keep tag taxonomy distinct from category taxonomy and keep the existing reader application integration-only in this repository.
-8. Continue P3 vertically: complete audio import and playback first, then comic import and reading. Keep NAS routine releases separate from first-install migration and do not infer undefined backup/restore behavior.
+8. Continue the media track with release hardening: restore the local Docker database, apply the storage migration, rebuild/recreate the backend image, run real fixture import, then address Range streaming, metadata extraction and background scanning. Keep NAS routine releases separate from first-install migration and do not infer undefined backup/restore behavior.
 
 ## 2026-08-04 Audio And Comic Storage Foundation
 
@@ -930,8 +930,9 @@ Current user priority:
 - The reader now has a real Comic channel, comic-aware search and details, a protected-image vertical reader, episode catalog, previous/next navigation and page/overall progress persistence.
 - Original local fixtures are available under `output/test-data/media-import`: `灯塔来信` contains one three-page comic episode, and `夜航札记` contains two WAV tracks. The output directory is intentionally ignored by Git; generation and test steps are documented in `docs/test-media-fixtures.md`.
 - Remaining work: preview-proxy Range streaming for release-scale audio, automatic audio metadata extraction, task-center-backed scanning, comic archive formats and incremental merging when new page files are appended to an existing episode.
-- Backend module compile, administration production build and reader production build passed.
-- Still incomplete: automatic duration/bitrate/embedded-cover metadata extraction; HTTP Range streaming for large authenticated media; task-center background scan/cancellation; all comic import, page-reader and comic-progress work.
+- Backend module compile, full backend package, administration production build and reader production build passed. Authenticated browser acceptance confirmed both media routes and their empty/error states render without layout breakage.
+- Runtime fixture import is not yet complete: the local `mysql` container is stopped, and Docker Desktop currently fails to recreate its E-drive bind mount with `/run/desktop/mnt/host/e ... file exists`. The SQL migration and rebuilt backend container must wait until Docker Desktop/WSL is restarted and MySQL is healthy.
+- Still incomplete: automatic duration/bitrate/embedded-cover metadata extraction; HTTP Range streaming for large authenticated media; task-center background scan/cancellation; comic archive import and incremental merging of pages appended to an existing episode.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\audio-import-reader-mvp-20260804.md`.
 
 ## New Thread Startup Checklist
