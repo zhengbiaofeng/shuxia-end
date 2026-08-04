@@ -902,10 +902,20 @@ Current user priority:
 2. Keep the historical no-context `RESUBMIT` boundary as a compatibility requirement while all new rule batches use persisted candidate context and item checkpoints.
 3. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
 4. Keep the first notification event boundary limited to explicit task completion/failure producers. Additional event codes must have a confirmed meaning and a real backend producer before they appear in configuration.
-5. Do not start P3 comic or audio implementation until their legal source, accepted formats, directory structures, processing requirements and storage contracts are explicitly confirmed by the user. Stable visual slots and empty states on the reader home do not broaden this boundary.
+5. Audio/comic boundaries are now confirmed: both are user-upload or registered local/NAS-folder scan domains, never web-scraped and never AI/TTS-generated in the current hardware scope. Audio and comic use independent `audio` and `comic` MinIO buckets, while custom destinations must come from Storage Management. The storage foundation is implemented; import, player/reader and progress workflows are still incomplete.
 6. Treat the current dashboard JSON as a runtime snapshot only. Do not implement or claim full backup/restore until product scope, encryption, retention and restore compatibility are confirmed.
 7. Keep tag taxonomy distinct from category taxonomy and keep the existing reader application integration-only in this repository.
-8. Before implementing another domain, confirm the NAS release/installation approach and then close Compose mount templates, first-start diagnostics, upgrade instructions and real-device path acceptance. Do not fold comic, audio, reader UI or undefined backup/restore work into that phase.
+8. Continue P3 vertically: complete audio import and playback first, then comic import and reading. Keep NAS routine releases separate from first-install migration and do not infer undefined backup/restore behavior.
+
+## 2026-08-04 Audio And Comic Storage Foundation
+
+- The confirmed acquisition boundary is enforced: audio and comics are supplied only by administrator upload or registered local/NAS directory scan. Web collection remains novel-only, and AI/TTS is out of the current hardware scope.
+- Storage Management now supports exact `audio` and `comic` scopes and independent default switches. Legacy `both` remains books-plus-novels only, preventing a general-purpose book path from silently becoming a media destination.
+- MinIO deployments prepare independent `audio` and `comic` buckets and register them as storage sources when no active or previously deleted source key exists. Administrators can later replace these defaults with registered local/NAS locations.
+- The shared file relation has media ordering fields for audio tracks and comic pages, and migration now resolves all four business types explicitly instead of treating every non-novel record as a book.
+- Backend module compile and administration production build passed. Full backend packaging and live SQL/database verification are the remaining release checks for this foundation.
+- Not completed in this milestone: audio upload/folder import, metadata extraction, player/progress; comic upload/folder import, archive/directory parsing, page reader/progress; reader-side end-to-end integration.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\audio-comic-storage-foundation-20260804.md`.
 
 ## New Thread Startup Checklist
 
