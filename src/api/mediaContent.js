@@ -27,6 +27,29 @@ export async function fetchAudioPage(params = {}) {
   }
 }
 
+export async function importComicMedia(formData) {
+  const response = await request.post('/sx/comic/import/media', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 10 * 60 * 1000,
+  })
+
+  if (!response?.success) {
+    throw new Error(response?.message || '导入漫画图片失败')
+  }
+  return response.result || {}
+}
+
+export async function scanComicLocal(payload = {}) {
+  const response = await request.post('/sx/comic/import/local/scan', payload, {
+    timeout: 10 * 60 * 1000,
+  })
+
+  if (!response?.success) {
+    throw new Error(response?.message || '扫描漫画目录失败')
+  }
+  return response.result || {}
+}
+
 export async function importAudioMedia(formData) {
   const response = await request.post('/sx/audio/import/media', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -71,6 +94,9 @@ async function fetchDomainPage(url, params, normalizer) {
 
 function normalizeComicRow(item = {}) {
   const tags = Array.isArray(item.tagNames) ? item.tagNames.filter(Boolean) : []
+  const coverUrl = normalizeCover(item.coverUrl || (item.coverFileId
+    ? `/sx/book/preview?fileId=${encodeURIComponent(item.coverFileId)}`
+    : ''))
 
   return {
     id: item.id,
@@ -78,7 +104,8 @@ function normalizeComicRow(item = {}) {
     title: item.bookName || '未命名漫画',
     author: item.authorName || '--',
     category: item.categoryName || '未分类',
-    cover: normalizeCover(item.coverUrl),
+    cover: coverUrl,
+    coverUrl,
     status: normalizeDomainStatus(item.domainStatus),
     latest: item.latestEpisodeTitle || '--',
     latestDate: formatDateTime(item.updateTime),

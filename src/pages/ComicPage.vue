@@ -11,6 +11,7 @@
     :page-size="pageSize"
     :rows="rows"
     :total="total"
+    @action="handlePageAction"
     @filter-change="handleFilterChange"
     @page-change="loadPage"
     @page-size-change="handlePageSizeChange"
@@ -19,12 +20,19 @@
     @search="loadPage(1)"
     @tab-change="handleTabChange"
   />
+
+  <ComicImportDialog
+    v-model:visible="importDialogVisible"
+    :initial-mode="importDialogMode"
+    @imported="handleImported"
+  />
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref, shallowRef, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import ContentManagementPage from '../components/content/ContentManagementPage.vue'
+import ComicImportDialog from '../components/content/ComicImportDialog.vue'
 import { comicPageConfig, createFilterState } from '../config/contentManagement'
 import { fetchComicPage } from '../api/mediaContent'
 
@@ -38,6 +46,8 @@ const tabs = shallowRef(comicPageConfig.tabs)
 const total = ref(0)
 const pageNo = ref(1)
 const pageSize = ref(10)
+const importDialogVisible = ref(false)
+const importDialogMode = ref('upload')
 
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
 const pageConfig = computed(() => ({
@@ -101,6 +111,17 @@ function resetFilters() {
   Object.assign(filters, createFilterState(comicPageConfig.filters))
   searchKeyword.value = ''
   activeTab.value = 'all'
+  loadPage(1)
+}
+
+function handlePageAction(action = {}) {
+  const code = String(action.code || '')
+  if (!['upload', 'scan'].includes(code)) return
+  importDialogMode.value = code
+  importDialogVisible.value = true
+}
+
+function handleImported() {
   loadPage(1)
 }
 

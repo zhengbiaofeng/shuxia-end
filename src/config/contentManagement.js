@@ -40,9 +40,8 @@ export const comicPageConfig = {
     { key: 'paused', label: '已暂停' },
   ],
   actions: [
-    { label: '刷新扫描', icon: RefreshRight, permission: 'sxbook:comic:import' },
-    { label: '导入漫画', icon: Upload, permission: 'sxbook:comic:import' },
-    { label: '添加漫画', icon: Plus, tone: 'primary', permission: 'sxbook:comic:add' },
+    { code: 'scan', label: '扫描目录', icon: RefreshRight, permission: 'sxbook:comic:import' },
+    { code: 'upload', label: '上传漫画', icon: Upload, tone: 'primary', permission: 'sxbook:comic:import' },
   ],
   filters: [
     { key: 'categoryId', label: '分类', options: [{ label: '全部分类', value: '' }] },
