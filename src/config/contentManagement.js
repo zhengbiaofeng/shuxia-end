@@ -1,10 +1,9 @@
 import {
   Collection,
   Delete,
-  EditPen,
   Headset,
-  MoreFilled,
   Opportunity,
+  Refresh,
   RefreshRight,
   Upload,
 } from '@element-plus/icons-vue'
@@ -19,10 +18,15 @@ export function createFilterState(filters = []) {
 
 export function createContentRowActions(prefix) {
   return [
-  { label: '查看', icon: Collection, permission: `sxbook:${prefix}:detail` },
-  { label: '编辑', icon: EditPen, permission: `sxbook:${prefix}:edit` },
-  { label: '删除', icon: Delete, danger: true, permission: `sxbook:${prefix}:delete` },
-  { label: '更多', icon: MoreFilled },
+    { code: 'view', label: '查看', icon: Collection, permission: `sxbook:${prefix}:detail` },
+    {
+      code: 'shelf',
+      label: '上下架',
+      icon: RefreshRight,
+      permission: `sxbook:${prefix}:status`,
+      tooltip: (row) => Number(row.raw?.publishStatus) === 1 ? '下架内容' : '上架内容',
+    },
+    { code: 'delete', label: '删除', icon: Delete, danger: true, permission: `sxbook:${prefix}:delete` },
   ]
 }
 
@@ -41,6 +45,10 @@ export const comicPageConfig = {
   actions: [
     { code: 'scan', label: '扫描目录', icon: RefreshRight, permission: 'sxbook:comic:import' },
     { code: 'upload', label: '上传漫画', icon: Upload, tone: 'primary', permission: 'sxbook:comic:import' },
+  ],
+  selectable: true,
+  batchActions: [
+    { code: 'merge', label: '合并内容', permission: 'sxbook:book:edit' },
   ],
   filters: [
     { key: 'categoryId', label: '分类', options: [{ label: '全部分类', value: '' }] },
@@ -84,8 +92,13 @@ export const audioPageConfig = {
     { key: 'paused', label: '已暂停' },
   ],
   actions: [
+    { code: 'metadata', label: '补全元数据', icon: Refresh, permission: 'sxbook:audio:import' },
     { code: 'scan', label: '扫描目录', icon: RefreshRight, permission: 'sxbook:audio:import' },
     { code: 'upload', label: '上传有声', icon: Upload, tone: 'primary', permission: 'sxbook:audio:import' },
+  ],
+  selectable: true,
+  batchActions: [
+    { code: 'merge', label: '合并内容', permission: 'sxbook:book:edit' },
   ],
   filters: [
     { key: 'categoryId', label: '分类', options: [{ label: '全部分类', value: '' }] },

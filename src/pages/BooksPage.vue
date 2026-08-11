@@ -29,6 +29,15 @@
     @submitted="handleStorageMigrationSubmitted"
   />
 
+  <ContentMergeDialog
+    v-model:visible="mergeVisible"
+    v-model:target-id="mergeTargetId"
+    :rows="mergeRows"
+    domain-label="书籍"
+    :submitting="mergeSubmitting"
+    @confirm="submitBookMerge"
+  />
+
   <el-drawer v-model="detailVisible" size="720px" title="书籍详情" destroy-on-close>
     <div v-loading="detailLoading" class="book-detail">
       <template v-if="selectedBook">
@@ -53,6 +62,53 @@
           </el-button>
           <el-button v-if="authStore.hasPermission('sxbook:book:delete')" :loading="actionLoading" type="danger" plain @click="handleDeleteBook(selectedBook)">删除</el-button>
         </div>
+
+        <section class="variant-manage">
+          <div class="variant-manage__heading">
+            <div>
+              <h3>可用格式</h3>
+              <p>同一内容的不同文件格式。默认格式用于首次阅读，读者也可在开始阅读时选择。</p>
+            </div>
+            <el-button size="small" @click="openVariantUpload(selectedBook)">添加格式</el-button>
+          </div>
+          <el-table v-loading="variantLoading" :data="variantRows" size="small" class="manage-table">
+            <el-table-column label="格式" width="100">
+              <template #default="{ row }"><strong>{{ row.formatCode }}</strong></template>
+            </el-table-column>
+            <el-table-column label="说明" prop="label" min-width="150" show-overflow-tooltip />
+            <el-table-column label="文件大小" prop="fileSizeText" width="110" />
+            <el-table-column label="状态" width="100">
+              <template #default="{ row }">
+                <el-tag v-if="row.defaultVariant" type="success" size="small">默认</el-tag>
+                <el-tag v-else-if="!row.readable" type="warning" size="small">仅存档</el-tag>
+                <span v-else>可用</span>
+                <el-tooltip v-if="!row.readable" :content="row.capabilityText" placement="top">
+                  <span class="variant-unreadable-hint">?</span>
+                </el-tooltip>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="120" align="right">
+              <template #default="{ row }">
+                <el-button
+                  v-if="!row.defaultVariant && row.readable"
+                  :loading="variantActionId === row.id"
+                  link
+                  type="primary"
+                  @click="handleSetDefaultVariant(row)"
+                >设为默认</el-button>
+                <el-tag v-else-if="!row.defaultVariant && !row.readable" type="warning" size="small">不可阅读</el-tag>
+                <el-button
+                  link
+                  type="danger"
+                  :disabled="selectedBookPublished"
+                  :loading="variantActionId === `${row.id}:delete`"
+                  @click="handleDeleteVariant(row)"
+                >删除</el-button>
+              </template>
+            </el-table-column>
+            <template #empty><el-empty description="暂无格式文件" :image-size="56" /></template>
+          </el-table>
+        </section>
 
         <el-tabs class="manage-tabs" model-value="history">
           <el-tab-pane label="文件历史" name="history">
@@ -166,6 +222,41 @@
 
   <el-dialog v-model="uploadVisible" title="上传书籍文件" width="520px" destroy-on-close @closed="resetUploadForm">
     <el-form class="upload-form" label-position="top">
+      <el-form-item label="入库方式">
+        <el-radio-group v-model="uploadForm.importMode">
+          <el-radio-button value="new">创建新书籍</el-radio-button>
+          <el-radio-button value="merge">归入已有书籍</el-radio-button>
+        </el-radio-group>
+        <p class="upload-form__hint">只有确认内容完全相同、仅文件格式不同时，才归入已有书籍。</p>
+      </el-form-item>
+      <template v-if="uploadForm.importMode === 'merge'">
+        <el-form-item label="已有书籍" required>
+          <el-select
+            v-model="uploadForm.mergeBookId"
+            :loading="mergeBookLoading"
+            :remote-method="loadMergeBookOptions"
+            filterable
+            remote
+            reserve-keyword
+            placeholder="输入书名搜索"
+          >
+            <el-option
+              v-for="book in mergeBookOptions"
+              :key="book.id"
+              :label="`${book.title} / ${book.author || '未知作者'}`"
+              :value="book.id"
+            />
+          </el-select>
+        </el-form-item>
+        <div class="form-grid">
+          <el-form-item label="格式说明">
+            <el-input v-model="uploadForm.variantLabel" placeholder="例如：EPUB 排版版（可选）" />
+          </el-form-item>
+          <el-form-item label="设为默认格式">
+            <el-switch v-model="uploadForm.makeDefaultVariant" />
+          </el-form-item>
+        </div>
+      </template>
       <el-form-item label="文件用途">
         <el-select v-model="uploadForm.fileType" placeholder="自动识别">
           <el-option label="自动识别" value="" />
@@ -383,6 +474,7 @@ import {
 } from '@element-plus/icons-vue'
 import ContentManagementPage from '../components/content/ContentManagementPage.vue'
 import StorageMigrationDialog from '../components/content/StorageMigrationDialog.vue'
+import ContentMergeDialog from '../components/content/ContentMergeDialog.vue'
 import { fetchEligibleStorageLocations } from '../api/resourceManagement'
 import { useAuthStore } from '../stores/auth'
 import {
@@ -400,6 +492,10 @@ import {
   fetchBookList,
   fetchBookOperateLogs,
   fetchBookPageSummary,
+  fetchBookVariants,
+  deleteBookVariant,
+  mergeBookContents,
+  setDefaultBookVariant,
   updateBook,
   uploadBookFile,
 } from '../api/books'
@@ -678,12 +774,19 @@ const detailLoading = ref(false)
 const actionLoading = ref(false)
 const batchLoading = ref(false)
 const selectedBookIds = ref([])
+const mergeVisible = ref(false)
+const mergeRows = ref([])
+const mergeTargetId = ref('')
+const mergeSubmitting = ref(false)
 const storageMigrationVisible = ref(false)
 const selectedBook = ref(null)
 const historyLoading = ref(false)
 const logLoading = ref(false)
 const fileHistoryRows = ref([])
 const operateLogRows = ref([])
+const variantLoading = ref(false)
+const variantRows = ref([])
+const variantActionId = ref('')
 const formVisible = ref(false)
 const formSubmitting = ref(false)
 const editingBook = ref(null)
@@ -696,10 +799,16 @@ const uploadRawFile = ref(null)
 const uploadDirectoryScanning = ref(false)
 const uploadedFile = ref(null)
 const uploadForm = reactive({
+  importMode: 'new',
   fileType: '',
   bookType: '',
   storageLocationId: '',
+  mergeBookId: '',
+  variantLabel: '',
+  makeDefaultVariant: false,
 })
+const mergeBookLoading = ref(false)
+const mergeBookOptions = ref([])
 const ebookStorageLocations = ref([])
 const ebookStorageLocationsLoading = ref(false)
 const localImportVisible = ref(false)
@@ -723,6 +832,7 @@ const bookRules = {
 }
 
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
+const selectedBookPublished = computed(() => Number(selectedBook.value?.raw?.publishStatus) === 1)
 const pageConfig = computed(() => ({
   activeMenu: '书籍',
   title: '书籍管理',
@@ -745,6 +855,7 @@ const pageConfig = computed(() => ({
     { code: 'batch-online', label: '批量上架', tone: 'primary', loading: batchLoading.value, permission: 'sxbook:book:batch:shelf' },
     { code: 'batch-offline', label: '批量下架', loading: batchLoading.value, permission: 'sxbook:book:batch:shelf' },
     { code: 'batch-migrate-storage', label: '迁移存储', loading: batchLoading.value, permission: 'sxbook:storage:migration:submit' },
+    { code: 'merge', label: '合并内容', loading: mergeSubmitting.value, permission: 'sxbook:book:edit' },
     { code: 'batch-delete', label: '批量删除', tone: 'danger', loading: batchLoading.value, permission: 'sxbook:book:batch:delete' },
   ],
 }))
@@ -1021,6 +1132,21 @@ async function handleBatchAction(action, selectedRows = []) {
     return
   }
 
+  if (code === 'merge') {
+    if (selectedRows.length < 2) {
+      ElMessage.warning('至少选择两条内容再合并')
+      return
+    }
+    if (selectedRows.some((row) => Number(row?.raw?.publishStatus) === 1)) {
+      ElMessage.warning('已上架书籍不能合并，请先将所选书籍全部下架')
+      return
+    }
+    mergeRows.value = selectedRows
+    mergeTargetId.value = selectedRows[0]?.id || ''
+    mergeVisible.value = true
+    return
+  }
+
   if (code === 'batch-delete') {
     await batchDeleteSelectedBooks(ids, selectedRows)
   }
@@ -1172,8 +1298,35 @@ async function submitBookForm() {
   }
 }
 
-function openUploadDialog() {
+async function openUploadDialog() {
+  if (!ebookStorageLocations.value.length) await loadEbookStorageLocations()
   uploadVisible.value = true
+}
+
+async function openVariantUpload(row) {
+  uploadForm.importMode = 'merge'
+  uploadForm.fileType = 'content'
+  uploadForm.mergeBookId = row?.id || ''
+  mergeBookOptions.value = row ? [row] : []
+  detailVisible.value = false
+  await openUploadDialog()
+}
+
+async function loadMergeBookOptions(keyword = '') {
+  mergeBookLoading.value = true
+  try {
+    const response = await fetchBookList({
+      pageNo: 1,
+      pageSize: 30,
+      bizType: BOOKS_BIZ_TYPE,
+      bookName: String(keyword || '').trim() || undefined,
+    })
+    mergeBookOptions.value = response.records
+  } catch (error) {
+    ElMessage.error(error?.message || '搜索已有书籍失败')
+  } finally {
+    mergeBookLoading.value = false
+  }
 }
 
 async function openLocalImportDialog() {
@@ -1335,11 +1488,18 @@ async function submitUpload() {
 
   uploading.value = true
   try {
+    if (uploadForm.importMode === 'merge' && !uploadForm.mergeBookId) {
+      ElMessage.warning('请选择要归入的已有书籍')
+      return
+    }
     uploadedFile.value = await uploadBookFileWithRetry({
       file: uploadRawFile.value,
       fileType: uploadForm.fileType || undefined,
       bookType: uploadForm.bookType || undefined,
       storageLocationId: uploadForm.storageLocationId || undefined,
+      mergeBookId: uploadForm.importMode === 'merge' ? uploadForm.mergeBookId : undefined,
+      variantLabel: uploadForm.importMode === 'merge' ? uploadForm.variantLabel.trim() || undefined : undefined,
+      makeDefaultVariant: uploadForm.importMode === 'merge' ? uploadForm.makeDefaultVariant : undefined,
     })
 
     if (uploadedFileAutoImported.value) {
@@ -1394,10 +1554,12 @@ async function loadBookManageInfo(bookId) {
   if (!bookId) return
   historyLoading.value = true
   logLoading.value = true
+  variantLoading.value = true
 
-  const [historyResult, logResult] = await Promise.allSettled([
+  const [historyResult, logResult, variantResult] = await Promise.allSettled([
     fetchBookFileHistory({ bookId, pageNo: 1, pageSize: 5 }),
     fetchBookOperateLogs({ bookId, pageNo: 1, pageSize: 5 }),
+    fetchBookVariants(bookId),
   ])
 
   if (historyResult.status === 'fulfilled') {
@@ -1405,6 +1567,13 @@ async function loadBookManageInfo(bookId) {
   } else {
     fileHistoryRows.value = []
     console.warn('书籍文件历史接口加载失败。', historyResult.reason)
+  }
+
+  if (variantResult.status === 'fulfilled') {
+    variantRows.value = variantResult.value
+  } else {
+    variantRows.value = []
+    console.warn('书籍格式版本接口加载失败。', variantResult.reason)
   }
 
   if (logResult.status === 'fulfilled') {
@@ -1416,6 +1585,71 @@ async function loadBookManageInfo(bookId) {
 
   historyLoading.value = false
   logLoading.value = false
+  variantLoading.value = false
+}
+
+async function handleSetDefaultVariant(row) {
+  if (!selectedBook.value?.id || !row?.id) return
+  variantActionId.value = row.id
+  try {
+    await setDefaultBookVariant(selectedBook.value.id, row.id)
+    variantRows.value = await fetchBookVariants(selectedBook.value.id)
+    selectedBook.value = await fetchBookDetail(selectedBook.value.id)
+    ElMessage.success(`已将 ${row.formatCode} 设为默认格式`)
+    await Promise.allSettled([loadBooks(pageNo.value), loadSummary()])
+  } catch (error) {
+    ElMessage.error(error?.message || '设置默认格式失败')
+  } finally {
+    variantActionId.value = ''
+  }
+}
+
+async function handleDeleteVariant(row) {
+  const bookId = selectedBook.value?.id
+  if (!bookId || !row?.id) return
+  if (selectedBookPublished.value) {
+    ElMessage.warning('已上架书籍不能删除格式，请先下架')
+    return
+  }
+  try {
+    await ElMessageBox.confirm(
+      `确定删除「${row.formatCode}」格式吗？该格式的正文和章节会从当前内容中移除。`,
+      '删除格式版本',
+      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' },
+    )
+    variantActionId.value = `${row.id}:delete`
+    await deleteBookVariant(bookId, row.id)
+    await loadBookManageInfo(bookId)
+    selectedBook.value = await fetchBookDetail(bookId)
+    await Promise.allSettled([loadBooks(pageNo.value), loadSummary()])
+    ElMessage.success(`已删除 ${row.formatCode} 格式`)
+  } catch (error) {
+    if (error !== 'cancel' && error !== 'close') ElMessage.error(error?.message || '删除格式版本失败')
+  } finally {
+    variantActionId.value = ''
+  }
+}
+
+async function submitBookMerge(targetId) {
+  const sourceIds = mergeRows.value.map((row) => row?.id).filter((id) => id && id !== targetId)
+  if (!targetId || !sourceIds.length) {
+    ElMessage.warning('请选择保留的目标内容')
+    return
+  }
+  mergeSubmitting.value = true
+  try {
+    await mergeBookContents(targetId, sourceIds)
+    mergeVisible.value = false
+    mergeRows.value = []
+    mergeTargetId.value = ''
+    selectedBookIds.value = []
+    ElMessage.success('内容合并完成，源内容已归档删除')
+    await Promise.allSettled([loadBooks(pageNo.value), loadSummary()])
+  } catch (error) {
+    ElMessage.error(error?.message || '内容合并失败，请检查格式是否冲突')
+  } finally {
+    mergeSubmitting.value = false
+  }
 }
 
 async function toggleShelfStatus(row) {
@@ -1604,6 +1838,11 @@ function resetUploadForm() {
   uploadForm.fileType = ''
   uploadForm.bookType = ''
   uploadForm.storageLocationId = preferredEbookStorageLocation()?.id || ''
+  uploadForm.importMode = 'new'
+  uploadForm.mergeBookId = ''
+  uploadForm.variantLabel = ''
+  uploadForm.makeDefaultVariant = false
+  mergeBookOptions.value = []
 }
 
 function formatEbookStorageLocation(location) {
@@ -2380,6 +2619,38 @@ onMounted(async () => {
   gap: 12px;
   justify-content: flex-end;
   margin-top: 20px;
+}
+
+.variant-manage {
+  border-top: 1px solid #e5ebf5;
+  margin-top: 20px;
+  padding-top: 18px;
+}
+
+.variant-manage__heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.variant-manage__heading h3 {
+  color: #071f56;
+  font-size: 16px;
+  margin: 0 0 5px;
+}
+
+.variant-manage__heading p,
+.upload-form__hint {
+  color: #7184a8;
+  font-size: 12px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.upload-form__hint {
+  margin-top: 7px;
 }
 
 .manage-tabs {

@@ -309,9 +309,11 @@ $env:MAVEN_HOME = "D:\tools\apache-maven-3.9.16"
 $env:Path = "$env:MAVEN_HOME\bin;$env:Path"
 
 mvn -f "$BackendRoot\pom.xml" -pl ":jeecg-system-start" -am -DskipTests package
-docker compose -f "$ComposeFile" restart jeecg-system-start
+docker compose -f "$ComposeFile" up -d --build jeecg-system-start
 docker logs -f --tail 120 jeecg-system-start
 ```
+
+Do not use `docker compose restart` after backend code changes. The backend JAR is copied into the image during the Docker build, so a restart alone keeps the previous packaged code.
 
 Run taxonomy SQL safely:
 
@@ -902,10 +904,10 @@ Current user priority:
 2. Keep the historical no-context `RESUBMIT` boundary as a compatibility requirement while all new rule batches use persisted candidate context and item checkpoints.
 3. Treat Storage Management as the only destination registry in all later work; downstream forms must consume eligible IDs and backend execution must revalidate them.
 4. Keep the first notification event boundary limited to explicit task completion/failure producers. Additional event codes must have a confirmed meaning and a real backend producer before they appear in configuration.
-5. Audio/comic boundaries are confirmed: both are user-upload or registered local/NAS-folder scan domains, never web-scraped and never AI/TTS-generated in the current hardware scope. Audio and comic use independent `audio` and `comic` MinIO buckets, while custom destinations must come from Storage Management. Audio upload/scan/playback and comic upload/scan/page-reading MVPs are implemented; release-scale Range streaming, metadata extraction, background scanning and comic incremental-page merging remain incomplete.
+5. Audio/comic boundaries are confirmed: both are user-upload or registered local/NAS-folder scan domains, never web-scraped and never AI/TTS-generated in the current hardware scope. Audio and comic use independent `audio` and `comic` MinIO buckets, while custom destinations must come from Storage Management. Upload/scan/playback/page-reading, Range streaming, new-import metadata extraction, task-center scans, ZIP/CBZ import and comic incremental-page merging are implemented. Remaining media work is limited to the explicit hardening list in the 2026-08-05 milestone.
 6. Treat the current dashboard JSON as a runtime snapshot only. Do not implement or claim full backup/restore until product scope, encryption, retention and restore compatibility are confirmed.
 7. Keep tag taxonomy distinct from category taxonomy and keep the existing reader application integration-only in this repository.
-8. Continue the media track with release hardening: restore the local Docker database, apply the storage migration, rebuild/recreate the backend image, run real fixture import, then address Range streaming, metadata extraction and background scanning. Keep NAS routine releases separate from first-install migration and do not infer undefined backup/restore behavior.
+8. Continue the media track with the remaining release hardening only: complete authenticated browser ticket acceptance and exercise a valid CBR/RAR fixture. File-level checkpoint resume, historical audio metadata backfill, media-file cascade cleanup, short-lived tickets, CBR/RAR routing and stale demo-record cleanup are complete. Keep NAS routine releases separate from first-install migration and do not infer undefined backup/restore behavior.
 
 ## 2026-08-04 Audio And Comic Storage Foundation
 
@@ -913,8 +915,8 @@ Current user priority:
 - Storage Management now supports exact `audio` and `comic` scopes and independent default switches. Legacy `both` remains books-plus-novels only, preventing a general-purpose book path from silently becoming a media destination.
 - MinIO deployments prepare independent `audio` and `comic` buckets and register them as storage sources when no active or previously deleted source key exists. Administrators can later replace these defaults with registered local/NAS locations.
 - The shared file relation has media ordering fields for audio tracks and comic pages, and migration now resolves all four business types explicitly instead of treating every non-novel record as a book.
-- Backend module compile and administration production build passed. Full backend packaging and live SQL/database verification are the remaining release checks for this foundation.
-- Not completed in this milestone: audio upload/folder import, metadata extraction, player/progress; comic upload/folder import, archive/directory parsing, page reader/progress; reader-side end-to-end integration.
+- Backend module compile, full backend packaging, administration production build and live SQL/database verification passed. The local backend image was rebuilt and recreated on 2026-08-04.
+- The later audio/comic MVP milestones completed upload/folder import and reader playback/page-reading flows. Metadata extraction, Range streaming, background scanning, comic archives and incremental comic-page merging remain incomplete.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\audio-comic-storage-foundation-20260804.md`.
 
 ## 2026-08-04 Audio Import And Reader MVP
@@ -922,6 +924,7 @@ Current user priority:
 - Administration now exposes two real audio ingestion actions: upload one album from audio files, or scan an enabled exact-scope `audio` local/NAS location registered in Storage Management. The backend revalidates the selected storage and never falls back to book, novel or comic storage.
 - Upload and scan create album, track and file-relation records. Audio files are naturally ordered, repeated local scans skip already-related normalized paths, and newly imported albums remain offline until administrator review.
 - The reader now has a real Audio channel, audio-aware search and content details, a track catalog, protected audio loading, previous/next controls and listening-progress persistence. Progress is saved every 15 seconds and on pause, track switch, completion and page leave.
+- End-to-end fixture acceptance is complete: `夜航札记` imported as one album with two WAV tracks, was explicitly published, appeared in administration and reader lists, and played through the protected reader path. Browser media state reached `readyState=4`, duration `22.296871` seconds and advancing playback time with no console errors.
 
 ## 2026-08-04 Comic Import And Reader MVP
 
@@ -931,9 +934,146 @@ Current user priority:
 - Original local fixtures are available under `output/test-data/media-import`: `灯塔来信` contains one three-page comic episode, and `夜航札记` contains two WAV tracks. The output directory is intentionally ignored by Git; generation and test steps are documented in `docs/test-media-fixtures.md`.
 - Remaining work: preview-proxy Range streaming for release-scale audio, automatic audio metadata extraction, task-center-backed scanning, comic archive formats and incremental merging when new page files are appended to an existing episode.
 - Backend module compile, full backend package, administration production build and reader production build passed. Authenticated browser acceptance confirmed both media routes and their empty/error states render without layout breakage.
-- Runtime fixture import is not yet complete: the local `mysql` container is stopped, and Docker Desktop currently fails to recreate its E-drive bind mount with `/run/desktop/mnt/host/e ... file exists`. The SQL migration and rebuilt backend container must wait until Docker Desktop/WSL is restarted and MySQL is healthy.
+- The local Docker Desktop/WSL stale E-drive mount was recovered on 2026-08-04 without deleting images, containers or data. MySQL, Redis and MinIO are healthy, the storage SQL migration is applied, and the current backend image is rebuilt/recreated.
+- End-to-end fixture acceptance is complete: `灯塔来信` imported as one comic with one episode and three pages, was explicitly published, appeared in administration and reader lists, and rendered all three protected `1024 x 1536` pages in the reader with no console errors.
+- Two backend defects found by the real imports were fixed: operation logging no longer serializes nested multipart objects or rewrites successful imports as system errors, and comic imports now persist the supported `topdown` layout instead of the invalid `vertical` value.
 - Still incomplete: automatic duration/bitrate/embedded-cover metadata extraction; HTTP Range streaming for large authenticated media; task-center background scan/cancellation; comic archive import and incremental merging of pages appended to an existing episode.
+- Known legacy-data cleanup: the old demo rows `Midnight Radio Project` and `Starport Investigation` still reference obsolete `sx-book` cover objects and therefore show broken covers. Newly imported audio/comic fixtures use the correct independent buckets and render normally; repair or remove the two legacy demo rows separately instead of adding frontend fallbacks.
 - Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\audio-import-reader-mvp-20260804.md`.
+
+## 2026-08-04 Audio And Comic Reader Channel Redesign
+
+- The shared reader channel page now gives Audio and Comic the same content-first hierarchy used by Library and Novel: a themed hero, channel artwork, account shelf, selected content, the permission-filtered catalog and a seven-day activity panel.
+- Audio uses the existing headphone artwork with a restrained amber/blue/green surface; Comic uses the existing comic artwork with a mint/violet/warm surface. Both remain one shared component with business-type theme configuration, so later behavior changes do not create duplicate page implementations.
+- Selected content is composed only from real featured and portal records, de-duplicated by content ID. Empty shelves and empty selected-content states remain explicit and do not introduce mock business data.
+- Responsive acceptance covered desktop `1280x720`, tablet `768x1024` and phone `390x844`; the document width matched the viewport at both handheld sizes and no horizontal overflow was present. Reader production build passed; the existing large-chunk warning remains.
+- The two legacy demo cover URLs remain a backend-data cleanup item. The redesign deliberately does not replace them with unrelated frontend placeholder covers.
+
+## 2026-08-05 Audio And Comic Media Pipeline Completion
+
+- Previously registered media follow-ups are now implemented for new imports: audio metadata extraction, authenticated HTTP Range streaming, task-center-backed audio/comic scans, ZIP/CBZ comic archive import, and incremental merging of newly appended comic pages.
+- Audio metadata extraction reads duration, bitrate, title, artist, album and embedded cover where available. Explicit administrator input wins over embedded metadata; parse failures remain non-fatal warnings. Existing historical tracks are not backfilled automatically.
+- Protected preview now supports byte ranges for both MinIO and local/NAS files. The reader audio player uses a direct authenticated media URL instead of downloading the complete file into a browser Blob first.
+- Audio/comic directory scans now return a 32-character task ID, run in the media-scan executor, appear in Task Center as `LOCAL_SCAN`, support termination, and mark interrupted active tasks failed after a backend restart instead of leaving them permanently processing.
+- Comic ZIP/CBZ import enforces traversal and size limits, extracts only supported images, builds episodes from directories and applies natural page order. CBR/RAR remains unsupported.
+- Re-scanning the same comic directory reuses existing comic/episode records, appends only new page files, renumbers the complete episode deterministically and refreshes the page count and preview list.
+- Verification passed: 9 targeted backend tests, the full 11-module backend package, administration and reader production builds, live `206`/`416` Range checks, real WAV metadata extraction, real CBZ import, and a two-page-to-three-page incremental scan visible in Task Center. Temporary validation records and files were removed.
+- At this milestone, the remaining hardening was historical audio metadata backfill, CBR/RAR support, restart checkpoint resume for partially scanned media, short-lived media tickets instead of a long-lived query token, and media-file relation cleanup during deletion. The next milestone below completes the metadata backfill and deletion cleanup items.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\audio-comic-media-pipeline-20260805.md`.
+
+## 2026-08-05 Media Cleanup And Historical Audio Metadata Backfill
+
+- Audio album/track and comic/episode deletion now closes the shared file-relation lifecycle. MinIO objects are physically removed only when no other active relation references them; local/NAS originals are retained while their database relations are soft-deleted.
+- Audio management now exposes `补全元数据`. It submits a bounded `MAB_` background task through the existing Task Center lifecycle and fills only missing duration, bitrate, blank track title, unknown author/narrator and embedded cover fields.
+- Historical orphan or mismatched media relations are skipped with warnings instead of aborting the full batch. Per-file extraction and per-album aggregate failures remain isolated; task interruption still stops work.
+- The completion summary now reports checked, updated-file, updated-track, embedded-cover, skipped and failed counts so administrators can distinguish unchanged files from dirty historical relations.
+- Verification passed: 11 focused backend tests, the full 11-module backend package, administration production build, Docker rebuild/recreation and OpenAPI HTTP 200. Real task `MAB_c8226da51a694f32ab3264a11c52` completed successfully with `检查 5，跳过 5，失败 0`.
+- Remaining media hardening is explicit: CBR/RAR import, file-level checkpoint resume after a backend restart, short-lived media access tickets, and cleanup/repair of the two legacy demo cover records.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\audio-comic-cleanup-metadata-backfill-20260805.md`.
+
+## 2026-08-05 Real Local Audio And Comic Scan Acceptance
+
+- The Windows test-data root `E:\code\trae_workspcae\shuxia\测试数据` is mounted read-only into the backend container at `/data/shuxia-test-data`. Storage Management now contains separate read-only `audio` and `comic` source records, while derived media is written only to the independent writable MinIO `audio` and `comic` buckets.
+- A bounded audio scan imported 2 WMA files from `78_单田芳评书《明英烈》`. Backend ffmpeg transcoding produced 2 MP3 derivatives, the album has 2 tracks and 1628 total seconds, and Task Center task `MSA_f0cf42f0e7d74ec0ae9d1e3e1b81` completed successfully.
+- A bounded comic scan rendered `1-半小时漫画中国史.pdf` into 417 JPEG pages. The comic has one 417-page episode, and Task Center task `MSC_2884cfdbcc6b4a72a8e050fb8a3f` completed successfully.
+- Both imported records were explicitly published through administration. Administration detail drawers show the real track/page aggregates; reader acceptance confirmed advancing native audio playback and all 417 protected comic pages, with sampled images loading at 420x552.
+- Native media authentication now resolves the standard `token` query parameter through `TokenUtils`. This fixes audio URLs that cannot send `X-Access-Token`; the regression test preserves the existing backend-role coverage and adds query-token authentication.
+- This is a sampled pipeline acceptance, not a full-data import. Remaining files can be scanned in bounded batches from the administration UI. MOBI/EPUB/AZW3/DOCX files found under the comic source are intentionally not treated as comics; supported comic sources remain images, PDF, ZIP and CBZ.
+- Verification passed: 3 `SxCurrentUserSupportTest` cases, full 11-module backend package, administration production build, reader production build, SQL relation/count checks and live browser acceptance.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\audio-comic-local-scan-acceptance-20260805.md`.
+
+## 2026-08-07 Full Local Audio And Comic Scan Acceptance
+
+- The complete supported test dataset under `E:\code\trae_workspcae\shuxia\测试数据` has been scanned through the registered read-only `audio` and `comic` locations. Derived media remains isolated in the writable MinIO `audio` and `comic` buckets.
+- Incremental audio scans now reuse an existing album from the same storage-source directory even when `maxFiles` splits one directory across several tasks. The four accidental split albums were reconciled into `78_单田芳评书《明英烈》`, which now has 163 ordered tracks, 262,022 total seconds, and 1,203,995,872 source bytes. A final bounded scan returned zero additions.
+- Incremental comic scans now advance past explicit `cover.jpg` files, import same-basename PDF/JPG pairs as one PDF comic with a sidecar cover, and keep every PDF as an independent comic. Seven PDFs produced seven comics and 2,956 protected JPEG pages; no one-page sidecar duplicate exists, and two final scans returned zero additions.
+- All seven test comics were published through the management API for end-to-end reader acceptance. Reader list, detail and catalog contracts matched database counts; every first-page asset returned HTTP 200 `image/jpeg`. A representative 250-page comic rendered all 250 pages with zero broken images and no horizontal overflow, while administration rendered all seven test covers correctly.
+- The audio album is published and exposes 163 tracks. A real protected audio range returned HTTP 206 with `Content-Range`, and the browser player reached `readyState=4`; playback advanced after the play action without a media error, broken image or horizontal overflow.
+- Focused audio/comic tests passed 3/3, the full backend package passed, and `jeecg-system-start` was rebuilt and recreated with `docker compose ... up -d --build`. A plain Compose restart is insufficient after JAR changes because it retains the previous image.
+- Unsupported files found in the comic source (`EPUB`, `MOBI`, `AZW3`, `DOCX`) remain intentionally ignored. Remaining media hardening is unchanged: CBR/RAR support, file-level checkpoint resume after restart, short-lived media access tickets, and cleanup or repair of the two legacy demo cover records.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\audio-comic-local-scan-incremental-fix-20260806.md`.
+
+## 2026-08-08 Audio And Comic Scan Restart Checkpoints
+
+- New audio/comic directory scans persist `sx_media_scan_context` before entering the asynchronous queue. The context stores media type, registered storage location, original scan limit, execution status, committed source-file count, last committed path, resume count and last error.
+- Audio album groups, comic image groups, PDFs and PDF sidecar covers now commit in bounded transactions. After each successful unit, the task records the committed source paths. The existing `sx_book_file.storage_path` relation remains the idempotent checkpoint used to filter already imported files.
+- Application startup automatically resumes `PENDING` and `RUNNING` audio/comic scan contexts under the same task ID with the remaining file allowance. Terminated contexts remain terminal. Historical media scan logs without a persisted context and audio metadata backfill tasks are not guessed or resumed.
+- The incremental SQL `sx-book-media-scan-checkpoint-20260808.sql` is required for existing deployments; the base `sx-book-init.sql` also contains the new table for fresh installations.
+- Verification passed: 9 focused tests, the full 11-module backend package, the incremental migration, Docker image rebuild, OpenAPI HTTP 200, and a real restart recovery from `RUNNING` to `SUCCESS` with `resume_count=1` and zero duplicate imports.
+- Remaining media hardening is explicit and unchanged: CBR/RAR import, short-lived media access tickets, and cleanup or repair of the two legacy demo cover records.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\audio-comic-media-scan-checkpoint-20260808.md`.
+
+## 2026-08-08 Short-Lived Media Access Tickets
+
+- Protected reader media now uses a Redis-backed five-minute ticket bound to the file ID and requesting user. The new `POST /sx/book/media/ticket` endpoint issues tickets only after the existing published/category visibility checks pass.
+- `GET /sx/book/preview` accepts the ticket and rechecks the file, user binding, visibility and expiry before streaming. MinIO/local preview and HTTP Range behavior remain shared with the existing path.
+- Audio native playback obtains a ticket before assigning `src` and retries once after an expired/failed ticket. Comic page requests obtain tickets before downloading protected images. URLs without a managed `fileId` are left unchanged.
+- Verification passed: `SxMediaAccessTicketServiceTest` 4/4, `sx-book` compile, full `jeecg-system-start` packaging, Docker image rebuild/recreation, reader production build, OpenAPI HTTP 200, and anonymous ticket issuance HTTP 401. No SQL migration is required; the ticket keys expire in Redis. An authenticated ticket issuance and browser playback pass still require an available administrator/reader session.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\media-access-ticket-20260808.md`.
+- CBR/RAR comic upload now supports unencrypted single-volume RAR4/CBR through Junrar, with the same safe extraction limits as ZIP/CBZ. RAR5, encrypted and multi-volume archives are explicitly rejected; the administration upload dialog states these limits.
+- Verification passed: ZIP extraction, traversal protection, CBR routing test, `sx-book` compile, and reader/administration source integration. A valid CBR/RAR fixture still needs to be exercised because the current test dataset contains no such archive.
+- Remaining media hardening is explicit: authenticated browser ticket acceptance and repair/removal of the two legacy demo cover records. These are separate from the completed audio/comic scan checkpoint and ticket work.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\cbr-rar-comic-import-20260808.md`.
+
+## 2026-08-08 Legacy Demo Media Cleanup
+
+- The two known stale seeded media records (`Midnight Radio Project` and `Starport Investigation`) were logically removed from the local database after confirming their old `sx-book` MinIO objects were already absent.
+- The cleanup covered 2 books, 4 file relations, 6 chapters and 1 task log. Existing operation logs were already deleted logically and were retained as audit history.
+- Current local/NAS comic and audio fixtures were checked by ID and remain active; no frontend cover fallback was introduced.
+- Remaining work is explicit: authenticated browser acceptance for the short-lived media ticket flow and a valid CBR/RAR fixture acceptance.
+- Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\legacy-demo-media-cleanup-20260808.md`.
+
+## 2026-08-08 Comic Cover Loading And Blank PDF Covers
+
+- Reader content cards and detail pages now load protected cover previews through a shared media-image component. File-ID previews use short-lived tickets; legacy bucket/object previews use an authenticated compatibility request.
+- PDF comic scans skip near-empty leading pages when selecting a cover and retain page 1 only when no nonblank page exists.
+- Browser acceptance confirmed all eight published comic covers across shelf, featured and catalog sections with no placeholder images or console errors. The local `1-半小时漫画中国史` record was rebound from its pure-white page 1 to page 2.
+- Verification passed: reader production build, two focused PDF-renderer tests, the full backend package, Docker image rebuild/recreation, OpenAPI HTTP 200, and the final authenticated browser refresh.
+- No schema migration is required. Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\comic-cover-protected-loading-20260808.md`.
+
+## 2026-08-09 Same Logical Content With Multiple Formats
+
+- Books, audio albums and comics now support multiple explicit formats under one logical content record. Different editions, translations, narrators, scans or content versions remain separate records; novels keep canonical chapters and do not use this model.
+- The backend adds `sx_content_variant`, default-variant references, resource bindings and per-format reading progress. Legacy non-novel records are migrated or lazily backfilled to one default variant.
+- Administration upload/import dialogs can either create new content or explicitly add a format to an existing compatible item. Detail drawers list all formats and allow the administrator to choose the default.
+- The reader detail page opens a format chooser when more than one readable format exists, stores the device preference and routes the selected variant into the PDF, EPUB, audio or comic reader. Unsupported online ebook formats remain visible but disabled.
+- A real published `半小时漫画中国史` fixture contains EPUB and PDF variants under one card. Browser acceptance opened both routes without horizontal overflow or console errors; per-format progress remained independent.
+- Database migration: `sx-book-content-variant-20260808.sql`. Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\content-variant-handoff-20260809.md`.
+- Directory scans remain intentionally non-merging: title, author, narrator and filename are never used to guess that two records are the same content. Historical duplicate logical rows are not auto-consolidated.
+
+## 2026-08-10 Manual Content Consolidation And Format Deletion
+
+- Books, audio albums and comics now expose an administrator-confirmed `合并内容` workflow. The administrator selects at least two off-shelf records, chooses the target logical content and explicitly confirms the operation.
+- The backend accepts only same-business-type, non-novel, off-shelf records. Duplicate format codes are rejected instead of being silently overwritten. Target metadata, cover and default format remain authoritative while source variants, files and chapters move to the target.
+- Source user state now follows the merge instead of being orphaned: active bookshelf membership wins, the farther per-user/per-format progress wins, history moves to the target, download counts are combined, and target title/author/cover snapshots are refreshed.
+- Detail drawers now support deleting one format while retaining the other formats. The final format cannot be removed; deleting the default format selects or validates a replacement first. Managed MinIO resources are cleaned only when unreferenced, while local/NAS originals are retained.
+- Whole-content deletion for books, audio and comics now uses the same lifecycle cleanup. It removes active format relations and bookshelf/progress/history/download rows together with managed file relations, closing the previous orphan-record path.
+- Published-content guards exist in both administration and backend. Browser acceptance confirmed the management page blocks merging two published books before sending an API request.
+- MOBI/AZW3 remain visible archive formats and are disabled in the reader format chooser. The current online ebook engines remain PDF and EPUB only.
+- Verification passed: 11 focused backend tests, full `jeecg-system-start` packaging, Docker image rebuild/recreation and administration production build. A real PDF + EPUB merge verified format selection and user-state migration; a real whole-book delete reduced active book/variant/file/bookshelf/progress/history/download counts to zero. Temporary acceptance data and files were removed afterward. Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\content-variant-consolidation-20260810.md`.
+- Explicit remaining work: historical duplicates still require administrator selection; scan results intentionally never infer sameness from title/author/filename; same-format conflicts require manual resolution; source category/tag metadata is not unioned into the target; MOBI/AZW3 still have no online reader engine.
+
+## 2026-08-09 Local Runtime Storage Guard
+
+- The C drive full incident was traced to `C:\Users\风之子\AppData\Local\Temp\shuxia-admin-dev.stderr.log`, a 41.294 GB unbounded Vite stderr log. The trigger was Vue proxying Element Plus icon component definitions inside reactive page configuration; the warning payload repeatedly serialized the component tree.
+- Shared resource actions and metric cards now unwrap and mark icon components as raw before rendering. A fresh browser load of `/automation/tasks` produced zero `made a reactive object` warnings and zero other warn/error console entries.
+- The new `scripts/run-admin.ps1` rejects a C-drive runtime root, sets `TEMP`/`TMP`, npm cache and Playwright cache below `E:\shuxia-runtime`, and starts background Vite through an isolated `cmd.exe` process with stdout/stderr sent to `NUL`. It returns a prompt immediately and does not create persistent development logs.
+- Existing npm, pnpm and Maven C-drive paths were inspected. `C:\Users\风之子\AppData\Local\npm-cache`, `C:\Users\风之子\AppData\Local\pnpm` and `C:\Users\风之子\.m2\repository` are directory junctions to `E:\DevCache\...`; no cache migration or deletion was required. Docker Desktop data is already on E drive under `E:\down\dockerDown\DockerDesktopWSL`.
+- Phase verification passed: PowerShell parser check, administration production build (`1778` modules), background start, HTTP `200` at `http://127.0.0.1:5173/`, and browser task-center reload. C drive free space remained about `41.42 GB` after the run.
+- Ongoing rule: use `.\scripts\run-admin.ps1 -Command dev` (or `-Background`) for the administration frontend. Do not redirect Vite output to `%TEMP%`; if diagnostic logs are ever needed, place them under `E:\shuxia-runtime\logs` with an explicit size/retention policy.
+- The reader repository now has `E:\code\trae_workspcae\shuxia\qianduan\shuxia\scripts\run-reader.ps1`, which applies the same E-drive guard for port `5174`, frontend temp files and caches. Its parser, C-drive rejection, background HTTP `200` smoke test and production build passed.
+- Remaining storage work is operational rather than code-blocking: redirect any future reader/backend local launch wrappers and ad-hoc test exports to E drive, then repeat a disk-growth check before each NAS delivery. The existing `shuxia-admin-*` and `shuxia-reader-vite.*` files in `%TEMP%` are stale small logs; they are not active runtime paths.
+
+## 2026-08-11 v0.3.0 Three-Repository Release Closure
+
+- The administration, reader and backend repositories use one release baseline and one Git tag: `v0.3.0`. The two frontend package versions are `0.3.0`.
+- Release scope includes the completed audio/comic pipelines, protected media tickets, restartable media scans, content variants, administrator-confirmed consolidation, per-format progress and format deletion.
+- Existing NAS databases must run three idempotent migrations in order after backup: audio/comic storage foundation, media scan checkpoint, then content variant.
+- Administration tests passed 9/9. Administration and reader production builds passed. Backend tests passed 90/90 across `sx-book` and its tested dependencies (`sx-book` 86, base-core 4).
+- The formal fnOS application-only package is built from clean committed sources with `deploy/fnos/scripts/build-upgrade-package.ps1 -Version 0.3.0`; it includes three `linux/amd64` application image archives and excludes user data and secrets.
+- Known non-blocking release debt: frontend route chunking and static image compression, no online MOBI/AZW3 engine, no automatic duplicate-content inference, no automatic same-format conflict resolution, and CBR support limited to compatible RAR4 single-volume unencrypted archives.
+- Verification completed before source closure: administration Vitest and production build, reader production build, `sx-book` plus dependency tests (90 passed), and the full 11-module backend package (`BUILD SUCCESS`). The fnOS package and remote Git/tag verification remain release-gate steps.
+- Release notes: `docs/releases/v0.3.0.md`. Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\release-v0.3.0-20260811.md`.
 
 ## New Thread Startup Checklist
 

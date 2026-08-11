@@ -18,7 +18,7 @@
 5. 构建带唯一版本号的升级包并完成校验。
 6. NAS 备份、升级、冒烟验收；失败时回滚上一版本。
 
-建议版本号使用 `年.月.日.序号`，例如 `2026.07.30.1`。同一个版本号不得重复构建或覆盖。
+正式版本使用语义化版本号，例如 `0.3.0`；临时验收包可使用 `年.月.日.序号`。同一个版本号不得重复构建或覆盖，三个仓库必须使用同一个 Git 标签（例如 `v0.3.0`）。
 
 ## 二、本地构建升级包
 
@@ -28,7 +28,7 @@
 Set-Location "E:\code\trae_workspcae\shuxia\qianduan\shuxia-end"
 
 powershell -ExecutionPolicy Bypass -File ".\deploy\fnos\scripts\build-upgrade-package.ps1" `
-  -Version "2026.07.30.1"
+  -Version "0.3.0"
 ```
 
 脚本会完成：
@@ -68,7 +68,7 @@ SQL 会进入升级包的 `migrations` 目录并生成顺序文件，但不会�
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File ".\deploy\fnos\scripts\verify-upgrade-package.ps1" `
-  -PackageRoot ".\output\fnos-release-2026.07.30.1"
+  -PackageRoot ".\output\fnos-release-0.3.0"
 ```
 
 校验会检查文件哈希、三个镜像归档、Compose 版本、Compose 语法，以及升级包内是否误带 `.env`、数据库初始化目录或用户书库。

@@ -59,7 +59,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, markRaw, toRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import { RefreshRight } from '@element-plus/icons-vue'
 import { useAuthStore } from '../../stores/auth'
@@ -84,9 +84,14 @@ const router = useRouter()
 const authStore = useAuthStore()
 const siteSettingsStore = useSiteSettingsStore()
 const menus = computed(() => createSideMenus(props.activeMenu, authStore.hasPermission))
-const visibleActions = computed(() => props.actions.filter((action) => (
-  !action.permission || authStore.hasPermission(action.permission)
-)))
+const visibleActions = computed(() => props.actions
+  .filter((action) => !action.permission || authStore.hasPermission(action.permission))
+  .map((action) => ({
+    ...action,
+    // Page configuration can be wrapped by reactive(). Element Plus expects the
+    // component passed to `icon` to stay raw, otherwise Vue logs the entire vnode.
+    icon: action.icon ? markRaw(toRaw(action.icon)) : action.icon,
+  })))
 const profile = computed(() => {
   const user = authStore.userInfo
 

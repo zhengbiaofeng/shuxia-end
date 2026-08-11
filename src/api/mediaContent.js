@@ -39,9 +39,21 @@ export async function importComicMedia(formData) {
   return response.result || {}
 }
 
+export async function importComicArchive(formData) {
+  const response = await request.post('/sx/comic/import/archive', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 10 * 60 * 1000,
+  })
+
+  if (!response?.success) {
+    throw new Error(response?.message || '导入漫画压缩包失败')
+  }
+  return response.result || {}
+}
+
 export async function scanComicLocal(payload = {}) {
   const response = await request.post('/sx/comic/import/local/scan', payload, {
-    timeout: 10 * 60 * 1000,
+    timeout: 30 * 1000,
   })
 
   if (!response?.success) {
@@ -64,13 +76,79 @@ export async function importAudioMedia(formData) {
 
 export async function scanAudioLocal(payload = {}) {
   const response = await request.post('/sx/audio/import/local/scan', payload, {
-    timeout: 10 * 60 * 1000,
+    timeout: 30 * 1000,
   })
 
   if (!response?.success) {
     throw new Error(response?.message || '扫描有声目录失败')
   }
   return response.result || {}
+}
+
+export async function backfillAudioMetadata(payload = {}) {
+  const response = await request.post('/sx/audio/metadata/backfill', payload, {
+    timeout: 30 * 1000,
+  })
+
+  if (!response?.success) {
+    throw new Error(response?.message || '提交音频元数据补全任务失败')
+  }
+  return response.result || {}
+}
+
+export async function fetchMediaDetail(type, id) {
+  const domain = normalizeMediaType(type)
+  const response = await request.get(`/sx/${domain}/detail/${encodeURIComponent(id)}`)
+
+  if (!response?.success || !response?.result) {
+    throw new Error(response?.message || '获取内容详情失败')
+  }
+  return response.result
+}
+
+export async function fetchMediaItems(type, bookId) {
+  const domain = normalizeMediaType(type)
+  const itemType = domain === 'comic' ? 'episode' : 'track'
+  const response = await request.get(`/sx/${domain}/${itemType}/list`, {
+    params: { bookId },
+  })
+
+  if (!response?.success) {
+    throw new Error(response?.message || '获取章节列表失败')
+  }
+  return Array.isArray(response.result) ? response.result : []
+}
+
+export async function changeMediaPublishStatus(type, id, publishStatus) {
+  const domain = normalizeMediaType(type)
+  const response = await request.post(`/sx/${domain}/changeStatus`, null, {
+    params: { id, publishStatus },
+  })
+
+  if (!response?.success) {
+    throw new Error(response?.message || '修改上架状态失败')
+  }
+  return Boolean(response.result)
+}
+
+export async function deleteMedia(type, id) {
+  const domain = normalizeMediaType(type)
+  const response = await request.delete(`/sx/${domain}/delete`, { params: { id } })
+
+  if (!response?.success) {
+    throw new Error(response?.message || '删除内容失败')
+  }
+  return Boolean(response.result)
+}
+
+export async function mergeMediaContents(targetBookId, sourceBookIds = []) {
+  const ids = Array.isArray(sourceBookIds) ? sourceBookIds.filter(Boolean) : []
+  if (!targetBookId || !ids.length) throw new Error('请选择待合并内容')
+  const response = await request.post('/sx/book/merge', { targetBookId, sourceBookIds: ids })
+  if (!response?.success || !response?.result) {
+    throw new Error(response?.message || '合并内容失败')
+  }
+  return response.result
 }
 
 async function fetchDomainPage(url, params, normalizer) {
@@ -186,6 +264,14 @@ function cleanQuery(query = {}) {
   return Object.fromEntries(
     Object.entries(query).filter(([, value]) => value !== '' && value !== undefined && value !== null),
   )
+}
+
+function normalizeMediaType(type) {
+  const value = String(type || '').toLowerCase()
+  if (!['comic', 'audio'].includes(value)) {
+    throw new Error('不支持的内容类型')
+  }
+  return value
 }
 
 function normalizeCover(url) {

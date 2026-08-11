@@ -14,7 +14,7 @@
   >
     <div class="metric-card__head">
       <span v-if="icon" class="metric-card__icon" :class="`is-${color}`">
-        <el-icon><component :is="icon" /></el-icon>
+        <el-icon><component :is="rawIcon" /></el-icon>
       </span>
       <div class="metric-card__title">{{ title }}</div>
     </div>
@@ -36,6 +36,7 @@
 </template>
 
 <script setup>
+import { computed, markRaw, toRaw } from 'vue'
 import { TopRight } from '@element-plus/icons-vue'
 
 const props = defineProps({
@@ -54,6 +55,10 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['click'])
+
+// Page configuration may be wrapped by reactive(). Component definitions must
+// stay raw or Vue serializes the proxied component into every warning message.
+const rawIcon = computed(() => (props.icon ? markRaw(toRaw(props.icon)) : props.icon))
 
 function handleClick() {
   if (!props.clickable) return

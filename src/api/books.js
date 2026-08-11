@@ -99,7 +99,16 @@ export async function fetchBookDetail(id) {
   return normalizeBookRecord(response.result);
 }
 
-export async function uploadBookFile({ file, fileType, bookType, categoryId, storageLocationId } = {}) {
+export async function uploadBookFile({
+  file,
+  fileType,
+  bookType,
+  categoryId,
+  storageLocationId,
+  mergeBookId,
+  variantLabel,
+  makeDefaultVariant,
+} = {}) {
   if (!file) {
     throw new Error('请选择要上传的文件');
   }
@@ -114,6 +123,9 @@ export async function uploadBookFile({ file, fileType, bookType, categoryId, sto
   if (bookType) formData.append('bookType', bookType);
   if (categoryId) formData.append('categoryId', categoryId);
   if (storageLocationId) formData.append('storageLocationId', storageLocationId);
+  if (mergeBookId) formData.append('mergeBookId', mergeBookId);
+  if (variantLabel) formData.append('variantLabel', variantLabel);
+  if (makeDefaultVariant !== undefined) formData.append('makeDefaultVariant', String(Boolean(makeDefaultVariant)));
 
   const response = await request.post('/sx/book/upload/single', formData, {
     headers: {
@@ -126,6 +138,45 @@ export async function uploadBookFile({ file, fileType, bookType, categoryId, sto
   }
 
   return normalizeBookFile(response.result);
+}
+
+export async function fetchBookVariants(bookId) {
+  if (!bookId) throw new Error('缺少内容ID');
+  const response = await request.get('/sx/book/variant/list', { params: { bookId } });
+  if (!response?.success || !Array.isArray(response?.result)) {
+    throw new Error(response?.message || '获取格式版本失败');
+  }
+  return response.result.map(normalizeBookVariant);
+}
+
+export async function setDefaultBookVariant(bookId, variantId) {
+  const response = await request.post('/sx/book/variant/default', { bookId, variantId });
+  if (!response?.success || !response?.result) {
+    throw new Error(response?.message || '设置默认格式失败');
+  }
+  return normalizeBookVariant(response.result);
+}
+
+export async function deleteBookVariant(bookId, variantId, replacementVariantId = '') {
+  const response = await request.post('/sx/book/variant/delete', {
+    bookId,
+    variantId,
+    replacementVariantId: replacementVariantId || undefined,
+  });
+  if (!response?.success || !response?.result) {
+    throw new Error(response?.message || '删除格式版本失败');
+  }
+  return normalizeBookVariant(response.result);
+}
+
+export async function mergeBookContents(targetBookId, sourceBookIds = []) {
+  const ids = Array.isArray(sourceBookIds) ? sourceBookIds.filter(Boolean) : [];
+  if (!targetBookId || !ids.length) throw new Error('请选择待合并内容');
+  const response = await request.post('/sx/book/merge', { targetBookId, sourceBookIds: ids });
+  if (!response?.success || !response?.result) {
+    throw new Error(response?.message || '合并内容失败');
+  }
+  return response.result;
 }
 
 export async function checkBookImportDuplicates(items = []) {
@@ -644,6 +695,7 @@ function normalizeBookFile(item = {}) {
     parseStatusText: item.parseStatus !== undefined ? normalizeParseStatus(item.parseStatus, item.bookType) : '',
     coverFileId: item.coverFileId || '',
     contentFileId: item.contentFileId || '',
+    variantId: item.variantId || '',
     bucketName: item.bucketName || '',
     objectName: item.objectName || '',
     storagePath: item.storagePath || '',
@@ -653,6 +705,28 @@ function normalizeBookFile(item = {}) {
     duplicateBookId: item.duplicateBookId || '',
     duplicateBookName: item.duplicateBookName || '',
     duplicateReason: item.duplicateReason || '',
+    raw: item,
+  };
+}
+
+function normalizeBookVariant(item = {}) {
+  const formatCode = String(item.formatCode || 'unknown').toLowerCase()
+  const readable = item.readable === undefined ? !['mobi', 'azw3'].includes(formatCode) : Boolean(item.readable)
+  return {
+    id: item.id || '',
+    bookId: item.bookId || '',
+    formatCode: formatCode.toUpperCase(),
+    label: item.variantLabel || String(item.formatCode || '未知格式').toUpperCase(),
+    sourceFileId: item.sourceFileId || '',
+    fileSize: Number(item.fileSize || 0),
+    fileSizeText: formatFileSize(item.fileSize),
+    itemCount: Number(item.itemCount || 0),
+    pageCount: Number(item.pageCount || 0),
+    totalDurationMillis: Number(item.totalDurationMillis || 0),
+    defaultVariant: Number(item.defaultFlag || 0) === 1,
+    readable,
+    capabilityText: readable ? '支持在线阅读' : '仅存档，暂不可在线阅读',
+    status: Number(item.status || 0),
     raw: item,
   };
 }
