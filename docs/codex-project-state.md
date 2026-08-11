@@ -1073,6 +1073,7 @@ Current user priority:
 - The formal fnOS application-only package is built from clean committed sources with `deploy/fnos/scripts/build-upgrade-package.ps1 -Version 0.3.0`; it includes three `linux/amd64` application image archives and excludes user data and secrets.
 - Known non-blocking release debt: frontend route chunking and static image compression, no online MOBI/AZW3 engine, no automatic duplicate-content inference, no automatic same-format conflict resolution, and CBR support limited to compatible RAR4 single-volume unencrypted archives.
 - Verification completed before source closure: administration Vitest and production build, reader production build, `sx-book` plus dependency tests (90 passed), and the full 11-module backend package (`BUILD SUCCESS`). The fnOS package and remote Git/tag verification remain release-gate steps.
+- fnOS release package verification passed at `E:\code\trae_workspcae\shuxia\qianduan\shuxia-end\output\fnos-release-0.3.0`: three amd64 image archives, Compose version pins, migration order, SHA256 manifest and no-user-data checks passed; package metadata reports `productionReady=true`.
 - Release notes: `docs/releases/v0.3.0.md`. Backend handoff: `E:\code\trae_workspcae\shuxia\qianduan\boot-box\server\jeecg-boot\docs\release-v0.3.0-20260811.md`.
 
 ## New Thread Startup Checklist
